@@ -1,0 +1,62 @@
+{
+  "name": "bailiwick",
+  "version": "0.0.1",
+  "description": "A more domain-ish model toolkit",
+  "main": "dist/commonjs/index.js",
+  "homepage": "https://bitbucket.org/ged/bailiwick",
+  "scripts": {
+    "test": "spec"
+  },
+  "repository": {
+    "type": "mercurial",
+    "url": "ssh://hg@bitbucket.org/ged/bailiwick"
+  },
+  "keywords": [
+    "es6",
+    "domain",
+    "model",
+    "xhr",
+    "rest"
+  ],
+  "author": "Michael Granger <ged@FaerieMUD.org>",
+  "license": "BSD",
+  "devDependencies": {
+    "conventional-changelog": "0.0.11",
+    "del": "^1.1.1",
+    "gulp": "^3.8.11",
+    "gulp-bump": "^0.2.1",
+    "gulp-jshint": "^1.9.2",
+    "gulp-yuidoc": "^0.1.2",
+    "jasmine-core": "^2.2.0",
+    "jshint-stylish": "^1.0.1",
+    "karma": "^0.12.31",
+    "karma-chrome-launcher": "^0.1.7",
+    "karma-coverage": "^0.2.7",
+    "karma-jasmine": "^0.3.5",
+    "karma-jspm": "^1.1.4",
+    "karma-verbose-reporter": "0.0.2",
+    "object.assign": "^1.1.1",
+    "protractor": "^1.8.0",
+    "require-dir": "^0.1.0",
+    "run-sequence": "^1.0.2",
+    "traceur": "0.0.86",
+    "vinyl-paths": "^1.0.0",
+    "yargs": "^3.3.1"
+  },
+  "jspm": {
+    "main": "system/index",
+    "format": "register",
+    "directories": {
+      "lib": "dist"
+    },
+    "configFile": "src/system.config.js",
+    "dependencies": {
+      "plugin-json": "github:systemjs/plugin-json@^0.1.0",
+      "traceur": "github:jmcriffey/bower-traceur@^0.0.88"
+    },
+    "devDependencies": {
+      "traceur": "github:jmcriffey/bower-traceur@^0.0.88",
+      "traceur-runtime": "github:jmcriffey/bower-traceur-runtime@0.0.87"
+    }
+  }
+}
