@@ -23,6 +23,7 @@
   "devDependencies": {
     "conventional-changelog": "0.0.11",
     "del": "^1.1.1",
+    "es6-module-loader": "^0.16.5",
     "gulp": "^3.8.11",
     "gulp-bump": "^0.2.1",
     "gulp-jshint": "^1.9.2",
@@ -34,17 +35,20 @@
     "karma-coverage": "^0.2.7",
     "karma-jasmine": "^0.3.5",
     "karma-jspm": "^1.1.4",
+    "karma-phantomjs-launcher": "^0.1.4",
+    "karma-systemjs": "^0.3.0",
     "karma-verbose-reporter": "0.0.2",
     "object.assign": "^1.1.1",
     "protractor": "^1.8.0",
     "require-dir": "^0.1.0",
     "run-sequence": "^1.0.2",
-    "traceur": "0.0.86",
+    "systemjs": "^0.16.7",
+    "traceur": "0.0.88",
     "vinyl-paths": "^1.0.0",
     "yargs": "^3.3.1"
   },
   "jspm": {
-    "main": "system/index",
+    "main": "src/bailiwick",
     "format": "register",
     "directories": {
       "lib": "dist"
