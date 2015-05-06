@@ -9,25 +9,18 @@ pattern.
 
 
     # acme/models.js
-    import Config from 'config';
-    import Bailiwick from 'bailiwick';
+    import config from './config.js!';
+    import {Model,RESTService} from 'bailiwick';
 
-    export const AcmeServiceStore = new Bailiwick.RESTService( config.serviceEndpoint );
-
-    export class AcmeModel extends Bailiwick.Model {
-        constructor( store=AcmeServiceStore, resource='' ) {
-            this.store = store;
-            this.resource = resource;
-        }
+    class AcmeService extends RESTService {
+        static baseURL = config.serviceEndpoint;
     }
 
-    export class User extends AcmeModel {
-
-        constructor( store=AcmeServiceStore ) {
-            super( store, 'users' );
-        }
-
+    export class AcmeModel extends Model {
+        datastore = new AcmeService();
     }
+
+    export class User extends AcmeModel {}
 
 
     # acme/app.js
@@ -35,7 +28,7 @@ pattern.
     
     class UserListView {
         constructor() {
-            this.users = User.fetchList({ limit: 50 });
+            this.users = User.filter({ active: true }).limit( 50 ).get(); // Returns a Promise
         }
     });
 
