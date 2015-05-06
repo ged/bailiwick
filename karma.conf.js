@@ -5,31 +5,15 @@ module.exports = function(config) {
 	config.set({
 
 		basePath: '',
-		frameworks: ['jasmine', 'systemjs'],
-		// plugins: ['karma-systemjs'],
+		frameworks: ['jspm', 'jasmine'],
 
-		systemjs: {
-			// Path to your SystemJS configuration file
-			configFile: 'src/system.config.js',
-
-			// File patterns for your application code, dependencies, and test suites
-			// list of files / patterns to load in the browser
-			files: [
-				'src/**/*.js',
-				'spec/**/*.spec.js'
+		jspm: {
+			// Edit this to your needs
+			loadFiles: [
+				'jspm_packages/npm/babel-core@5.1.13/browser-polyfill.js',
+				'spec/**/*.js'
 			],
-
-			// SystemJS configuration specifically for tests, added after your config file.
-			// Good for adding test libraries and mock modules
-			config: {
-				paths: {
-					// 'angular-mocks': 'bower_components/angular-mocks/angular-mocks.js'
-				}
-			},
-
-			// Specify the suffix used for test suite file names.  Defaults to 
-			// .test.js, .spec.js, _test.js, and _spec.js
-			testFileSuffix: '.spec.js'
+			serveFiles : ['src/**/*.js']
 		},
 
 		// list of files to exclude
@@ -37,13 +21,26 @@ module.exports = function(config) {
 
 		// preprocess matching files before serving them to the browser
 		// available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
-		preprocessors: {},
+		preprocessors: {
+			'spec/**/*.js': ['babel'],
+			'src/**/*.js': ['babel']
+		},
+		'babelPreprocessor': {
+			options: {
+				sourceMap: 'inline',
+				modules: 'system',
+				moduleIds: false,
+				optional: [
+					"es7.decorators"
+				]
+			}
+		},
 
 
 		// test results reporter to use
 		// possible values: 'dots', 'progress'
 		// available reporters: https://npmjs.org/browse/keyword/karma-reporter
-		reporters: ['progress'],
+		reporters: ['progress', 'html'],
 
 
 		// web server port
@@ -63,9 +60,16 @@ module.exports = function(config) {
 		autoWatch: true,
 
 
+		client: {
+			captureConsole: true
+		},
+
 		// start these browsers
 		// available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-		browsers: ['Chrome', 'PhantomJS'],
+		browsers: [
+			// 'PhantomJS',
+			'Chrome'
+		],
 
 
 		// Continuous Integration mode
