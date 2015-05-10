@@ -34,7 +34,7 @@ describe( 'Null Datastore class', () => {
 		});
 
 
-		it( 'rejects with "no such object" when getting a non-existant object', done => {
+		it( 'rejects with "no such object" when getting a non-existent object', done => {
 			datastore.get( User, 1 ).
 				catch( err => {
 					expect( err.name ).toEqual( "Error" );
@@ -154,14 +154,14 @@ describe( 'Null Datastore class', () => {
 		});
 
 
-		it( 'rejects the returned Promise when attempting to update a non-existant object', done => {
-			var nonexistantId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
-			console.debug( `Non-existant ID = ${nonexistantId}` );
+		it( 'rejects the returned Promise when attempting to update a non-existent object', done => {
+			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
+			console.debug( `Non-existent ID = ${nonexistentId}` );
 
-			datastore.update( User, nonexistantId, {firstName: 'Jaime'} ).
+			datastore.update( User, nonexistentId, {firstName: 'Jaime'} ).
 				catch( err => {
 					expect( err.name ).toEqual( "Error" );
-					expect( err.message ).toEqual( `No such User ID=${nonexistantId}` );
+					expect( err.message ).toEqual( `No such User ID=${nonexistentId}` );
 				}).
 				finally( done );
 		});
@@ -206,14 +206,68 @@ describe( 'Null Datastore class', () => {
 		});
 
 
-		it( 'rejects the returned Promise when attempting to replace a non-existant object', done => {
-			var nonexistantId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
-			console.debug( `Non-existant ID = ${nonexistantId}` );
+		it( 'rejects the returned Promise when attempting to replace a non-existent object', done => {
+			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
+			console.debug( `Non-existent ID = ${nonexistentId}` );
 
-			datastore.replace( User, nonexistantId, {firstName: 'Jaime'} ).
+			datastore.replace( User, nonexistentId, {firstName: 'Jaime'} ).
 				catch( err => {
 					expect( err.name ).toEqual( "Error" );
-					expect( err.message ).toEqual( `No such User ID=${nonexistantId}` );
+					expect( err.message ).toEqual( `No such User ID=${nonexistentId}` );
+				}).
+				finally( done );
+		});
+
+	});
+
+
+	describe( 'removing', () => {
+
+		var objects = [
+			{ firstName: "Lukas-Kasha", alias: "the King" },
+			{ firstName: "Kayim" },
+			{ firstName: "Nur-Jehan" }
+		];
+		var ids;
+
+		beforeEach( done => {
+			Promise.map( objects, obj => {
+					return datastore.store( User, obj );
+				}).
+				then( newIds => {
+					console.debug( `Got IDS=${newIds}` );
+					ids = newIds;
+				}).
+				finally( done );
+		});
+
+
+		it( 'can remove the data for an existing object', done => {
+			var objId = ids[ 1 ];
+			datastore.remove( User, objId ).
+				then( removedData => {
+					expect( removedData ).toBe( true );
+
+					datastore.get( User, objId ).then( obj => {
+						fail( `User ${objId} was not removed.` );
+					}).
+					catch( err => {
+						expect( err.name ).toEqual( "Error" );
+						expect( err.message ).toEqual( `No such User ID=${objId}` );
+					});
+				}).
+				finally( done );
+
+		});
+
+
+		it( 'resolves the returned Promise when removing a non-existent object', done => {
+			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
+			console.debug( `Non-existent ID = ${nonexistentId}` );
+
+			datastore.remove( User, nonexistentId ).
+				then( result => {
+					expect( result ).toBe( false );
 				}).
 				finally( done );
 		});
