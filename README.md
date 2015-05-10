@@ -28,7 +28,7 @@ pattern.
     
     class UserListView {
         constructor() {
-            this.users = User.filter({ active: true }).limit( 50 ).get(); // Returns a Promise
+            this.users = User.filter({ active: true }).get( 50 ); // Returns a Promise
         }
     });
 

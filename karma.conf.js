@@ -11,7 +11,7 @@ module.exports = function(config) {
 			// Edit this to your needs
 			loadFiles: [
 				'jspm_packages/npm/babel-core@5.1.13/browser-polyfill.js',
-				'spec/**/*.js'
+				'spec/**/*.spec.js'
 			],
 			serveFiles : ['src/**/*.js']
 		},
@@ -22,7 +22,7 @@ module.exports = function(config) {
 		// preprocess matching files before serving them to the browser
 		// available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
 		preprocessors: {
-			'spec/**/*.js': ['babel'],
+			'spec/**/*.spec.js': ['babel'],
 			'src/**/*.js': ['babel']
 		},
 		'babelPreprocessor': {
@@ -40,7 +40,7 @@ module.exports = function(config) {
 		// test results reporter to use
 		// possible values: 'dots', 'progress'
 		// available reporters: https://npmjs.org/browse/keyword/karma-reporter
-		reporters: ['progress', 'html'],
+		reporters: ['dots', 'story'],
 
 
 		// web server port
@@ -74,6 +74,6 @@ module.exports = function(config) {
 
 		// Continuous Integration mode
 		// if true, Karma captures browsers, runs the tests and exits
-		singleRun: false
+		singleRun: true
 	});
 };

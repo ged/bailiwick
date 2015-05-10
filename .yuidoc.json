@@ -1,0 +1,12 @@
+{
+	"name": "Bailiwick",
+	"description": "Bailiwick -- A more domain-ish model toolkit.",
+	"version": "0.0.1",
+	"url": "http://deveiate.org/code/bailiwick/",
+	"options": {
+		"linkNatives": "true",        
+		"paths": "src",
+		"outdir": "docs"
+	}
+}
+
