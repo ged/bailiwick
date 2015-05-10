@@ -1,3 +1,4 @@
+/* -*- javascript -*- */
 
 import Promise from 'bluebird';
 import {Datastore} from './datastore';
