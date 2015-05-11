@@ -1,14 +1,21 @@
+/**
+ * Datastore tests
+ *
+ * jshint undef: true, unused: true, esnext: true
+ * global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console
+ */
 'use strict';
 
-import {NotImplementedError} from '../src/utils';
-import {Datastore} from '../src/datastore';
-import {Model} from '../src/model';
+import Promise from 'bluebird';
+import 'babel/polyfill';
+
+import {Model, Datastore, NotImplementedError} from '../src/index';
 
 
 class Profile extends Model {}
 
 
-describe( 'base Datastore class', () => {
+describe( 'Datastore class', () => {
 
 	var store;
 
@@ -37,6 +44,7 @@ describe( 'base Datastore class', () => {
 		it( 'rejects with "not implemented"', done => {
 			store.get( Profile ).
 				catch( err => {
+					console.error( err );
 					expect( err.name ).toEqual( "Error" );
 					expect( err.message ).
 						toEqual( "No implementation provided for getCollection(...)" );

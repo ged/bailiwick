@@ -8,22 +8,18 @@ pattern.
 ## Proposed API
 
 
-    # acme/models.js
+    /* acme/models.js */
     import config from './config.js!';
     import {Model,RESTService} from 'bailiwick';
 
-    class AcmeService extends RESTService {
-        static baseURL = config.serviceEndpoint;
-    }
-
     export class AcmeModel extends Model {
-        datastore = new AcmeService();
+        static datastore = new RESTService( config.serviceEndpoint )
     }
 
     export class User extends AcmeModel {}
 
 
-    # acme/app.js
+    /* acme/app.js */
     import {User} from './models';
     
     class UserListView {

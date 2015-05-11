@@ -1,3 +1,6 @@
+/* -*- javascript -*- */
+'use strict';
+
 /**
  * Fluent criteria for Bailiwick querying
  *
@@ -5,7 +8,6 @@
  * @constructor
  *
  */
-
 export class Criteria {
 
 	constructor( model, pairs={} ) {

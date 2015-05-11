@@ -1,28 +1,36 @@
 /* -*- javascript -*- */
+'use strict';
 
 import Promise from 'bluebird';
+import 'babel/polyfill';
+
 import {Datastore} from './datastore';
 import {Criteria} from './criteria';
-
-function *genId() {
-	let i = 0;
-	while( 1 ) {
-		yield( ++i );
-	}
-};
 
 
 /**
  * An in-memory datastore (for testing)
  *
  * @class NullDatastore
+ * @constructor
  *
  */
 export class NullDatastore extends Datastore {
 
 	/**
+	 * ID-generator function.
+	 * @static
+	 */
+	static *genId() {
+		let i = 0;
+		while( 1 ) {
+			yield( ++i );
+		}
+	}
+
+
+	/**
 	 * Create a new NullDatastore
-	 * @constructor
 	 */
 	constructor() {
 		super();
@@ -38,7 +46,7 @@ export class NullDatastore extends Datastore {
 	getCollectionForType( type ) {
 		if ( ! this.objects.has(type) ) {
 			this.objects.set( type, new Map() );
-			this.ids.set( type, genId() );
+			this.ids.set( type, NullDatastore.genId() );
 		}
 
 		return this.objects.get( type );

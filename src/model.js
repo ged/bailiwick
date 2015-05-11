@@ -5,6 +5,7 @@
 *
 */
 
+import {Criteria} from './criteria';
 import Promise from 'bluebird';
 import inflection from 'inflection';
 
@@ -15,8 +16,7 @@ export class Model {
 	 * Get the relative URI for the service endpoint for the receiving class.
 	 */
 	static get uri() {
-		let name = this.constructor.name;
-		return inflection.tableize( name );
+		return inflection.tableize( this.name );
 	}
 
 
@@ -24,14 +24,28 @@ export class Model {
 	 * Get instances of the model.
 	 */
 	static get( id_or_criteria ) {
-		return this.datastore.get( this, id_or_criteria ).
+		var datastore = Reflect.construct( this ).datastore;
+		return datastore.get( this, id_or_criteria ).
 			then( data => {
 				if ( Array.isArray(data) ) {
-					return data.map( record => {Reflect.constructor(this, record)} );
+					return data.map( record => {Reflect.construct(this, [record])} );
 				} else {
-					return Reflect.constructor( this, data );
+					return Reflect.construct( this, [data] );
 				}
 			});
+	}
+
+
+	static filter( pairs ) {
+		return new Criteria( this, pairs );
+	}
+
+	static limit( count ) {
+		return new Criteria( this ).limit( count );
+	}
+
+	static offset( index ) {
+		return new Criteria( this ).offset( index );
 	}
 
 

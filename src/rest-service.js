@@ -1,38 +1,77 @@
+/* -*- javascript -*- */
+'use strict';
+
+import httpplease from 'httpplease';
+// import {jsonrequest, jsonresponse, oldiexdomain} from 'httpplease/plugins';
+import Promise from 'bluebird';
+
+import {Datastore} from './datastore';
+import * as plugins from './rest-service/plugins';
+
+
 /**
  * REST service datastore
  *
- * @module RESTService
+ * @class RESTService
+ * @constructor
  *
  */
-
-import {Datastore} from './datastore';
-
-
 export class RESTService extends Datastore {
 
-	constructor( http ) {
+	constructor( baseUrl ) {
 		super();
-		this.http = http;
+
+		this.baseUrl = baseUrl;
+		this.http = httpplease.use(
+			new plugins.JSONResponseProcessor(),
+			new plugins.JSONRequestProcessor(),
+			new plugins.CORSSupport()
+		);
 	}
 
-
 	getInstance( type, id ) {
-		let http = this.buildRequestFor( type );
-		return http.get( id ).then( result => {
-			Reflect.construct( type, result );
+		return new Promise( (resolve, reject) => {
+			var url = `${this.baseUrl}/${type.uri}/${id}`;
+			console.debug( `GETting ${url}` );
+
+			this.http.get( url, (err, res) => {
+				if ( err ) {
+					console.error( `ERROR [${err.status}]: ${err.message}` );
+					reject( err );
+				} else {
+					console.info( "Successful response" );
+					console.debug( res );
+					resolve( res.body );
+				}
+			});
 		});
 	}
 
-	getCollection( type, options ) {
-		let http = this.buildRequestFor( type );
-		return http.get( options )
+	getCollection( type, criteria ) {
+		return new Promise( (resolve, reject) => {
+			var url = `${this.baseUrl}/${type.uri}`;
+			var params = this.makeParamsFromCriteria( criteria );
+
+			if ( params ) {
+				url = url + '?' + params;
+			}
+
+			this.http.get( url, (err, res) => {
+				if ( err ) {
+					console.error( `ERROR [${err.status}]: ${err.message}` );
+					reject( err );
+				} else {
+					console.info( "Successful response" );
+					console.debug( res );
+					resolve( res.body );
+				}
+			});
+		});
 	}
 
-
-
-
-	buildRequestFor( type ) {
-		
+	makeParamsFromCriteria( criteria ) {
+		// No-op for now
+		return null;
 	}
 
 }

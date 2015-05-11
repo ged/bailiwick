@@ -1,10 +1,16 @@
 /**
  * Criteria tests
+ *
+ * jshint undef: true, unused: true, esnext: true
+ * global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console
  */
 'use strict';
 
-import {Criteria} from '../src/criteria';
-import {Model} from '../src/model';
+import Promise from 'bluebird';
+import 'babel/polyfill';
+
+import {Criteria, Model} from '../src/index';
+
 
 class Invoice extends Model {}
 

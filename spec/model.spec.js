@@ -1,10 +1,16 @@
 /**
  * Model tests
+ *
+ * jshint undef: true, unused: true, esnext: true
+ * global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console
  */
 'use strict';
 
-import {NullDatastore} from '../src/null-datastore';
-import {Model} from '../src/model';
+import Promise from 'bluebird';
+import 'babel/polyfill';
+
+import {NullDatastore, Model} from '../src/index';
+
 
 class User extends Model {}
 
