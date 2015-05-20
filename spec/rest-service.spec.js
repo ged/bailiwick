@@ -10,11 +10,10 @@ import Promise from 'bluebird';
 import 'babel/polyfill';
 
 import {Model, RESTService} from '../src/index';
+import {Xhr} from '../src/rest-service/xhr';
 
 
-class User extends Model {
-	static get uri() { return 'auth'; }
-}
+class User extends Model {}
 
 
 describe( 'REST Service datastore class', () => {
@@ -28,6 +27,12 @@ describe( 'REST Service datastore class', () => {
 
 
 	describe( 'get', () => {
+
+		it( 'has an Xhr object set up with its baseUrl', () => {
+			expect( datastore.http instanceof Xhr ).toBeTruthy();
+			expect( datastore.http.options['baseUrl'] ).toEqual( baseUrl );
+		});
+
 
 		it( 'fetches the object with the specified ID', done => {
 			var testData = { id: 17, firstName: "Michael", lastName: "Carthwaite" };
@@ -48,11 +53,7 @@ describe( 'REST Service datastore class', () => {
 
 
 		it( 'rejects with "no such object" when getting a non-existent object', done => {
-			// datastore.requestBuilder.
-			// 	when( 'GET', `${datastore.basePath}/users/17` ).
-			// 	respond( "User 17 not found." ).
-			// 	status( 404 ).
-			// 	header( 'Content-type', 'text/plain' );
+			
 
 			datastore.get( User, 17 ).
 				catch( err => {

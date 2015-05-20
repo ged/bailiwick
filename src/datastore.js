@@ -4,7 +4,20 @@
 import Promise from 'bluebird';
 import 'babel/polyfill';
 
-import {NotImplementedError} from './utils';
+import {NotImplementedError} from './errors';
+import {Criteria} from './criteria';
+
+/**
+ * Datastore decorator -- syntactic sugar for setting the `datastore`
+ * member of the decorated class's prototype.
+ */
+export function datastore( type, ...args ) {
+	return function decorator( target ) {
+		var ds = Reflect.construct( type, args );
+		console.debug( "Setting datastore of ", target, " to ", ds );
+		target.datastore = ds;
+	}
+}
 
 /**
  * The base class for Bailiwick datastore classes.
@@ -41,8 +54,8 @@ export class Datastore {
 	 *    if fetching by ID and no data for that object is available.
 	 */
 	get( type, criteria=null ) {
-		// Collection API if the ID is complex
-		if ( typeof criteria === 'object' ) {
+		// Collection API if the criteria is a Criteria
+		if ( criteria instanceof Criteria ) {
 			return this.getCollection( type, criteria );
 		} else {
 			return this.getInstance( type, criteria );

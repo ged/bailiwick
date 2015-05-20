@@ -9,7 +9,7 @@
 import Promise from 'bluebird';
 import 'babel/polyfill';
 
-import {NullDatastore, Model} from '../src/index';
+import {NullDatastore, Criteria, Model} from '../src/index';
 
 
 class User extends Model {}
@@ -79,7 +79,8 @@ describe( 'Null Datastore class', () => {
 
 
 			it( "resolves with an empty Array if the criteria don't match anything", done => {
-				datastore.get( User, { firstName: 'Rob' }).
+				var criteria = new Criteria( User, { firstName: 'Rob' } );
+				datastore.get( criteria ).
 					then( result => {
 						expect( result.length ).toBe( 0 );
 					}).
@@ -88,10 +89,14 @@ describe( 'Null Datastore class', () => {
 
 
 			it( "resolves with an Array of matches if the criteria match", done => {
-				datastore.get( User, { firstName: 'Robin' }).
+				var criteria = new Criteria( User, { firstName: 'Robin' } );
+				datastore.get( criteria ).
 					then( result => {
 						expect( result.length ).toBe( 3 );
 						expect( result ).toEqual( jasmine.arrayContaining(objects) );
+					}).
+					catch( err => {
+						console.error( err );
 					}).
 					finally( done );
 			});

@@ -28,3 +28,11 @@ pattern.
         }
     });
 
+
+## Plugin Semantics
+
+Pipe plugins:
+
+val rval = plugin.hook( arg )
+
+

@@ -84,9 +84,9 @@ export class NullDatastore extends Datastore {
 	 *
 	 * @returns {Promise} the promise that resolves to an Array of matching object data.
 	 */
-	getCollection( type, criteria=null ) {
-		console.debug( `Getting collection of ${type.name} matching: ${criteria}` );
-		var collection = this.getCollectionForType( type );
+	getCollection( criteria ) {
+		console.debug( `Getting collection matching: ${criteria}` );
+		var collection = this.getCollectionForType( criteria.model );
 		var results;
 
 		if ( criteria ) {
@@ -142,9 +142,6 @@ export class NullDatastore extends Datastore {
 		if ( criteria.filterClauses ) {
 			for ( let key of criteria.filterClauses.keys() )
 				clauses.push([ key, criteria.filterClauses.get(key) ]);
-		} else {
-			for ( let key in criteria )
-				clauses.push([ key, criteria[key] ]);
 		}
 
 		return function( obj ) {

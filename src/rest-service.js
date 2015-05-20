@@ -1,13 +1,12 @@
 /* -*- javascript -*- */
 'use strict';
 
-import httpplease from 'httpplease';
-// import {jsonrequest, jsonresponse, oldiexdomain} from 'httpplease/plugins';
 import Promise from 'bluebird';
-
 import {Datastore} from './datastore';
-import * as plugins from './rest-service/plugins';
 
+import {VERSION} from './index';
+import {Xhr} from './rest-service/xhr';
+import {JSONPlugin, CORSPlugin} from './rest-service/plugins';
 
 /**
  * REST service datastore
@@ -20,58 +19,36 @@ export class RESTService extends Datastore {
 
 	constructor( baseUrl ) {
 		super();
-
 		this.baseUrl = baseUrl;
-		this.http = httpplease.use(
-			new plugins.JSONResponseProcessor(),
-			new plugins.JSONRequestProcessor(),
-			new plugins.CORSSupport()
-		);
+		this.http = new Xhr({ baseUrl: baseUrl }).
+			using( JSONPlugin, CORSPlugin );
 	}
+
 
 	getInstance( type, id ) {
-		return new Promise( (resolve, reject) => {
-			var url = `${this.baseUrl}/${type.uri}/${id}`;
-			console.debug( `GETting ${url}` );
-
-			this.http.get( url, (err, res) => {
-				if ( err ) {
-					console.error( `ERROR [${err.status}]: ${err.message}` );
-					reject( err );
-				} else {
-					console.info( "Successful response" );
-					console.debug( res );
-					resolve( res.body );
-				}
-			});
-		});
+		var uri = type.uri;
+		if ( id ) { uri += '/' + id.toString(); }
+		return this.http.get( uri );
 	}
+
 
 	getCollection( type, criteria ) {
-		return new Promise( (resolve, reject) => {
-			var url = `${this.baseUrl}/${type.uri}`;
-			var params = this.makeParamsFromCriteria( criteria );
+		var uri = type.uri;
+		var params = this.makeParamsFromCriteria( criteria );
 
-			if ( params ) {
-				url = url + '?' + params;
-			}
-
-			this.http.get( url, (err, res) => {
-				if ( err ) {
-					console.error( `ERROR [${err.status}]: ${err.message}` );
-					reject( err );
-				} else {
-					console.info( "Successful response" );
-					console.debug( res );
-					resolve( res.body );
-				}
-			});
-		});
+		return this.http.get( uri, params );
 	}
 
+
 	makeParamsFromCriteria( criteria ) {
-		// No-op for now
-		return null;
+		if ( !criteria ) return null;
+
+		var params = new Map();
+
+		if ( criteria.maxResultCount ) params.set( 'limit', criteria.maxResultCount );
+		if ( criteria.resultOffset ) params.set( 'offset', criteria.resultOffset );
+
+		return params;
 	}
 
 }

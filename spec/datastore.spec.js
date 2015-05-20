@@ -9,7 +9,7 @@
 import Promise from 'bluebird';
 import 'babel/polyfill';
 
-import {Model, Datastore, NotImplementedError} from '../src/index';
+import {Model, Criteria, Datastore, NotImplementedError} from '../src/index';
 
 
 class Profile extends Model {}
@@ -42,7 +42,7 @@ describe( 'Datastore class', () => {
 	describe( 'getCollection', () => {
 
 		it( 'rejects with "not implemented"', done => {
-			store.get( Profile ).
+			store.get( Profile, Criteria.all() ).
 				catch( err => {
 					console.error( err );
 					expect( err.name ).toEqual( "Error" );

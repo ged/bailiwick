@@ -1,50 +1,20 @@
+/* -*- javascript -*- */
+"use strict";
+
 /**
- * Utility Classes and functions
- * 
- * 
+ * Decorator: monadic
+ *
+ * Declare a method that acts as a monadic mutator -- calling it will operate on (and return)
+ * a clone of the receiving object instead of the receiver.
  */
+export function monadic( target, name, descriptor ) {
+	var realfunc = descriptor.value;
+	descriptor.value = function( ...args ) {
+		var dup = this.clone();
+		realfunc.apply( dup, args );
+		return dup;
+	};
 
-import 'babel/polyfill';
-
-export class NotImplementedError extends Error {
-
-	constructor( methodname ) {
-		super();
-		this.message =  `No implementation provided for ${methodname}(...)`;
-	}
-
+	return descriptor;
 }
-
-// parseUri 1.2.2
-// (c) Steven Levithan <stevenlevithan.com>
-// MIT License
-
-export function parseUri( str ) {
-	var	o   = parseUri.options,
-		m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
-		uri = {},
-		i   = 14;
-
-	while (i--) uri[o.key[i]] = m[i] || "";
-
-	uri[o.q.name] = {};
-	uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
-		if ($1) uri[o.q.name][$1] = $2;
-	});
-
-	return uri;
-};
-
-parseUri.options = {
-	strictMode: false,
-	key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
-	q:   {
-		name:   "queryKey",
-		parser: /(?:^|&)([^&=]*)=?([^&]*)/g
-	},
-	parser: {
-		strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
-		loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
-	}
-};
 

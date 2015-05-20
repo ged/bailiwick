@@ -13,11 +13,12 @@ import 'babel/polyfill';
  * The default namespace
  */
 
-export {Model}         from './model';
-export {Datastore}     from './datastore';
-export {Criteria}      from './criteria';
+export var VERSION = '0.0.1.dev';
 
-export {NullDatastore} from './null-datastore';
-export {RESTService}   from './rest-service';
+export * from './model';
+export * from './datastore';
+export * from './criteria';
 
-export {NotImplementedError} from './utils';
+export * from './null-datastore';
+export * from './rest-service';
+

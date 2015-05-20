@@ -12,9 +12,11 @@ module.exports = function(config) {
 		jspm: {
 			loadFiles: [
 				'spec/**/*.spec.js'
+				// 'spec/rest-service/xhr.spec.js'
 			],
 			serveFiles : [
-				'src/**/*.js'
+				'src/**/*.js',
+				'spec/helpers.js',
 			]
 		},
 		exclude: [],
@@ -28,7 +30,10 @@ module.exports = function(config) {
 				modules: 'system',
 				moduleIds: false,
 				optional: [
-					"es7.decorators"
+					"runtime",
+					"es7.decorators",
+					"es7.comprehensions",
+					"es7.classProperties"
 				]
 			}
 		},
@@ -42,7 +47,8 @@ module.exports = function(config) {
 		},
 		browsers: [
 			// 'PhantomJS',
-			'Chrome'
+			// 'Chrome',
+			'ChromeCanary'
 		],
 		singleRun: true
 	});
