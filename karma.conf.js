@@ -11,8 +11,8 @@ module.exports = function(config) {
 		],
 		jspm: {
 			loadFiles: [
-				'spec/**/*.spec.js'
-				// 'spec/rest-service/xhr.spec.js'
+				// 'spec/**/*.spec.js'
+				'spec/rest-service/xhr.spec.js'
 			],
 			serveFiles : [
 				'src/**/*.js',

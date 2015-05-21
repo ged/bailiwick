@@ -1,8 +1,8 @@
-/**
+/*
  * RESTService XHR tests
  *
- * jshint undef: true, unused: true, esnext: true
- * global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console, jasmine
+ *jshint undef: true, unused: true, esnext: true
+ *global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console, jasmine
  */
 'use strict';
 
@@ -16,12 +16,18 @@ import {customMatchers} from '../helpers';
 describe( 'Xhr object', () => {
 
 	var xhr,
-		baseUrl = 'http://localhost:8889/v1';
+	baseUrl = 'http://localhost:8889/v1';
 
 	beforeEach( () => {
+		jasmine.Ajax.install();
 		jasmine.addMatchers( customMatchers );
 		xhr = new Xhr();
-	})
+	});
+
+
+	afterEach( () => {
+		jasmine.Ajax.uninstall();
+	});
 
 
 	describe( "fluent interface", () => {
@@ -40,44 +46,52 @@ describe( 'Xhr object', () => {
 		it( 'can construct clones of itself that use a different baseUrl', () => {
 			var clone = xhr.withBaseUrl( baseUrl );
 
-			expect( xhr.options['baseUrl'] ).not.toEqual( baseUrl );
-			expect( clone.options['baseUrl'] ).toEqual( baseUrl );
+			expect( xhr.options[ 'baseUrl' ] ).not.toEqual( baseUrl );
+			expect( clone.options[ 'baseUrl' ] ).toEqual( baseUrl );
 		});
 
 
 		it( 'can construct clones of itself that use a different timeout', () => {
 			var clone = xhr.withTimeout( 300 );
 
-			expect( xhr.options['timeout'] ).not.toEqual( 300 );
-			expect( clone.options['timeout'] ).toEqual( 300 );
+			expect( xhr.options[ 'timeout' ] ).not.toEqual( 300 );
+			expect( clone.options[ 'timeout' ] ).toEqual( 300 );
 		});
 
 
 		it( 'can construct clones of itself with an additional default request header', () => {
 			var clone = xhr.withDefaultHeader( 'Accept', 'application/json' );
 
-			expect( xhr.defaultHeaders.has('accept') ).toBeFalsy();
-			expect( clone.defaultHeaders.has('accept') ).toBeTruthy();
+			expect( xhr.defaultHeaders.has( 'accept' ) ).toBeFalsy();
+			expect( clone.defaultHeaders.has( 'accept' ) ).toBeTruthy();
 		});
 
 	});
 
 
-	describe( "query parameters", () => {} );
-	describe( "default request headers", () => {} );
+	describe( "query parameters", () => {
+	});
+
+
+	describe( "default request headers", () => {
+	});
+
 
 	describe( "plugin system", () => {
 
 		it( "installs hooks from provided plugins", () => {
-			var plugin = { setupXhr: arg => {} };
+			var plugin = {
+				setupXhr: arg => {
+				}
+			};
 			spyOn( plugin, 'setupXhr' );
 
 			var pluggedXhr = xhr.using( plugin );
 
 			expect( pluggedXhr ).not.toBe( xhr );
-			expect( xhr.pluginSlots.has('setupXhr') ).toBeFalsy();
-			expect( pluggedXhr.pluginSlots.has('setupXhr') ).toBeTruthy();
-			expect( pluggedXhr.pluginSlots.get('setupXhr') ).toBeA( Set );
+			expect( xhr.pluginSlots.has( 'setupXhr' ) ).toBeFalsy();
+			expect( pluggedXhr.pluginSlots.has( 'setupXhr' ) ).toBeTruthy();
+			expect( pluggedXhr.pluginSlots.get( 'setupXhr' ) ).toBeA( Set );
 
 			pluggedXhr.setupXhr();
 
@@ -86,24 +100,36 @@ describe( 'Xhr object', () => {
 
 
 		it( "skips hooks after one that returns a truthy value", () => {
-			var fakeXhr = Object.create( null );
-			var firstPlugin = { setupXhr: arg => { return fakeXhr } };
-			var secondPlugin = { setupXhr: arg => { return false } };
+			var fakeXhr = jasmine.createSpy( 'xhr' );
+			var firstPlugin = {
+				setupXhr: arg => {
+					return true;
+				}
+			};
+			var secondPlugin = {
+				setupXhr: arg => {
+					return false;
+				}
+			};
 
 			spyOn( firstPlugin, 'setupXhr' ).and.callThrough();
 			spyOn( secondPlugin, 'setupXhr' ).and.callThrough();
 
 			var pluggedXhr = xhr.using( firstPlugin, secondPlugin );
-			var rval = pluggedXhr.setupXhr();
+			var rval = pluggedXhr.setupXhr( fakeXhr );
 
 			expect( firstPlugin.setupXhr ).toHaveBeenCalled();
 			expect( secondPlugin.setupXhr ).not.toHaveBeenCalled();
-			expect( rval ).toBe( fakeXhr );
+			expect( rval ).toBe( true );
 		});
 
 
 		it( "ignores non-existent extension points defined by a plugin", () => {
-			var plugin = { queryStringFromParams: arg => { return false } };
+			var plugin = {
+				queryStringFromParams: arg => {
+					return false
+				}
+			};
 			spyOn( plugin, 'queryStringFromParams' );
 
 			var pluggedXhr = xhr.using( plugin );
@@ -117,16 +143,25 @@ describe( 'Xhr object', () => {
 
 	describe( "XMLHttpRequests", () => {
 
-		it( "can GET from a simple URI", done => {
-			xhr.get( 'users' ).
-				then( response => {
-					console.debug( "Got response:", response );
-				}).
-				catch( err => {
-					console.error( "Network or other internal error: ", err );
-					throw err;
-				}).
-				finally( done );
+		beforeEach( () => {
+			xhr = xhr.withBaseUrl( baseUrl );
+		});
+
+
+		it( "can GET from a simple URI", () => {
+			var promise = xhr.get( 'users' );
+
+			expect( jasmine.Ajax.requests.mostRecent().url ).toBe( `${baseUrl}/users` );
+			expect( promise ).not.toBeFulfilled();
+
+			jasmine.Ajax.requests.mostRecent().response({
+				"status": 200,
+				"contentType": 'application/json',
+				"responseText": '{"name":"wallaby"}'
+			});
+
+			expect( promise ).toBeFulfilled();
+			expect( promise.value() ).toEqual({name: "wallaby"});
 		});
 
 	});

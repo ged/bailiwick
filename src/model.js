@@ -30,7 +30,7 @@ export function validator( field ) {
 				}
 			});
 		};
-		target.validators.set( field, descriptor.value )
+		target.validators.set( field, descriptor.value );
 
 		return descriptor;
 	};
@@ -147,6 +147,8 @@ export class Model {
 		this.newObject = true;
 		this.data = data;
 		this.dirtyFields = new Set();
+
+		this.datastore = this.constructor.datastore;
 
 		// console.debug( `Created a new %s: %o`, this.constructor.name, data );
 		this.defineAttributes( data );
