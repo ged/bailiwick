@@ -8,12 +8,10 @@ import 'babel/polyfill';
 import {HTTPError} from '../errors';
 import {monadic} from '../utils';
 
-const DEFAULT_OPTIONS = {
+const DEFAULT_XHR_OPTIONS = {
 	timeout: 10000,
 	baseUrl: '//',
 };
-
-
 
 
 /**
@@ -71,7 +69,7 @@ export class Xhr {
 
 	constructor( options={} ) {
 		// console.debug( `Creating a new Xhr with options: ${options}` );
-		this.options = Object.assign( {}, DEFAULT_OPTIONS, options );
+		this.options = Object.assign( {}, DEFAULT_XHR_OPTIONS, options );
 		this.defaultHeaders = new Map();
 		this.pluginSlots = new Map();
 	}
@@ -165,12 +163,43 @@ export class Xhr {
 	 * Request API
 	 */
 
+	/**
+	 * Sent a GET request.
+	 * @method get
+	 */
 	get( uri='', params=null ) {
 		var queryString = this.queryStringFromParams( params );
 		if ( '' !== queryString ) {
 			uri += '?' + queryString;
 		}
 		return this.getXhrPromise( 'GET', uri );
+	}
+
+
+	/**
+	 * Sent a POST request.
+	 * @method post
+	 */
+	post( uri='', body ) {
+		return this.getXhrPromise( 'POST', uri, body );
+	}
+
+
+	/**
+	 * Sent a PUT request.
+	 * @method put
+	 */
+	put( uri='', body ) {
+		return this.getXhrPromise( 'PUT', uri, body );
+	}
+
+
+	/**
+	 * Sent a DELETE request.
+	 * @method delete
+	 */
+	delete( uri='' ) {
+		return this.getXhrPromise( 'DELETE', uri );
 	}
 
 
@@ -193,16 +222,19 @@ export class Xhr {
 
 
 	/**
-	 * Do any required transforms on the body of the request before dispatching it.
+	 * Do any required transforms on the body of the request and any necessary
+	 * correllated request modification (e.g., setting headers, responseType, etc.)
+	 * before dispatching it.
 	 *
 	 * @method makeRequestBody
 	 *
+	 * @param {XMLHttpRequest} xhr  the request object being sent
 	 * @param {Object} body  the body of the request, if any.
 	 *
 	 * @returns {Object}  the transformed body.
 	 */
 	@pluggable
-	makeRequestBody( body ) {
+	makeRequestBody( xhr, body ) {
 		// console.debug( "Applying transforms to the request body." );
 	}
 
@@ -245,8 +277,8 @@ export class Xhr {
 	onLoadStart( evt ) {
 		// console.debug( "Got a 'loadstart' event: %o", evt );
 		for ( let [header, value] of this.defaultHeaders ) {
-			// console.debug( "Setting request header %s to %s.", header, value );
-			evt.target.setRequestHeader( header, value );
+			console.debug( "Setting request header %s to %s.", header, value );
+			xhr.setRequestHeader( header, value );
 		}
 	}
 
@@ -274,6 +306,9 @@ export class Xhr {
 	 * Utility methods
 	 */
 
+	/**
+	 * Turn the specified {params} Object into a URL-encoded query string.
+	 */
 	queryStringFromParams( params ) {
 		if ( !params ) return '';
 
@@ -289,40 +324,25 @@ export class Xhr {
 
 
 	/**
-	 * Fetch the appropriate XHR class for the current browser.
-	 * @method getXhr
+	 * Fetch a promise that is wrapped around an XMLHttpRequest for the
+	 * specified {method}, {url}, and {body}.
+	 * 
+	 * @method getXhrPromise
 	 */
-	getXhr() {
-		// console.debug( "Getting a new XMLHttpRequest" );
-		var xhr = new XMLHttpRequest;
-
-		xhr.addEventListener( 'abort',     evt => { this.onAbort(evt) });
-		xhr.addEventListener( 'error',     evt => { this.onError(evt) });
-		xhr.addEventListener( 'load',      evt => { this.onLoad(evt) });
-		xhr.addEventListener( 'loadstart', evt => { this.onLoadStart(evt) });
-		xhr.addEventListener( 'progress',  evt => { this.onProgress(evt) });
-		xhr.addEventListener( 'timeout',   evt => { this.onTimeout(evt) });
-		xhr.addEventListener( 'loadend',   evt => { this.onLoadEnd(evt) });
-
-		return xhr;
-	}
-
-
 	getXhrPromise( method, uri, body=null ) {
 		if ( uri[0] !== '/' ) uri = `/${uri}`;
 		var url = `${this.options.baseUrl}${uri}`;
 		var xhr = this.getXhr();
 
-		this.setupXhr( xhr );
-
 		// console.debug( "Creating promise for %s %s", method, url );
 		return new Promise( (resolve, reject) => {
+			this.setupXhr( xhr );
 			this.setMainEventHandlers( xhr, resolve, reject );
-
-			body = this.makeRequestBody( body );
 
 			xhr.open( method, url );
 			// console.info( "XHR opened." );
+
+			body = this.makeRequestBody( xhr, body );
 			xhr.send( body );
 			// console.info( "XHR sent." );
 		}).
@@ -336,6 +356,32 @@ export class Xhr {
 	}
 
 
+	/**
+	 * Fetch the appropriate XHR class for the current browser.
+	 * @method getXhr
+	 */
+	getXhr() {
+		// console.debug( "Getting a new XMLHttpRequest" );
+		var xhr = new XMLHttpRequest;
+
+		xhr.addEventListener( 'abort',     evt => this.onAbort(evt) );
+		xhr.addEventListener( 'error',     evt => this.onError(evt) );
+		xhr.addEventListener( 'load',      evt => this.onLoad(evt) );
+		xhr.addEventListener( 'loadstart', evt => this.onLoadStart(evt) );
+		xhr.addEventListener( 'progress',  evt => this.onProgress(evt) );
+		xhr.addEventListener( 'timeout',   evt => this.onTimeout(evt) );
+		xhr.addEventListener( 'loadend',   evt => this.onLoadEnd(evt) );
+
+		return xhr;
+	}
+
+
+	/**
+	 * Set up the default handlers for the `error` and `load` events that {resolve}
+	 * or {reject} the Promise wrapped around the specified {xhr}.
+	 *
+	 * @method setMainEventHandlers
+	 */
 	setMainEventHandlers( xhr, resolve, reject ) {
 		var self = this;
 

@@ -22,3 +22,4 @@ export * from './criteria';
 export * from './null-datastore';
 export * from './rest-service';
 
+export * from './errors';

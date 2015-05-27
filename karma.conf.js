@@ -40,7 +40,7 @@ module.exports = function(config) {
 		reporters: ['story'],
 		port: 9876,
 		colors: true,
-		logLevel: config.LOG_INFO,
+		logLevel: config.LOG_DEBUG,
 		autoWatch: true,
 		client: {
 			captureConsole: true

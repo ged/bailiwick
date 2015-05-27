@@ -3,6 +3,7 @@ System.config({
   "babelOptions": {
     "optional": [
       "runtime",
+      "regenerator",
       "es7.decorators",
       "es7.comprehensions",
       "es7.classProperties"

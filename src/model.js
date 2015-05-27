@@ -6,6 +6,7 @@
 import Promise from 'bluebird';
 import inflection from 'inflection';
 
+import {monadic} from './utils';
 import {Criteria} from './criteria';
 import {ValidationFailure} from './errors';
 
@@ -88,10 +89,38 @@ export class Model {
 
 
 	/**
+	 * Get a clone of the ResultSet for this model class.
+	 */
+	static get resultset() {
+		return new ResultSet( this );
+	}
+
+
+	/**
 	 * Fetch a ResultSet that will use the specified {parameters} in its criteria.
 	 */
-	static where( criteria ) {
-		return new ResultSet( this, criteria );
+	static where( parameters ) {
+		return this.resultset.where( parameters );
+	}
+
+
+	/**
+	 * Fetch a ResultSet that will use the specified {count} in its limit.
+	 */
+	static limit( count ) {
+		return this.resultset.limit( count );
+	}
+
+
+	/**
+	 * Create one or more instances of the model from the specified {data}.
+	 */
+	static fromData( data ) {
+		if ( Array.isArray(data) ) {
+			return data.map( record => Reflect.construct(this, [record, false]) );
+		} else {
+			return Reflect.construct( this, [data, false] );
+		}
 	}
 
 
@@ -100,16 +129,10 @@ export class Model {
 	 */
 	static get( id_or_criteria=null ) {
 		return this.datastore.get( this, id_or_criteria ).
-			then( data => {
-				console.debug( "Model.get resolved to: ", data );
-				if ( Array.isArray(data) ) {
-					return data.map( record => {
-						console.debug( "Creating instance from record: ", record );
-						return Reflect.construct(this, [record]);
-					});
-				} else {
-					return Reflect.construct( this, [data] );
-				}
+			then( data => this.fromData(data) ).
+			catch( err => {
+				console.error( `Error while getting ${this.constructor.name}[ ${id_or_criteria} ] ` );
+				throw( err );
 			});
 	}
 
@@ -143,8 +166,8 @@ export class Model {
 	// }
 
 
-	constructor( data={} ) {
-		this.newObject = true;
+	constructor( data={}, isNew=true ) {
+		this.newObject = isNew;
 		this.data = data;
 		this.dirtyFields = new Set();
 
@@ -164,6 +187,7 @@ export class Model {
 		if ( this.isNew() ) {
 			return this.create();
 		} else {
+			if ( !this.isDirty() ) return Promise.resolve( this );
 			return this.update();
 		}
 	}
@@ -177,10 +201,18 @@ export class Model {
 		return this.validate().
 			then( () => {
 				return this.datastore.store( this.constructor, this.data );
-			}).then( id => {
-				this.data['id'] = id;
+			}).then( result => {
+				if ( typeof result === 'object' ) {
+					Object.assign( this.data, result );
+				} else {
+					this.data['id'] = result;
+				}
+
 				this.newObject = false;
 				this.dirtyFields.clear();
+				this.defineAttributes( this.data );
+
+				return this;
 			});
 	}
 
@@ -189,14 +221,35 @@ export class Model {
 	 *
 	 */
 	update() {
+		var dirtyData = {};
+		for ( var field of this.dirtyFields ) {
+			dirtyData[ field ] = this.data[ field ];
+		}
+
 		return this.validate().
 			then( () => {
-				return this.datastore.store( this.constructor, this.data );
-			}).then( id => {
-				this.data['id'] = id;
+				return this.datastore.update( this.constructor, this.id, dirtyData );
+			}).then( mergedData => {
+				Object.assign( this.data, mergedData );
 				this.newObject = false;
 				this.dirtyFields.clear();
+				this.defineAttributes( this.data );
+
+				return this;
 			});
+	}
+
+
+	/**
+	 * 
+	 */
+	delete() {
+		if ( this.id ) {
+			return this.datastore.remove( this.constructor, this.id ).
+				then( () => this );
+		} else {
+			return Promise.resolve( this.data );
+		}
 	}
 
 
@@ -230,10 +283,16 @@ export class Model {
 		var self = this;
 
 		for ( let name in attrs ) {
-			Object.defineProperty( self, name, {
-				get: () => { return self.getValue(name); },
-				set: newval => { self.setValue(name, newval); }
-			});
+			if ( !Object.hasOwnProperty(self, name) ) {
+				Object.defineProperty( self, name, {
+					configurable: true,
+					enumerable: true,
+					get: () => { return self.getValue(name); },
+					set: newval => { self.setValue(name, newval); }
+				});
+			} else {
+				console.debug( `Already has a ${name} property.` );
+			}
 		}
 
 	}
@@ -312,6 +371,10 @@ export class Model {
 	}
 
 
+	/**
+	 * Return the object's data as string containing fields and values suitable
+	 * for debugging.
+	 */
 	_valueString() {
 		var values = [];
 		for ( let field in this.data ) {
@@ -323,11 +386,15 @@ export class Model {
 }
 
 
+/**
+ * 
+ */
 class Errors {
 
 	constructor() {
 		this.failures = new Map();
 	}
+
 
 	get fields() {
 		var fields = [];
@@ -336,6 +403,7 @@ class Errors {
 
 		return fields;
 	}
+
 
 	get fullMessages() {
 		var messages = [];
@@ -346,13 +414,16 @@ class Errors {
 		return messages;
 	}
 
+
 	get size() {
 		return this.failures.size;
 	}
 
+
 	add( field, reason ) {
 		this.failures.set( field, reason );
 	}
+
 
 	isEmpty() {
 		return ( this.size === 0 );
@@ -361,23 +432,96 @@ class Errors {
 }
 
 
+/**
+ * A monadic/fluid interface to an unreified set of Model objects made up of
+ * a Model class and a Criteria for selecting a subset of them.
+ *
+ * @class ResultSet
+ * @constructor
+ */
 export class ResultSet {
 
-	constructor( model, criteria ) {
-		if ( !(criteria instanceof Criteria) ) {
+	constructor( model, criteria=null ) {
+		if ( criteria === null ) {
+			criteria = new Criteria();
+		}
+		else if ( !(criteria instanceof Criteria) ) {
 			criteria = new Criteria( criteria );
 		}
+
 		this.model = model;
 		this.criteria = criteria;
 	}
 
 
+	/**
+	 * Return a Promise that will resolve as the reified results described by
+	 * the ResultSet.
+	 * @method get
+	 */
 	get( limit=null, offset=null ) {
 		var cr = this.criteria;
 		if ( limit ) cr = cr.limit( limit );
 		if ( offset ) cr = cr.offset( offset );
 
 		return this.model.get( cr );
+	}
+
+
+	/*
+	 * Monadic API
+	 */
+
+	/**
+	 * Monadic API -- duplicate the ResultSet.
+	 * @return {ResultSet} the cloned result set
+	 */
+	clone() {
+		console.debug( "Cloning result set." );
+		var newObj = Reflect.construct( this.constructor );
+		newObj.model = this.model;
+		newObj.criteria = this.criteria;
+		return newObj;
+	}
+
+
+	/**
+	 * Add selection criteria to the set.
+	 * @method where
+	 * @param {Object} params  key/value pairs that will be mapped to selection criteria.
+	 * @return {ResultSet}  the cloned result set with the additional criteria.
+	 */
+	@monadic
+	where( params ) {
+		console.debug( "Cloning resultset to add params: ", params );
+		this.criteria = this.criteria.filter( params );
+	}
+
+
+	/**
+	 * Add a limit to the maximum size of the set.
+	 * @method limit
+	 * @param {Number} count  the maximum number of results in the set
+	 * @return {ResultSet}  the cloned result set with the new limit.
+	 */
+	@monadic
+	limit( count ) {
+		console.debug( "Cloned resultset to add limit: ", count );
+		this.criteria = this.criteria.limit( count );
+	}
+
+
+	/**
+	 * Add an offset into the set that should be the first element.
+	 * @method index
+	 * @param {Number} index  the index of the first element of the set of all
+	 *                        matching model objects.
+	 * @return {ResultSet}  the cloned result set with the new offset.
+	 */
+	@monadic
+	offset( index ) {
+		console.debug( "Cloned resultset to add offset: ", index );
+		this.criteria = this.criteria.offset( index );
 	}
 
 }

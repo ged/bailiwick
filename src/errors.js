@@ -10,7 +10,7 @@ export class NotImplementedError extends Error {
 
 	constructor( methodname ) {
 		super();
-		this.message =  `No implementation provided for ${methodname}(...)`;
+		this.message = `No implementation provided for ${methodname}(...)`;
 	}
 
 }
@@ -21,22 +21,23 @@ export class HTTPError extends Error {
 		if ( !xhr.status || xhr.status == 0 ) return null;
 		switch( Math.floor(xhr.status / 100) ) {
 		case 4:
-			return new RequestError( xhr.status, xhr.statusText, xhr.responseText );
+			return new RequestError( xhr.status, xhr.statusText, xhr.response );
 			break;
 		case 5:
-			return new ServerError( xhr.status, xhr.statusText, xhr.responseText );
+			return new ServerError( xhr.status, xhr.statusText, xhr.response );
 			break;
 		default:
 			var msg = `Oops, don't know how to handle a ${xhr.status} error.`;
 			console.error( msg );
-			return new HTTPError( xhr.status, xhr.statusText, xhr.responseText );
+			return new HTTPError( xhr.status, xhr.statusText, xhr.response );
 		}
 	}
 
-	constructor( status, statusText, message ) {
-		super( message );
+	constructor( status, statusText, body ) {
+		super( `${status} ${statusText}` );
 		this.status = status;
 		this.statusText = statusText;
+		this.body = body;
 	}
 
 }

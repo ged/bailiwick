@@ -5,7 +5,7 @@ meant to allow for a model that is closer to the Domain Model
 pattern.
 
 
-## Proposed API
+## Proposed Declaration API
 
 
     /* acme/models.js */
@@ -16,8 +16,32 @@ pattern.
         static datastore = new RESTService( config.serviceEndpoint )
     }
 
-    export class User extends AcmeModel {}
+	export class Role extends AcmeModel {}
 
+    export class User extends AcmeModel {
+	
+		@oneToMany( 'roles', Role )
+		@oneToMany( 'properties', Property )
+
+		constructor() {}
+	
+	}
+
+	export class Property {
+	
+		@manyToOne( 'owner', User )
+		@oneToMany( 'ledgers', Ledger )
+
+		constructor() {}
+	
+	}
+
+	export class Ledger {
+		@manyToOne( 'property', Property )
+	}
+
+
+## Proposed Usage API
 
     /* acme/app.js */
     import {User} from './models';
@@ -27,6 +51,7 @@ pattern.
             this.users = User.filter({ active: true }).get( 50 ); // Returns a Promise
         }
     });
+
 
 
 ## Plugin Semantics

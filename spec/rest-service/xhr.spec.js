@@ -80,6 +80,7 @@ describe( 'Xhr object', () => {
 	describe( "plugin system", () => {
 
 		it( "installs hooks from provided plugins", () => {
+			var fakeXhr = jasmine.createSpy( 'xhr' );
 			var plugin = {
 				setupXhr: arg => {
 				}
@@ -93,7 +94,7 @@ describe( 'Xhr object', () => {
 			expect( pluggedXhr.pluginSlots.has( 'setupXhr' ) ).toBeTruthy();
 			expect( pluggedXhr.pluginSlots.get( 'setupXhr' ) ).toBeA( Set );
 
-			pluggedXhr.setupXhr();
+			pluggedXhr.setupXhr( fakeXhr );
 
 			expect( plugin.setupXhr ).toHaveBeenCalled();
 		});
@@ -152,16 +153,16 @@ describe( 'Xhr object', () => {
 			var promise = xhr.get( 'users' );
 
 			expect( jasmine.Ajax.requests.mostRecent().url ).toBe( `${baseUrl}/users` );
-			expect( promise ).not.toBeFulfilled();
+			expect( promise ).toBePending();
 
-			jasmine.Ajax.requests.mostRecent().response({
+			jasmine.Ajax.requests.mostRecent().respondWith({
 				"status": 200,
 				"contentType": 'application/json',
-				"responseText": '{"name":"wallaby"}'
+				"responseText": '[{"name":"wallaby"}]'
 			});
 
 			expect( promise ).toBeFulfilled();
-			expect( promise.value() ).toEqual({name: "wallaby"});
+			expect( promise.value() ).toEqual([{ name: "wallaby" }]);
 		});
 
 	});

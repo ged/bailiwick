@@ -25,6 +25,9 @@ export class RESTService extends Datastore {
 	}
 
 
+	/**
+	 * 
+	 */
 	getInstance( type, id ) {
 		var uri = type.uri;
 		if ( id ) { uri += '/' + id.toString(); }
@@ -32,6 +35,9 @@ export class RESTService extends Datastore {
 	}
 
 
+	/**
+	 * 
+	 */
 	getCollection( type, criteria ) {
 		var uri = type.uri;
 		var params = this.makeParamsFromCriteria( criteria );
@@ -40,16 +46,62 @@ export class RESTService extends Datastore {
 	}
 
 
+	/**
+	 * 
+	 */
 	makeParamsFromCriteria( criteria ) {
 		if ( !criteria ) return null;
 
 		var params = new Map();
+
+		for ( let [key, val] of criteria.filterClauses ) {
+			console.debug( `Adding parameter ${key}=${val} from criteria's filter clauses.` );
+			params.set( key, val );
+		}
 
 		if ( criteria.maxResultCount ) params.set( 'limit', criteria.maxResultCount );
 		if ( criteria.resultOffset ) params.set( 'offset', criteria.resultOffset );
 
 		return params;
 	}
+
+
+	/**
+	 * 
+	 */
+	store( type, data ) {
+		var uri = type.uri;
+		// :TODO: Just return the ID from this?
+		return this.http.post( uri, data );
+	}
+
+
+	/**
+	 * 
+	 */
+	update( type, id, data ) {
+		var uri = `${type.uri}/${id}`;
+		return this.http.post( uri, data );
+	}
+
+
+	/**
+	 * 
+	 */
+	replace( type, id, data ) {
+		var uri = `${type.uri}/${id}`;
+		return this.http.put( uri, data );
+	}
+
+
+	/**
+	 * 
+	 */
+	remove( type, id ) {
+		var uri = `${type.uri}/${id}`;
+		return this.http.delete( uri );
+	}
+
 
 }
 

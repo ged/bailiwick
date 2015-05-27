@@ -1,32 +1,43 @@
 /* -*- javascript -*- */
 'use strict';
 
-function hasNonJsonContentType( xhr ) {
-	return xhr.headers.has('content-type') &&
-		xhr.headers.get('content-type').indexOf('application/json') == -1
+function isJSONContentType( contentType ) {
+	return ( contentType.indexOf('application/json') >= 0 ||
+	         contentType.indexOf('+json') >= 0 );
 }
 
 export var JSONPlugin = {
 
-	makeRequestBody: body => {
+	makeRequestBody: (xhr, body) => {
 		if ( !body ) return;
 		if ( !body instanceof Object ) return;
-		if ( hasNonJsonContentType(this) ) return;
+		if ( xhr.responseType !== '' ) return;
 
 		console.debug( "Setting up a JSON body." );
-		this.headers.set( 'content-type', 'application/json; charset=utf-8' );
+		xhr.setRequestHeader( 'content-type', 'application/json; charset=utf-8' );
+		xhr.responseType = 'json';
+
 		return JSON.stringify( body );
 	},
 
 	extractResponseBody: (xhr) => {
-		var contentType = xhr.getResponseHeader( 'content-type' );
-
-		if ( contentType.indexOf('application/json') >= 0 || contentType.indexOf('+json') >= 0 ) {
-			console.info( "JSON response; parsing and returning %d bytes of data.", xhr.response.length );
-			return JSON.parse( xhr.response );
-		} else {
-			console.debug( "Not a JSON response (content-type = %s); skipping.", contentType );
+		if ( xhr.responseType === 'json' ) {
+			console.debug( `Native JSON response. Using xhr.response.` );
+			return xhr.response;
 		}
+
+		else {
+			var contentType = xhr.getResponseHeader( 'content-type' );
+
+			if ( isJSONContentType(contentType) ) {
+				console.info( "JSON response; parsing and returning %d bytes of data.",
+				              xhr.response.length );
+				return JSON.parse( xhr.response );
+			} else {
+				console.debug( "Not a JSON response (content-type = %s); skipping.", contentType );
+			}
+		}
+
 	}
 
 };
