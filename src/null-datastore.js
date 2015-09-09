@@ -45,6 +45,7 @@ export class NullDatastore extends Datastore {
 	 */
 	getCollectionForType( type ) {
 		if ( ! this.objects.has(type) ) {
+			console.info( "ObjectStore doesn't have a %s collection; creating one.", type );
 			this.objects.set( type, new Map() );
 			this.ids.set( type, NullDatastore.genId() );
 		}
@@ -84,14 +85,15 @@ export class NullDatastore extends Datastore {
 	 *
 	 * @returns {Promise} the promise that resolves to an Array of matching object data.
 	 */
-	getCollection( criteria ) {
-		console.debug( `Getting collection matching: ${criteria}` );
-		var collection = this.getCollectionForType( criteria.model );
+	getCollection( type, criteria ) {
+		console.debug( `Getting %s collection matching: %o`, type.name, criteria );
+		var collection = this.getCollectionForType( type );
 		var results;
 
 		if ( criteria ) {
-			console.debug( "Filtered fetch!" );
+			console.debug( "Filtered fetch over collection of %d objects!", collection.size );
 			var matches = this.findMatchingObjects( collection, criteria );
+			console.debug( "Found %d matches: %o", matches.length, matches );
 			results = Array.from( matches );
 		} else {
 			console.debug( "Unfiltered fetch!" );

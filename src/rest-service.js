@@ -6,7 +6,8 @@ import {Datastore} from './datastore';
 
 import {VERSION} from './index';
 import {Xhr} from './rest-service/xhr';
-import {JSONPlugin, CORSPlugin} from './rest-service/plugins';
+
+export * from './rest-service/plugins';
 
 /**
  * REST service datastore
@@ -20,8 +21,20 @@ export class RESTService extends Datastore {
 	constructor( baseUrl ) {
 		super();
 		this.baseUrl = baseUrl;
-		this.http = new Xhr({ baseUrl: baseUrl }).
-			using( JSONPlugin, CORSPlugin );
+		this.http = new Xhr({ baseUrl: baseUrl });
+	}
+
+
+	/**
+	 * Configure the service instance to use the specified {plugins}.
+	 *
+	 * @method
+	 * @param {Array} plugins  an Array of Xhr plugins.
+	 * @return {RESTService} the reconfigured RESTService object.
+	 */
+	usePlugins( ...plugins ) {
+		this.http = this.http.using( ...plugins );
+		return this;
 	}
 
 
@@ -42,6 +55,7 @@ export class RESTService extends Datastore {
 		var uri = type.uri;
 		var params = this.makeParamsFromCriteria( criteria );
 
+		console.info( "GET %s params: %o", uri, params );
 		return this.http.get( uri, params );
 	}
 

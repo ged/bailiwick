@@ -6,7 +6,7 @@ import parseHeaders from 'parse-headers';
 import 'babel/polyfill';
 
 import {HTTPError} from '../errors';
-import {monadic} from '../utils';
+import {monadic,mapify} from '../utils';
 
 const DEFAULT_XHR_OPTIONS = {
 	timeout: 10000,
@@ -310,15 +310,21 @@ export class Xhr {
 	 * Turn the specified {params} Object into a URL-encoded query string.
 	 */
 	queryStringFromParams( params ) {
+		console.debug( "Making query string from params: %o", params );
+
 		if ( !params ) return '';
 
-		var pairs = [];
-		for ( let [key, val] of params ) {
+		let paramMap = mapify( params );
+		console.debug( "Param map is: %o", paramMap );
+		let pairs = [];
+		for ( let [key, val] of paramMap ) {
 			let encKey = encodeURIComponent( key );
 			let encVal = encodeURIComponent( val );
+			console.debug( "  adding pair: %s=%s", encKey, encVal );
 			pairs.push( `${encKey}=${encVal}` );
 		}
 
+		console.debug( "Returning query string of %d param pairs.", pairs.length );
 		return pairs.join( '&' );
 	}
 

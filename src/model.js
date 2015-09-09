@@ -11,6 +11,32 @@ import {Criteria} from './criteria';
 import {ValidationFailure} from './errors';
 
 /**
+ * Decorator: @throughCallbacks
+ * Marks the decorated method as one that is passed through the onRequest/onResponse and
+ * equivalent error callbacks.
+ */
+function throughCallbacks( target, name, descriptor ) {
+	var methodBody = descriptor.value;
+	descriptor.value = function( ...args ) {
+		console.debug( "Calling %s through request callbacks.", methodBody.name );
+		let requestCallbacks = target.
+			throughCallbacks( 'request', args ).
+			catch( err => target.throughCallbacks('requestError', err) );
+
+		return requestCallbacks.then( () => {
+			let response = methodBody.apply( this, args );
+			return response.
+				then( results => {
+					console.debug( "Returning %o through response callbacks.", results );
+					return target.throughCallbacks('response', results);
+				}).
+				catch( err => target.throughCallbacks('responseError', err) );
+			});
+	};
+}
+
+
+/**
  * Decorator: @validator
  * Marks the decorated method as a validator; it returns either
  */
@@ -63,7 +89,7 @@ export class Model {
 
 
 	/**
-	 * Fetch the datastore associated with this model.
+	 * Request the datastore associated with this model.
 	 *
 	 * @throws {Error}  if the datastore hasn't been set.
 	 *
@@ -72,7 +98,7 @@ export class Model {
 		var datastore = this._datastore;
 
 		if ( datastore === undefined ) {
-			throw Error( "No datastore has been set for %o", this );
+			throw Error( `No datastore has been set for ${this}` );
 		}
 
 		return datastore;
@@ -88,6 +114,76 @@ export class Model {
 	}
 
 
+	/*
+	 * Callbacks API
+	 */
+
+	/**
+	 *
+	 */
+	static get callbacks() {
+		if ( !this._callbacks ) {
+			this._callbacks = new Map();
+			this._callbacks.set( 'request', new Set() );
+			this._callbacks.set( 'requestError', new Set() );
+			this._callbacks.set( 'response', new Set() );
+			this._callbacks.set( 'responseError', new Set() );
+		}
+
+		return this._callbacks;
+	}
+
+
+	/**
+	 *
+	 */
+	static throughCallbacks( kind, ...args ) {
+		var hooks = Array.from( this.callbacks.get(kind) );
+		console.debug( "Filtering args %o through %d %s callbacks.", args, hooks.length, kind );
+
+		return Promise.reduce( hooks, (args, hook, index, len) => {
+			console.debug( `Running ${kind} hook ${index} of ${len}` );
+			return hook.call( args );
+		}, args );
+	}
+
+
+	/**
+	 *
+	 */
+	static onRequest( callback ) {
+		var callbacks = this.callbacks.get( 'request' )
+		callbacks.add( callback );
+	}
+
+
+	/**
+	 *
+	 */
+	static onRequestError( callback ) {
+		var callbacks = this.callbacks.get( 'requestError' )
+		callbacks.add( callback );
+	}
+
+
+	/**
+	 *
+	 */
+	static onResponse( callback ) {
+		var callbacks = this.callbacks.get( 'response' )
+		callbacks.add( callback );
+	}
+
+
+	/**
+	 *
+	 */
+	static onResponseError( callback ) {
+		var callbacks = this.callbacks.get( 'responseError' )
+		callbacks.add( callback );
+	}
+
+
 	/**
 	 * Get a clone of the ResultSet for this model class.
 	 */
@@ -97,7 +193,7 @@ export class Model {
 
 
 	/**
-	 * Fetch a ResultSet that will use the specified {parameters} in its criteria.
+	 * Request a ResultSet that will use the specified {parameters} in its criteria.
 	 */
 	static where( parameters ) {
 		return this.resultset.where( parameters );
@@ -105,7 +201,7 @@ export class Model {
 
 
 	/**
-	 * Fetch a ResultSet that will use the specified {count} in its limit.
+	 * Request a ResultSet that will use the specified {count} in its limit.
 	 */
 	static limit( count ) {
 		return this.resultset.limit( count );
@@ -116,6 +212,7 @@ export class Model {
 	 * Create one or more instances of the model from the specified {data}.
 	 */
 	static fromData( data ) {
+		console.debug( "Constructing %s objects from objectstore data %o", this.name, data );
 		if ( Array.isArray(data) ) {
 			return data.map( record => Reflect.construct(this, [record, false]) );
 		} else {
@@ -127,13 +224,10 @@ export class Model {
 	/**
 	 * Get instances of the model.
 	 */
+	// @throughCallbacks
 	static get( id_or_criteria=null ) {
 		return this.datastore.get( this, id_or_criteria ).
-			then( data => this.fromData(data) ).
-			catch( err => {
-				console.error( `Error while getting ${this.constructor.name}[ ${id_or_criteria} ] ` );
-				throw( err );
-			});
+			then( data => this.fromData(data) );
 	}
 
 
@@ -148,7 +242,6 @@ export class Model {
 		var instance = Reflect.construct( this, [fields] );
 		return instance.create();
 	}
-
 
 
 	// :TODO: Add some kind of ResultSet that can build up a Criteria + a Model
@@ -241,7 +334,7 @@ export class Model {
 
 
 	/**
-	 * 
+	 *
 	 */
 	delete() {
 		if ( this.id ) {
@@ -387,7 +480,7 @@ export class Model {
 
 
 /**
- * 
+ *
  */
 class Errors {
 
@@ -464,6 +557,7 @@ export class ResultSet {
 		if ( limit ) cr = cr.limit( limit );
 		if ( offset ) cr = cr.offset( offset );
 
+		console.debug( "Fetching %s results matching criteria: %o", this.model.name, cr );
 		return this.model.get( cr );
 	}
 
@@ -477,10 +571,13 @@ export class ResultSet {
 	 * @return {ResultSet} the cloned result set
 	 */
 	clone() {
-		console.debug( "Cloning result set." );
+		console.debug( "Cloning result set from: %o (%o) with %o.", this, this.constructor, Reflect.construct );
 		var newObj = Reflect.construct( this.constructor );
+		console.debug( "Reflected: %o", newObj );
 		newObj.model = this.model;
+		console.debug( "Set the model to: %o", this.model );
 		newObj.criteria = this.criteria;
+		console.debug( "Set the criteria to: %o", this.criteria );
 		return newObj;
 	}
 

@@ -56,8 +56,10 @@ export class Datastore {
 	get( type, criteria=null ) {
 		// Collection API if the criteria is a Criteria
 		if ( criteria instanceof Criteria ) {
+			console.debug( "Fetch with criteria!" );
 			return this.getCollection( type, criteria );
 		} else {
+			console.debug( "Fetch by ID!" );
 			return this.getInstance( type, criteria );
 		}
 	}

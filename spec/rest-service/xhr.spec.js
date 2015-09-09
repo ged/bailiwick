@@ -16,7 +16,7 @@ import {customMatchers} from '../helpers';
 describe( 'Xhr object', () => {
 
 	var xhr,
-	baseUrl = 'http://localhost:8889/v1';
+	    baseUrl = 'http://localhost:8889/v1';
 
 	beforeEach( () => {
 		jasmine.Ajax.install();
@@ -152,8 +152,25 @@ describe( 'Xhr object', () => {
 		it( "can GET from a simple URI", () => {
 			var promise = xhr.get( 'users' );
 
-			expect( jasmine.Ajax.requests.mostRecent().url ).toBe( `${baseUrl}/users` );
 			expect( promise ).toBePending();
+			expect( jasmine.Ajax.requests.mostRecent().url ).toBe( `${baseUrl}/users` );
+
+			jasmine.Ajax.requests.mostRecent().respondWith({
+				"status": 200,
+				"contentType": 'application/json',
+				"responseText": '[{"name":"wallaby"}]'
+			});
+
+			expect( promise ).toBeFulfilled();
+			expect( promise.value() ).toEqual([{ name: "wallaby" }]);
+		});
+
+
+		it( "can GET from a URI and one parameter", () => {
+			var promise = xhr.get( 'users', {sortBy: 'lastname'} );
+
+			expect( promise ).toBePending();
+			expect( jasmine.Ajax.requests.mostRecent().url ).toBe( `${baseUrl}/users?sortBy=lastname` );
 
 			jasmine.Ajax.requests.mostRecent().respondWith({
 				"status": 200,

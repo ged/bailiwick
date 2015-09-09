@@ -22,7 +22,7 @@
     "rest"
   ],
   "author": "Michael Granger <ged@FaerieMUD.org>",
-  "license": "BSD",
+  "license": "BSD-3-Clause",
   "devDependencies": {
     "babel-eslint": "^3.1.1",
     "conventional-changelog": "0.0.11",
@@ -37,7 +37,7 @@
     "gulp-sourcemaps": "^1.5.2",
     "gulp-yuidoc": "^0.1.2",
     "jasmine": "^2.3.1",
-    "jasmine-ajax": "^3.1.1",
+    "jasmine-ajax": "https://github.com/jasmine/jasmine-ajax/archive/v3.2.0.tar.gz",
     "jasmine-core": "^2.1.3",
     "jshint-stylish": "^1.0.0",
     "karma": "^0.12.28",
