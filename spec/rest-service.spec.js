@@ -16,7 +16,7 @@ import {Xhr} from '../src/rest-service/xhr';
 class User extends Model {}
 
 
-xdescribe( 'REST Service datastore class', () => {
+describe( 'REST Service datastore class', () => {
 
 	var datastore,
 		baseUrl = 'http://localhost:8889/v1';

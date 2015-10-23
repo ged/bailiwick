@@ -52,7 +52,7 @@ export class RESTService extends Datastore {
 	 * 
 	 */
 	getCollection( type, criteria ) {
-		var uri = type.uri;
+		var uri = criteria.location || type.uri;
 		var params = this.makeParamsFromCriteria( criteria );
 
 		console.info( "GET %s params: %o", uri, params );

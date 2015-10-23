@@ -6,9 +6,12 @@
 import Promise from 'bluebird';
 import inflection from 'inflection';
 
-import {monadic} from './utils';
+import {monadic, validator} from './utils';
+
+import {ResultSet} from './result-set';
 import {Criteria} from './criteria';
-import {ValidationFailure} from './errors';
+import {ValidationErrors} from './errors';
+
 
 /**
  * Decorator: @throughCallbacks
@@ -36,33 +39,6 @@ function throughCallbacks( target, name, descriptor ) {
 }
 
 
-/**
- * Decorator: @validator
- * Marks the decorated method as a validator; it returns either
- */
-export function validator( field ) {
-	return function decorator( target, name, descriptor ) {
-		var methodBody = descriptor.value;
-
-		if ( !target.validators ) {
-			target.validators = new Map();
-		}
-
-		descriptor.value = function() {
-			return new Promise( (resolve, reject) => {
-				try {
-					resolve( methodBody.apply(this) );
-				} catch( e ) {
-					reject([ field, e.message || e ]);
-				}
-			});
-		};
-		target.validators.set( field, descriptor.value );
-
-		return descriptor;
-	};
-}
-
 
 /**
 * Bailiwick.Model
@@ -72,6 +48,20 @@ export function validator( field ) {
 */
 export class Model {
 
+	/**
+	 * Get the Map of associations defined for the class.
+	 */
+	static get associations() {
+		if ( !this.associations ) {
+			this.associations = new Map();
+		}
+		return this.associations;
+	}
+
+
+	/**
+	 * Get the Map of validators defined for the class.
+	 */
 	static get validators() {
 		if ( !this.validators ) {
 			this.validators = new Map();
@@ -209,10 +199,19 @@ export class Model {
 
 
 	/**
+	 * Request a ResultSet that will use the specified {location} when fetching from
+	 * the datastore.
+	 */
+	static from( location ) {
+		return this.resultset.from( location );
+	}
+
+
+	/**
 	 * Create one or more instances of the model from the specified {data}.
 	 */
 	static fromData( data ) {
-		console.debug( "Constructing %s objects from objectstore data %o", this.name, data );
+		console.debug( "Constructing %s objects from datastore data %o", this.name, data );
 		if ( Array.isArray(data) ) {
 			return data.map( record => Reflect.construct(this, [record, false]) );
 		} else {
@@ -244,30 +243,36 @@ export class Model {
 	}
 
 
-	// :TODO: Add some kind of ResultSet that can build up a Criteria + a Model
-
-	// static filter( pairs ) {
-	// 	return new Criteria( this, pairs );
-	// }
-	//
-	// static limit( count ) {
-	// 	return new Criteria( this ).limit( count );
-	// }
-	//
-	// static offset( index ) {
-	// 	return new Criteria( this ).offset( index );
-	// }
-
-
+	/**
+	 * Construct a new model object around the given {data}, marking it as new
+	 * if {isNew} is true.
+	 */
 	constructor( data={}, isNew=true ) {
 		this.newObject = isNew;
 		this.data = data;
 		this.dirtyFields = new Set();
+		this.associationCache = new Map();
 
 		this.datastore = this.constructor.datastore;
 
 		// console.debug( `Created a new %s: %o`, this.constructor.name, data );
 		this.defineAttributes( data );
+	}
+
+
+	/**
+	 * Fetch the URI of the object.
+	 */
+	get uri() {
+		return `${this.constructor.uri}/${this.id}`;
+	}
+
+
+	/**
+	 * Fetch the name of the model class of the object.
+	 */
+	get modelType() {
+		return this.constructor.name;
 	}
 
 
@@ -355,7 +360,13 @@ export class Model {
 	 */
 	getValue( name ) {
 		// console.debug(`Getting ${name}`);
-		return this.data[ name ];
+		let association = `${name}Object`;
+
+		if ( typeof this[association] === 'function' ) {
+			return this[association]( this.data[name] );
+		} else {
+			return this.data[ name ];
+		}
 	}
 
 
@@ -427,7 +438,7 @@ export class Model {
 	 */
 	validate() {
 		return new Promise( (resolve, reject) => {
-			this.errors = new Errors();
+			this.errors = new ValidationErrors();
 			var promises = [];
 
 			for ( let [field, validationMethod] of this.validators ) {
@@ -478,148 +489,4 @@ export class Model {
 	}
 }
 
-
-/**
- *
- */
-class Errors {
-
-	constructor() {
-		this.failures = new Map();
-	}
-
-
-	get fields() {
-		var fields = [];
-		// :FIXME: Use an Array comprehension once those are stable
-		for ( let field of this.failures.keys() ) fields.push( field );
-
-		return fields;
-	}
-
-
-	get fullMessages() {
-		var messages = [];
-		for( let [field, reason] of this.failures ) {
-			messages.push( `${field} ${reason}` );
-		}
-
-		return messages;
-	}
-
-
-	get size() {
-		return this.failures.size;
-	}
-
-
-	add( field, reason ) {
-		this.failures.set( field, reason );
-	}
-
-
-	isEmpty() {
-		return ( this.size === 0 );
-	}
-
-}
-
-
-/**
- * A monadic/fluid interface to an unreified set of Model objects made up of
- * a Model class and a Criteria for selecting a subset of them.
- *
- * @class ResultSet
- * @constructor
- */
-export class ResultSet {
-
-	constructor( model, criteria=null ) {
-		if ( criteria === null ) {
-			criteria = new Criteria();
-		}
-		else if ( !(criteria instanceof Criteria) ) {
-			criteria = new Criteria( criteria );
-		}
-
-		this.model = model;
-		this.criteria = criteria;
-	}
-
-
-	/**
-	 * Return a Promise that will resolve as the reified results described by
-	 * the ResultSet.
-	 * @method get
-	 */
-	get( limit=null, offset=null ) {
-		var cr = this.criteria;
-		if ( limit ) cr = cr.limit( limit );
-		if ( offset ) cr = cr.offset( offset );
-
-		console.debug( "Fetching %s results matching criteria: %o", this.model.name, cr );
-		return this.model.get( cr );
-	}
-
-
-	/*
-	 * Monadic API
-	 */
-
-	/**
-	 * Monadic API -- duplicate the ResultSet.
-	 * @return {ResultSet} the cloned result set
-	 */
-	clone() {
-		console.debug( "Cloning result set from: %o (%o) with %o.", this, this.constructor, Reflect.construct );
-		var newObj = Reflect.construct( this.constructor );
-		console.debug( "Reflected: %o", newObj );
-		newObj.model = this.model;
-		console.debug( "Set the model to: %o", this.model );
-		newObj.criteria = this.criteria;
-		console.debug( "Set the criteria to: %o", this.criteria );
-		return newObj;
-	}
-
-
-	/**
-	 * Add selection criteria to the set.
-	 * @method where
-	 * @param {Object} params  key/value pairs that will be mapped to selection criteria.
-	 * @return {ResultSet}  the cloned result set with the additional criteria.
-	 */
-	@monadic
-	where( params ) {
-		console.debug( "Cloning resultset to add params: ", params );
-		this.criteria = this.criteria.filter( params );
-	}
-
-
-	/**
-	 * Add a limit to the maximum size of the set.
-	 * @method limit
-	 * @param {Number} count  the maximum number of results in the set
-	 * @return {ResultSet}  the cloned result set with the new limit.
-	 */
-	@monadic
-	limit( count ) {
-		console.debug( "Cloned resultset to add limit: ", count );
-		this.criteria = this.criteria.limit( count );
-	}
-
-
-	/**
-	 * Add an offset into the set that should be the first element.
-	 * @method index
-	 * @param {Number} index  the index of the first element of the set of all
-	 *                        matching model objects.
-	 * @return {ResultSet}  the cloned result set with the new offset.
-	 */
-	@monadic
-	offset( index ) {
-		console.debug( "Cloned resultset to add offset: ", index );
-		this.criteria = this.criteria.offset( index );
-	}
-
-}
 

@@ -10,7 +10,8 @@
 import Promise from 'bluebird';
 import 'babel/polyfill';
 
-import {NullDatastore, Model, ResultSet, Criteria, validator} from '../src/index';
+import {NullDatastore, Model, ResultSet, Criteria} from '../src/index';
+import {validator} from '../src/utils';
 import {customMatchers} from './helpers';
 
 

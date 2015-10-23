@@ -2,7 +2,7 @@
 "use strict";
 
 /**
- * Decorator: monadic
+ * Decorator: @monadic
  *
  * Declare a method that acts as a monadic mutator -- calling it will operate on (and return)
  * a clone of the receiving object instead of the receiver.
@@ -19,6 +19,7 @@ export function monadic( target, name, descriptor ) {
 
 	return descriptor;
 }
+
 
 
 /*

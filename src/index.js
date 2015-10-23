@@ -18,6 +18,8 @@ export var VERSION = '0.0.1.dev';
 export * from './model';
 export * from './datastore';
 export * from './criteria';
+export * from './associations';
+export * from './validations';
 
 export * from './null-datastore';
 export * from './rest-service';

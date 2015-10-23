@@ -21,6 +21,7 @@ export class Criteria {
 		this.filterClauses = new Map();
 		this.maxResultCount = null;
 		this.resultOffset = null;
+		this.location = null;
 
 		for ( let key in pairs ) {
 			this.filterClauses.set( key, pairs[key] );
@@ -76,4 +77,17 @@ export class Criteria {
 	}
 
 
+	/**
+	 * Create a clone of the current criteria with its location set to {newLocation}.
+	 * @param {Object} location  The location the resource should be fetched from; the
+	 *                           value of this parameter is datastore-dependent, and
+	 *                           may not make sense for all of them.
+	 */
+	@monadic
+	from( newLocation ) {
+		this.location = newLocation;
+	}
+
+
 }
+

@@ -81,6 +81,18 @@ describe( 'Criteria', () => {
 
 	});
 
+
+	describe( 'setting an alternate location', () => {
+
+		it( 'can be set to fetch results from a specific "location"', () => {
+			var criteria = new Criteria().from( "/somewhere/else" );
+
+			expect( criteria ).toBeDefined();
+			expect( criteria.location ).toEqual( "/somewhere/else" );
+		});
+
+	});
+
 });
 
 

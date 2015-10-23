@@ -46,17 +46,49 @@ export class HTTPError extends Error {
 export class RequestError extends HTTPError {}
 export class ServerError extends HTTPError {}
 
-export class ValidationFailure {
+/**
+ *
+ */
+export class ValidationErrors {
 
-	constructor( field, failure ) {
-		this.field = field;
-		this.failure = failure;
+	constructor() {
+		this.failures = new Map();
 	}
 
 
-	message() {
-		return `${this.field} ${this.failure}`;
+	get fields() {
+		var fields = [];
+		// :FIXME: Use an Array comprehension once those are stable
+		for ( let field of this.failures.keys() ) fields.push( field );
+
+		return fields;
+	}
+
+
+	get fullMessages() {
+		var messages = [];
+		for( let [field, reason] of this.failures ) {
+			messages.push( `${field} ${reason}` );
+		}
+
+		return messages;
+	}
+
+
+	get size() {
+		return this.failures.size;
+	}
+
+
+	add( field, reason ) {
+		this.failures.set( field, reason );
+	}
+
+
+	isEmpty() {
+		return ( this.size === 0 );
 	}
 
 }
+
 
