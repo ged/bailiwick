@@ -3,15 +3,14 @@
  *
  */
 
-/* jshint nonew:true, curly:true, noarg:true, esnext:true, forin:true, noempty:true, smarttabs:true, eqeqeq:true, strict:true, undef:true, bitwise:true, browser:true  */
-/* global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console, jasmine */
+/* global it, beforeEach, describe, expect, console, jasmine */
 "use strict";
 
 import Promise from 'bluebird';
 import 'babel/polyfill';
 
 import {NullDatastore, Model, ResultSet, Criteria} from '../src/index';
-import {validator} from '../src/utils';
+import {validator} from '../src/validations';
 import {customMatchers} from './helpers';
 
 
@@ -20,15 +19,15 @@ class User extends Model {
 	@validator( 'firstName' )
 	validateFirstName() {
 		if ( this.firstName === 'Nate' ) {
-			throw( "no Nates allowed." );
+			throw "no Nates allowed.";
 		} else if ( !this.firstName || this.firstName === '' ) {
-			throw( "missing" );
+			throw "missing";
 		}
 	}
 
 	@validator( 'lastName' )
 	validateLastName() {
-		if ( !this.lastName || this.lastName === '' ) throw "missing";
+		if ( !this.lastName || this.lastName === '' ) { throw "missing"; }
 	}
 
 	// @validator( 'email' )
@@ -43,8 +42,6 @@ class User extends Model {
 
 
 describe( 'Model class', () => {
-
-	var datastore;
 
 	beforeEach( () => {
 		User.datastore = new NullDatastore();
@@ -118,7 +115,7 @@ describe( 'Model class', () => {
 			var result = User.where( { firstName: 'Arya' } );
 			expect( result ).toBeA( ResultSet );
 			expect( result.criteria ).toBeA( Criteria );
-			expect( result.criteria.filterClauses.get( 'firstName' ) ).toEqual( 'Arya' );
+			expect( result.criteria.filterClauses.get('firstName') ).toEqual( 'Arya' );
 		} );
 
 	} );
@@ -139,7 +136,7 @@ describe( 'Model class', () => {
 			var failure = jasmine.createSpy( 'promise rejected' );
 
 			var promise = user.validate();
-			expect( promise ).toBeA( Promise );
+			// expect( promise ).toBeA( Promise );
 
 			promise.then( success ).catch( failure ).finally( () => {
 				expect( success ).toHaveBeenCalled();
@@ -184,12 +181,11 @@ describe( 'ResultSet class', () => {
 		rs.get().
 			then( users => {
 				expect( users.length ).toEqual( 3 );
-				expect( users[ 0 ].firstName ).toEqual( 'Paul' );
-				expect( users[ 1 ].firstName ).toEqual( 'Alia' );
-				expect( users[ 2 ].firstName ).toEqual( 'Duncan' );
+				expect( users[ 0 ].firstName ).toEqual( user1.firstName );
+				expect( users[ 1 ].firstName ).toEqual( user2.firstName );
+				expect( users[ 2 ].firstName ).toEqual( user3.firstName );
 			} ).
 			finally( done );
 	} );
 
 } );
-

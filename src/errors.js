@@ -1,8 +1,5 @@
-/**
- * Utility Classes and functions
- * 
- * 
- */
+/* -*- javascript -*- */
+"use strict";
 
 import 'babel/polyfill';
 
@@ -18,14 +15,12 @@ export class NotImplementedError extends Error {
 export class HTTPError extends Error {
 
 	static fromXMLHttpRequest( xhr ) {
-		if ( !xhr.status || xhr.status == 0 ) return null;
+		if ( !xhr.status || xhr.status === 0 ) { return null; }
 		switch( Math.floor(xhr.status / 100) ) {
 		case 4:
 			return new RequestError( xhr.status, xhr.statusText, xhr.response );
-			break;
 		case 5:
 			return new ServerError( xhr.status, xhr.statusText, xhr.response );
-			break;
 		default:
 			var msg = `Oops, don't know how to handle a ${xhr.status} error.`;
 			console.error( msg );
@@ -90,5 +85,3 @@ export class ValidationErrors {
 	}
 
 }
-
-

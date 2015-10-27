@@ -20,6 +20,7 @@ export * from './datastore';
 export * from './criteria';
 export * from './associations';
 export * from './validations';
+export * from './result-set';
 
 export * from './null-datastore';
 export * from './rest-service';

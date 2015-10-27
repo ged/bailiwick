@@ -2,15 +2,14 @@
 'use strict';
 
 import Promise from 'bluebird';
-import parseHeaders from 'parse-headers';
 import 'babel/polyfill';
 
 import {HTTPError} from '../errors';
-import {monadic,mapify} from '../utils';
+import {monadic, mapify} from '../utils';
 
 const DEFAULT_XHR_OPTIONS = {
 	timeout: 10000,
-	baseUrl: '//',
+	baseUrl: '//'
 };
 
 
@@ -30,7 +29,7 @@ function pluggable( target, name, descriptor ) {
 
 			for ( var hook of hooks ) {
 				result = hook.apply( this, args );
-				if ( result ) break;
+				if ( result ) { break; }
 			}
 		}
 
@@ -38,7 +37,7 @@ function pluggable( target, name, descriptor ) {
 	};
 
 	return descriptor;
-};
+}
 pluggable.slots = new Set();
 
 
@@ -103,7 +102,7 @@ export class Xhr {
 
 			for ( var hook in plugin ) {
 				// console.debug( `  setting up a ${hook} hook...` );
-				if ( ! pluggable.slots.has(hook) ) {
+				if ( !pluggable.slots.has(hook) ) {
 					console.warn( `No pluggable slot for a "${hook}" hook; skipping.` );
 					continue;
 				}
@@ -128,28 +127,28 @@ export class Xhr {
 	/**
 	 * Return a copy of the Xhr object that will use the given {newUrl} as the
 	 * new baseUrl.
-	 * 
+	 *
 	 * @params {String} newUrl   the new URL to use as the base for new requests.
-	 * 
+	 *
 	 * @returns {Xhr}  the new Xhr object.
 	 */
 	@monadic
 	withBaseUrl( newUrl ) {
-		this.options['baseUrl'] = newUrl;
+		this.options.baseUrl = newUrl;
 	}
 
 
 	/**
 	 * Return a copy of the Xhr object that will use the given {newTimeout} as the
 	 * new request timeout.
-	 * 
-	 * @params {Number} newTimeout   the number of milliseconds to allow 
-	 * 
+	 *
+	 * @params {Number} newTimeout   the number of milliseconds to allow
+	 *
 	 * @returns {Xhr}  the new Xhr object.
 	 */
 	@monadic
 	withTimeout( newTimeout ) {
-		this.options['timeout'] = newTimeout;
+		this.options.timeout = newTimeout;
 	}
 
 
@@ -169,7 +168,7 @@ export class Xhr {
 	 */
 	get( uri='', params=null ) {
 		var queryString = this.queryStringFromParams( params );
-		if ( '' !== queryString ) {
+		if ( queryString !== '' ) {
 			uri += '?' + queryString;
 		}
 		return this.getXhrPromise( 'GET', uri );
@@ -234,13 +233,13 @@ export class Xhr {
 	 * @returns {Object}  the transformed body.
 	 */
 	@pluggable
-	makeRequestBody( xhr, body ) {
+	makeRequestBody( xhr, body ) { // eslint-disable-line no-unused-vars
 		// console.debug( "Applying transforms to the request body." );
 	}
 
 
 	/**
-	 * Do any required transforms on the body of the response before resolving the 
+	 * Do any required transforms on the body of the response before resolving the
 	 * Promise.
 	 *
 	 * @method extractResponseBody
@@ -250,31 +249,31 @@ export class Xhr {
 	 * @returns {Object}  the transformed body.
 	 */
 	@pluggable
-	extractResponseBody( xhr ) {
+	extractResponseBody( xhr ) { // eslint-disable-line no-unused-vars
 		// console.debug( "Applying transforms to the response body" );
 	}
 
 
 	@pluggable
-	onAbort( evt ) {
+	onAbort( evt, xhr ) { // eslint-disable-line no-unused-vars
 		console.warn( "Request aborted." );
 	}
 
 
 	@pluggable
-	onError( evt ) {
+	onError( evt, xhr ) { // eslint-disable-line no-unused-vars
 		console.error( "Network or other internal error." );
 	}
 
 
 	@pluggable
-	onLoad( evt ) {
+	onLoad( evt, xhr ) { // eslint-disable-line no-unused-vars
 		// console.debug( "Got a 'load' event: %o", evt );
 	}
 
 
 	@pluggable
-	onLoadStart( evt ) {
+	onLoadStart( evt, xhr ) { // eslint-disable-line no-unused-vars
 		// console.debug( "Got a 'loadstart' event: %o", evt );
 		for ( let [header, value] of this.defaultHeaders ) {
 			console.debug( "Setting request header %s to %s.", header, value );
@@ -284,19 +283,19 @@ export class Xhr {
 
 
 	@pluggable
-	onProgress( evt ) {
+	onProgress( evt, xhr ) { // eslint-disable-line no-unused-vars
 		// console.debug( "Got a 'progress' event: %o", evt );
 	}
 
 
 	@pluggable
-	onTimeout( evt ) {
+	onTimeout( evt, xhr ) { // eslint-disable-line no-unused-vars
 		console.warn( `Request for ${evt.target.responseUrl} timed out.` );
 	}
 
 
 	@pluggable
-	onLoadEnd( evt ) {
+	onLoadEnd( evt, xhr ) { // eslint-disable-line no-unused-vars
 		// console.debug( "Got a 'loadend' event: %o", evt );
 	}
 
@@ -312,7 +311,7 @@ export class Xhr {
 	queryStringFromParams( params ) {
 		console.debug( "Making query string from params: %o", params );
 
-		if ( !params ) return '';
+		if ( !params ) { return ''; }
 
 		let paramMap = mapify( params );
 		console.debug( "Param map is: %o", paramMap );
@@ -332,11 +331,11 @@ export class Xhr {
 	/**
 	 * Fetch a promise that is wrapped around an XMLHttpRequest for the
 	 * specified {method}, {url}, and {body}.
-	 * 
+	 *
 	 * @method getXhrPromise
 	 */
 	getXhrPromise( method, uri, body=null ) {
-		if ( uri[0] !== '/' ) uri = `/${uri}`;
+		if ( uri[0] !== '/' ) { uri = `/${uri}`; }
 		var url = `${this.options.baseUrl}${uri}`;
 		var xhr = this.getXhr();
 
@@ -368,15 +367,15 @@ export class Xhr {
 	 */
 	getXhr() {
 		// console.debug( "Getting a new XMLHttpRequest" );
-		var xhr = new XMLHttpRequest;
+		var xhr = new XMLHttpRequest();
 
-		xhr.addEventListener( 'abort',     evt => this.onAbort(evt) );
-		xhr.addEventListener( 'error',     evt => this.onError(evt) );
-		xhr.addEventListener( 'load',      evt => this.onLoad(evt) );
-		xhr.addEventListener( 'loadstart', evt => this.onLoadStart(evt) );
-		xhr.addEventListener( 'progress',  evt => this.onProgress(evt) );
-		xhr.addEventListener( 'timeout',   evt => this.onTimeout(evt) );
-		xhr.addEventListener( 'loadend',   evt => this.onLoadEnd(evt) );
+		xhr.addEventListener( 'abort',     evt => this.onAbort(evt, xhr) );
+		xhr.addEventListener( 'error',     evt => this.onError(evt, xhr) );
+		xhr.addEventListener( 'load',      evt => this.onLoad(evt, xhr) );
+		xhr.addEventListener( 'loadstart', evt => this.onLoadStart(evt, xhr) );
+		xhr.addEventListener( 'progress',  evt => this.onProgress(evt, xhr) );
+		xhr.addEventListener( 'timeout',   evt => this.onTimeout(evt, xhr) );
+		xhr.addEventListener( 'loadend',   evt => this.onLoadEnd(evt, xhr) );
 
 		return xhr;
 	}
@@ -392,25 +391,23 @@ export class Xhr {
 		var self = this;
 
 		xhr.addEventListener( "error", evt => {
-			console.error( "Network error." );
+			console.error( "Network error: ", evt );
 			reject( new Error("Network error.") );
 		});
 
 		xhr.addEventListener( "load", evt => {
-			var xhr = evt.currentTarget || evt.target;
-			console.info( `${xhr.responseURL} => ${xhr.status} ${xhr.statusText}` );
+			let target = evt.currentTarget || evt.target;
+			console.info( `${target.responseUrl} => ${target.status} ${target.statusText}` );
 
-			if ( xhr.status < 200 || xhr.status >= 400 ) {
-				reject( HTTPError.fromXMLHttpRequest(xhr) );
+			if ( target.status < 200 || target.status >= 400 ) {
+				reject( HTTPError.fromXMLHttpRequest(target) );
 			}
 
-			// console.debug( "Transforming response from ", xhr );
-			var responseData = self.extractResponseBody( xhr ) || xhr.response;
+			// console.debug( "Transforming response from ", target );
+			var responseData = self.extractResponseBody( target ) || target.response;
 			resolve( responseData );
 		});
 	}
 
 
 }
-
-

@@ -5,7 +5,6 @@ import Promise from 'bluebird';
 import 'babel/polyfill';
 
 import {Datastore} from './datastore';
-import {Criteria} from './criteria';
 
 
 /**
@@ -23,7 +22,7 @@ export class NullDatastore extends Datastore {
 	 */
 	static *genId() {
 		let i = 0;
-		while( 1 ) {
+		for( ;; ) {
 			yield( ++i );
 		}
 	}
@@ -44,7 +43,7 @@ export class NullDatastore extends Datastore {
 	 * @protected
 	 */
 	getCollectionForType( type ) {
-		if ( ! this.objects.has(type) ) {
+		if ( !this.objects.has(type) ) {
 			console.info( "ObjectStore doesn't have a %s collection; creating one.", type );
 			this.objects.set( type, new Map() );
 			this.ids.set( type, NullDatastore.genId() );
@@ -121,7 +120,7 @@ export class NullDatastore extends Datastore {
 		var matches = [];
 
 		for ( let obj of collection.values() ) {
-			if ( filterFunc(obj) ) matches.push( obj );
+			if ( filterFunc(obj) ) { matches.push( obj ); }
 		}
 
 		return matches;
@@ -149,10 +148,9 @@ export class NullDatastore extends Datastore {
 		return function( obj ) {
 			return clauses.every( pair => {
 				let [key, val] = pair;
-				console.debug( `  obj:${key}: ${obj[key] == val}` );
-				return obj[ key ] == val;
+				return ( obj[key] === val );
 			});
-		}
+		};
 	}
 
 
@@ -246,4 +244,3 @@ export class NullDatastore extends Datastore {
 	}
 
 }
-

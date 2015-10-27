@@ -25,7 +25,7 @@ export function monadic( target, name, descriptor ) {
 /*
  * Extracted from es6-mapify by Jonathan Lipps <jlipps (at) gmail.com> to avoid
  * the dependency on Traceur.
- * 
+ *
  * Used under the terms of the Apache-2.0 license.
  */
 
@@ -40,7 +40,7 @@ export function monadic( target, name, descriptor ) {
  *     objects
  */
 export function mapify( obj ) {
-	if ( obj instanceof Map ) return obj;
+	if ( obj instanceof Map ) { return obj; }
 
 	let m = new Map();
 
@@ -60,7 +60,7 @@ export function mapify( obj ) {
 		if ( obj.hasOwnProperty(k) ) {
 			m.set( k, mapify(obj[k]) );
 		}
-	};
+	}
 
 	return m;
 }
@@ -93,5 +93,4 @@ export function demapify( map ) {
 	}
 
 	return obj;
-};
-
+}

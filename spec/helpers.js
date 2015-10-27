@@ -3,9 +3,10 @@
 
 export var customMatchers = {
 
-	toBeA: function( utils, customEqTesters ) {
+	toBeA: function() {
 		return {
 			compare: function( actual, expected ) {
+				console.debug( `Checking to see if ${actual} is an instanceof ${expected}` );
 				var result = {
 					pass: actual instanceof expected
 				};
@@ -20,9 +21,9 @@ export var customMatchers = {
 		};
 	},
 
-	toBeFulfilled: function( utils, customEqTesters ) {
+	toBeFulfilled: function() {
 		return {
-			compare: function( actual, expected ) {
+			compare: function( actual ) {
 				var result = {
 					pass: actual.isFulfilled()
 				};
@@ -37,9 +38,9 @@ export var customMatchers = {
 		};
 	},
 
-	toBeRejected: function( utils, customEqTesters ) {
+	toBeRejected: function() {
 		return {
-			compare: function( actual, expected ) {
+			compare: function( actual ) {
 				var result = {
 					pass: actual.isRejected()
 				};
@@ -54,9 +55,9 @@ export var customMatchers = {
 		};
 	},
 
-	toBePending: function( utils, customEqTesters ) {
+	toBePending: function() {
 		return {
-			compare: function( actual, expected ) {
+			compare: function( actual ) {
 				var result = {
 					pass: actual.isPending()
 				};
@@ -72,5 +73,3 @@ export var customMatchers = {
 	}
 
 };
-
-

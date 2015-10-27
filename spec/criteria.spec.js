@@ -1,12 +1,8 @@
-/**
- * Criteria tests
- *
- * jshint undef: true, unused: true, esnext: true
- * global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console
- */
+/* -*- Criteria tests -*- */
+
+ /* global it, describe, expect, console */
 'use strict';
 
-import Promise from 'bluebird';
 import 'babel/polyfill';
 
 import {Criteria} from '../src/index';
@@ -94,5 +90,3 @@ describe( 'Criteria', () => {
 	});
 
 });
-
-

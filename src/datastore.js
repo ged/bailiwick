@@ -1,4 +1,6 @@
 /* -*- javascript -*- */
+
+/* eslint-disable no-unused-vars */
 'use strict';
 
 import Promise from 'bluebird';
@@ -16,7 +18,7 @@ export function datastore( type, ...args ) {
 		var ds = Reflect.construct( type, args );
 		console.debug( "Setting datastore of ", target, " to ", ds );
 		target.datastore = ds;
-	}
+	};
 }
 
 /**
@@ -78,7 +80,7 @@ export class Datastore {
 	 *
 	 * @protected
 	 */
-	getCollection( type, criteria ) {
+	getCollection( type, criteria ) { // eslint-disable-line no-unused-vars
 		return Promise.reject( new NotImplementedError("getCollection") );
 	}
 
@@ -160,4 +162,3 @@ export class Datastore {
 
 
 }
-

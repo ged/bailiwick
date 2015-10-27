@@ -9,9 +9,9 @@ function isJSONContentType( contentType ) {
 export var JSONPlugin = {
 
 	makeRequestBody: (xhr, body) => {
-		if ( !body ) return;
-		if ( !body instanceof Object ) return;
-		if ( xhr.responseType !== '' ) return;
+		if ( !body ) { return null; }
+		if ( !body instanceof Object ) { return null; }
+		if ( xhr.responseType !== '' ) { return null; }
 
 		console.debug( "Setting up a JSON body." );
 		xhr.setRequestHeader( 'content-type', 'application/json; charset=utf-8' );
@@ -41,4 +41,3 @@ export var JSONPlugin = {
 	}
 
 };
-

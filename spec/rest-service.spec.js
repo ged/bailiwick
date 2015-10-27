@@ -1,16 +1,13 @@
-/**
- * RESTService tests
- *
- * jshint undef: true, unused: true, esnext: true
- * global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console, jasmine
- */
+/* -*- javascript -*- */
+ /* global it, describe, expect, beforeEach, beforeAll, console, jasmine */
 'use strict';
 
-import Promise from 'bluebird';
 import 'babel/polyfill';
 
 import {Model, RESTService} from '../src/index';
+import {RequestError} from '../src/errors';
 import {Xhr} from '../src/rest-service/xhr';
+import {customMatchers} from './helpers';
 
 
 class User extends Model {}
@@ -21,8 +18,13 @@ describe( 'REST Service datastore class', () => {
 	var datastore,
 		baseUrl = 'http://localhost:8889/v1';
 
+	beforeAll( () => {
+		jasmine.Ajax.install();
+	});
+
 	beforeEach( () => {
 		datastore = new RESTService( baseUrl );
+		jasmine.addMatchers( customMatchers );
 	});
 
 
@@ -30,17 +32,12 @@ describe( 'REST Service datastore class', () => {
 
 		it( 'has an Xhr object set up with its baseUrl', () => {
 			expect( datastore.http instanceof Xhr ).toBeTruthy();
-			expect( datastore.http.options['baseUrl'] ).toEqual( baseUrl );
+			expect( datastore.http.options.baseUrl ).toEqual( baseUrl );
 		});
 
 
 		it( 'fetches the object with the specified ID', done => {
 			var testData = { id: 17, firstName: "Michael", lastName: "Carthwaite" };
-			// datastore.requestBuilder.
-			// 	when( 'GET', `${datastore.basePath}/users/17` ).
-			// 	respond( JSON.stringify(testData) ).
-			// 	status( 200 ).
-			// 	header( 'Content-type', 'application/json' );
 
 			datastore.get( User, 17 ).then( result => {
 				expect( result ).toEqual( testData );
@@ -49,18 +46,33 @@ describe( 'REST Service datastore class', () => {
 				console.error( e );
 			}).
 			finally( done );
+
+			expect( jasmine.Ajax.requests.mostRecent().url ).toBe( `${baseUrl}/users/17` );
+			expect( jasmine.Ajax.requests.mostRecent().method ).toBe( 'GET' );
+			jasmine.Ajax.requests.mostRecent().respondWith({
+				"status": 200,
+				"contentType": 'application/json',
+				"response": testData
+			});
 		});
 
 
 		it( 'rejects with "no such object" when getting a non-existent object', done => {
-			
-
 			datastore.get( User, 17 ).
-				catch( err => {
-					expect( err.name ).toEqual( "RequestError" );
-					expect( err.message ).toEqual( "User 17 not found." );
-				}).
-				finally( done );
+			catch( err => {
+				console.debug( 'Error on fetch: ', err );
+				expect( err ).toBeA( RequestError );
+				expect( err.body ).toEqual( "User 17 not found." );
+			}).
+			finally( done );
+
+			expect( jasmine.Ajax.requests.mostRecent().url ).toBe( `${baseUrl}/users/17` );
+			expect( jasmine.Ajax.requests.mostRecent().method ).toBe( 'GET' );
+			jasmine.Ajax.requests.mostRecent().respondWith({
+				"status": 404,
+				"contentType": 'text/plain',
+				"responseText": "User 17 not found."
+			});
 		});
 
 	});
@@ -295,4 +307,3 @@ describe( 'REST Service datastore class', () => {
 	// });
 
 });
-

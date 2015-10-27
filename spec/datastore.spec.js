@@ -1,15 +1,11 @@
-/**
- * Datastore tests
- *
- * jshint undef: true, unused: true, esnext: true
- * global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console
- */
+/* -*- Criteria tests -*- */
+
+ /* global it, describe, expect, beforeEach, console */
 'use strict';
 
-import Promise from 'bluebird';
 import 'babel/polyfill';
 
-import {Model, Criteria, Datastore, NotImplementedError} from '../src/index';
+import {Model, Criteria, Datastore} from '../src/index';
 
 
 class Profile extends Model {}
@@ -115,4 +111,3 @@ describe( 'Datastore class', () => {
 	});
 
 });
-

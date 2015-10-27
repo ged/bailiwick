@@ -13,9 +13,9 @@ module.exports = function(config) {
 			loadFiles: [
 				'spec/**/*.spec.js'
 			],
-			serveFiles : [
+			serveFiles: [
 				'src/**/*.js',
-				'spec/helpers.js',
+				'spec/helpers.js'
 			]
 		},
 		exclude: [],
@@ -39,7 +39,7 @@ module.exports = function(config) {
 		reporters: ['story'],
 		port: 9876,
 		colors: true,
-		logLevel: config.LOG_DEBUG,
+		logLevel: config.LOG_INFO,
 		autoWatch: true,
 		client: {
 			captureConsole: true

@@ -1,43 +1,24 @@
-/* -*- javascript -*-
- * jshint undef: true, unused: true, esnext: true
- */
+/* -*- javascript -*- */
 "use strict";
 
 import Promise from 'bluebird';
 import inflection from 'inflection';
 
-import {monadic, validator} from './utils';
-
 import {ResultSet} from './result-set';
-import {Criteria} from './criteria';
 import {ValidationErrors} from './errors';
 
-
-/**
- * Decorator: @throughCallbacks
- * Marks the decorated method as one that is passed through the onRequest/onResponse and
- * equivalent error callbacks.
+/*
+ * Use symbols for model object properties so they don't collide with
+ * data properties.
  */
-function throughCallbacks( target, name, descriptor ) {
-	var methodBody = descriptor.value;
-	descriptor.value = function( ...args ) {
-		console.debug( "Calling %s through request callbacks.", methodBody.name );
-		let requestCallbacks = target.
-			throughCallbacks( 'request', args ).
-			catch( err => target.throughCallbacks('requestError', err) );
-
-		return requestCallbacks.then( () => {
-			let response = methodBody.apply( this, args );
-			return response.
-				then( results => {
-					console.debug( "Returning %o through response callbacks.", results );
-					return target.throughCallbacks('response', results);
-				}).
-				catch( err => target.throughCallbacks('responseError', err) );
-			});
-	};
-}
-
+const NEW_OBJECT         = Symbol.for("newObject"),
+      DATA               = Symbol.for("data"),
+      DIRTY_FIELDS       = Symbol.for("dirtyFields"),
+      ASSOCIATIONS_CACHE = Symbol.for("associationsCache"),
+      DATASTORE          = Symbol.for("datastore"),
+      VALIDATORS         = Symbol.for("validators"),
+      ASSOCIATIONS       = Symbol.for("associations"),
+      VALUE_STRING       = Symbol.for("valueString");
 
 
 /**
@@ -52,10 +33,10 @@ export class Model {
 	 * Get the Map of associations defined for the class.
 	 */
 	static get associations() {
-		if ( !this.associations ) {
-			this.associations = new Map();
+		if ( !this[ASSOCIATIONS] ) {
+			this[ ASSOCIATIONS ] = new Map();
 		}
-		return this.associations;
+		return this[ ASSOCIATIONS ];
 	}
 
 
@@ -63,10 +44,10 @@ export class Model {
 	 * Get the Map of validators defined for the class.
 	 */
 	static get validators() {
-		if ( !this.validators ) {
-			this.validators = new Map();
+		if ( !this[VALIDATORS] ) {
+			this[ VALIDATORS ] = new Map();
 		}
-		return this.validators;
+		return this[ VALIDATORS ];
 	}
 
 
@@ -85,13 +66,11 @@ export class Model {
 	 *
 	 */
 	static get datastore() {
-		var datastore = this._datastore;
-
-		if ( datastore === undefined ) {
+		if ( !this[DATASTORE] ) {
 			throw Error( `No datastore has been set for ${this}` );
 		}
 
-		return datastore;
+		return this[ DATASTORE ];
 	}
 
 
@@ -100,77 +79,7 @@ export class Model {
 	 */
 	static set datastore( datastore ) {
 		console.info( `Datastore for ${this} set to ${datastore}` );
-		this._datastore = datastore;
-	}
-
-
-	/*
-	 * Callbacks API
-	 */
-
-	/**
-	 *
-	 */
-	static get callbacks() {
-		if ( !this._callbacks ) {
-			this._callbacks = new Map();
-			this._callbacks.set( 'request', new Set() );
-			this._callbacks.set( 'requestError', new Set() );
-			this._callbacks.set( 'response', new Set() );
-			this._callbacks.set( 'responseError', new Set() );
-		}
-
-		return this._callbacks;
-	}
-
-
-	/**
-	 *
-	 */
-	static throughCallbacks( kind, ...args ) {
-		var hooks = Array.from( this.callbacks.get(kind) );
-		console.debug( "Filtering args %o through %d %s callbacks.", args, hooks.length, kind );
-
-		return Promise.reduce( hooks, (args, hook, index, len) => {
-			console.debug( `Running ${kind} hook ${index} of ${len}` );
-			return hook.call( args );
-		}, args );
-	}
-
-
-	/**
-	 *
-	 */
-	static onRequest( callback ) {
-		var callbacks = this.callbacks.get( 'request' )
-		callbacks.add( callback );
-	}
-
-
-	/**
-	 *
-	 */
-	static onRequestError( callback ) {
-		var callbacks = this.callbacks.get( 'requestError' )
-		callbacks.add( callback );
-	}
-
-
-	/**
-	 *
-	 */
-	static onResponse( callback ) {
-		var callbacks = this.callbacks.get( 'response' )
-		callbacks.add( callback );
-	}
-
-
-	/**
-	 *
-	 */
-	static onResponseError( callback ) {
-		var callbacks = this.callbacks.get( 'responseError' )
-		callbacks.add( callback );
+		this[ DATASTORE ] = datastore;
 	}
 
 
@@ -223,9 +132,8 @@ export class Model {
 	/**
 	 * Get instances of the model.
 	 */
-	// @throughCallbacks
-	static get( id_or_criteria=null ) {
-		return this.datastore.get( this, id_or_criteria ).
+	static get( idOrCriteria=null ) {
+		return this[ DATASTORE ].get( this, idOrCriteria ).
 			then( data => this.fromData(data) );
 	}
 
@@ -248,12 +156,12 @@ export class Model {
 	 * if {isNew} is true.
 	 */
 	constructor( data={}, isNew=true ) {
-		this.newObject = isNew;
-		this.data = data;
-		this.dirtyFields = new Set();
-		this.associationCache = new Map();
+		this[ NEW_OBJECT ] = isNew;
+		this[ DATA ] = data;
+		this[ DIRTY_FIELDS ] = new Set();
+		this[ ASSOCIATIONS_CACHE ] = new Map();
 
-		this.datastore = this.constructor.datastore;
+		this[ DATASTORE ] = this.constructor.datastore;
 
 		// console.debug( `Created a new %s: %o`, this.constructor.name, data );
 		this.defineAttributes( data );
@@ -285,7 +193,9 @@ export class Model {
 		if ( this.isNew() ) {
 			return this.create();
 		} else {
-			if ( !this.isDirty() ) return Promise.resolve( this );
+			if ( !this.isDirty() ) {
+                return Promise.resolve( this );
+            }
 			return this.update();
 		}
 	}
@@ -293,22 +203,23 @@ export class Model {
 
 
 	/**
-	 *
+	 * Create the model object in the object's store and return a Promise that
+     * will resolve to the result.
 	 */
 	create() {
 		return this.validate().
 			then( () => {
-				return this.datastore.store( this.constructor, this.data );
+				return this[ DATASTORE ].store( this.constructor, this[ DATA ] );
 			}).then( result => {
 				if ( typeof result === 'object' ) {
-					Object.assign( this.data, result );
+					Object.assign( this[ DATA ], result );
 				} else {
-					this.data['id'] = result;
+					this[ DATA ]['id'] = result; // eslint-disable-line dot-notation
 				}
 
-				this.newObject = false;
-				this.dirtyFields.clear();
-				this.defineAttributes( this.data );
+				this[ NEW_OBJECT ] = false;
+				this[ DIRTY_FIELDS ].clear();
+				this.defineAttributes( this[DATA] );
 
 				return this;
 			});
@@ -316,22 +227,23 @@ export class Model {
 
 
 	/**
-	 *
+	 * Update any dirty fields in the model object in the object's store with values from the object
+     * and return a Promise that will resolve to the result.
 	 */
 	update() {
 		var dirtyData = {};
-		for ( var field of this.dirtyFields ) {
-			dirtyData[ field ] = this.data[ field ];
+		for ( var field of this[ DIRTY_FIELDS ] ) {
+			dirtyData[ field ] = this[ DATA ][ field ];
 		}
 
 		return this.validate().
 			then( () => {
-				return this.datastore.update( this.constructor, this.id, dirtyData );
+				return this[ DATASTORE ].update( this.constructor, this.id, dirtyData );
 			}).then( mergedData => {
-				Object.assign( this.data, mergedData );
-				this.newObject = false;
-				this.dirtyFields.clear();
-				this.defineAttributes( this.data );
+				Object.assign( this[ DATA ], mergedData );
+				this[ NEW_OBJECT ] = false;
+				this[ DIRTY_FIELDS ].clear();
+				this.defineAttributes( this[ DATA ] );
 
 				return this;
 			});
@@ -343,10 +255,10 @@ export class Model {
 	 */
 	delete() {
 		if ( this.id ) {
-			return this.datastore.remove( this.constructor, this.id ).
+			return this[ DATASTORE ].remove( this.constructor, this.id ).
 				then( () => this );
 		} else {
-			return Promise.resolve( this.data );
+			return Promise.resolve( this[ DATA ] );
 		}
 	}
 
@@ -359,13 +271,11 @@ export class Model {
 	 * Data property reader
 	 */
 	getValue( name ) {
-		// console.debug(`Getting ${name}`);
-		let association = `${name}Object`;
-
-		if ( typeof this[association] === 'function' ) {
-			return this[association]( this.data[name] );
+		if ( this.constructor.associations.has(name) ) {
+			let fn = this.constructor.associations.get( name );
+            return fn( this[DATA][name] );
 		} else {
-			return this.data[ name ];
+			return this[ DATA ][ name ];
 		}
 	}
 
@@ -375,8 +285,10 @@ export class Model {
 	 */
 	setValue( name, value ) {
 		// console.debug(`Setting ${name} to ${value}`);
-		if ( this.data[name] !== value ) this.dirtyFields.add( name );
-		this.data[ name ] = value;
+		if ( this[ DATA ][name] !== value ) {
+            this[ DIRTY_FIELDS ].add( name );
+        }
+		this[ DATA ][ name ] = value;
 	}
 
 
@@ -384,16 +296,18 @@ export class Model {
 	 *
 	 */
 	defineAttributes( attrs ) {
-		var self = this;
+		let self = this;
 
 		for ( let name in attrs ) {
 			if ( !Object.hasOwnProperty(self, name) ) {
+                /* eslint-disable no-loop-func */
 				Object.defineProperty( self, name, {
 					configurable: true,
 					enumerable: true,
 					get: () => { return self.getValue(name); },
 					set: newval => { self.setValue(name, newval); }
 				});
+                /* eslint-enable no-loop-func */
 			} else {
 				console.debug( `Already has a ${name} property.` );
 			}
@@ -408,7 +322,7 @@ export class Model {
 	 * @return {Boolean}
 	 */
 	isDirty() {
-		return ( this.isNew() || this.dirtyFields.size !== 0 )
+		return ( this.isNew() || this[ DIRTY_FIELDS ].size !== 0 );
 	}
 
 
@@ -418,7 +332,7 @@ export class Model {
 	 * @return {Boolean}
 	 */
 	isNew() {
-		return this.newObject;
+		return this[ NEW_OBJECT ];
 	}
 
 
@@ -426,8 +340,8 @@ export class Model {
 	 * Mark the object as clean (i.e., not requiring saving).
 	 */
 	markClean() {
-		this.newObject = false;
-		this.dirtyFields.clear();
+		this[ NEW_OBJECT ] = false;
+		this[ DIRTY_FIELDS ].clear();
 	}
 
 	/**
@@ -442,6 +356,7 @@ export class Model {
 			var promises = [];
 
 			for ( let [field, validationMethod] of this.validators ) {
+                console.debug( `Adding validation promise for ${field}` );
 				promises.push( validationMethod.apply(this) );
 			}
 
@@ -470,8 +385,9 @@ export class Model {
 	 * toString() API -- return a human-readable representation of the object.
 	 */
 	get [Symbol.toStringTag]() {
-		var dirtyMark = this.isDirty() ? ' ~' : '';
-		return `${this.constructor.name} values={${this._valueString()}}${dirtyMark}`;
+		let dirtyMark = this.isDirty() ? ' ~' : '';
+        let valueString = this[ VALUE_STRING ]();
+		return `${this.constructor.name} values={${valueString}}${dirtyMark}`;
 	}
 
 
@@ -479,14 +395,12 @@ export class Model {
 	 * Return the object's data as string containing fields and values suitable
 	 * for debugging.
 	 */
-	_valueString() {
+	[ VALUE_STRING ]() {
 		var values = [];
-		for ( let field in this.data ) {
-			let val = this.data[ field ];
+		for ( let field in this[ DATA ] ) {
+			let val = this[ DATA ][ field ];
 			values.push( `${field}: ${val}` );
 		}
 		return values.join( ', ' );
 	}
 }
-
-

@@ -1,10 +1,7 @@
 /* -*- javascript -*- */
 'use strict';
 
-import Promise from 'bluebird';
 import {Datastore} from './datastore';
-
-import {VERSION} from './index';
 import {Xhr} from './rest-service/xhr';
 
 export * from './rest-service/plugins';
@@ -39,7 +36,8 @@ export class RESTService extends Datastore {
 
 
 	/**
-	 * 
+	 * Fetch a single instance of the specified {type} with the given {id}, and return
+	 * a Promise that resolves to it.
 	 */
 	getInstance( type, id ) {
 		var uri = type.uri;
@@ -49,7 +47,9 @@ export class RESTService extends Datastore {
 
 
 	/**
-	 * 
+	 * Fetch a collection of the specified object {type} that matches the specified
+	 * {criteria} (a Criteria object), and return a Promise that resolves to the resulting
+	 * Array.
 	 */
 	getCollection( type, criteria ) {
 		var uri = criteria.location || type.uri;
@@ -61,10 +61,11 @@ export class RESTService extends Datastore {
 
 
 	/**
-	 * 
+	 * Turn the specified {criteria} into a Map of parameters suitable for passing in an Xhr
+	 * request.
 	 */
 	makeParamsFromCriteria( criteria ) {
-		if ( !criteria ) return null;
+		if ( !criteria ) { return null; }
 
 		var params = new Map();
 
@@ -73,15 +74,16 @@ export class RESTService extends Datastore {
 			params.set( key, val );
 		}
 
-		if ( criteria.maxResultCount ) params.set( 'limit', criteria.maxResultCount );
-		if ( criteria.resultOffset ) params.set( 'offset', criteria.resultOffset );
+		if ( criteria.maxResultCount ) { params.set( 'limit', criteria.maxResultCount ); }
+		if ( criteria.resultOffset ) { params.set( 'offset', criteria.resultOffset ); }
 
 		return params;
 	}
 
 
 	/**
-	 * 
+	 * Store a new instance of the specified {type} with the given {data} via the REST service,
+	 * and return a Promise that resolves to the result.
 	 */
 	store( type, data ) {
 		var uri = type.uri;
@@ -91,7 +93,8 @@ export class RESTService extends Datastore {
 
 
 	/**
-	 * 
+	 * Update the instance of the specified {type} with the given {id} via the REST
+	 * service using the specified {data}, and return a Promise that resolves to the result.
 	 */
 	update( type, id, data ) {
 		var uri = `${type.uri}/${id}`;
@@ -100,7 +103,8 @@ export class RESTService extends Datastore {
 
 
 	/**
-	 * 
+	 * Replace the data for the instance of the specified {type} with the given {id} via the REST
+	 * service using the specified {data}, and return a Promise that resolves to the result.
 	 */
 	replace( type, id, data ) {
 		var uri = `${type.uri}/${id}`;
@@ -109,7 +113,8 @@ export class RESTService extends Datastore {
 
 
 	/**
-	 * 
+	 * Delete the instance of the specified {type} with the given {id} via the REST service and
+	 * return a Promise that resolves to the result.
 	 */
 	remove( type, id ) {
 		var uri = `${type.uri}/${id}`;
@@ -118,4 +123,3 @@ export class RESTService extends Datastore {
 
 
 }
-
