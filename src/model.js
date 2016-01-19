@@ -133,7 +133,7 @@ export class Model {
 	 * Get instances of the model.
 	 */
 	static get( idOrCriteria=null ) {
-		return this[ DATASTORE ].get( this, idOrCriteria ).
+		return this.datastore.get( this, idOrCriteria ).
 			then( data => this.fromData(data) );
 	}
 
@@ -251,7 +251,8 @@ export class Model {
 
 
 	/**
-	 *
+	 * Delete the object from the object's store and return a Promise that will resolve to the
+     * result.
 	 */
 	delete() {
 		if ( this.id ) {
@@ -293,7 +294,7 @@ export class Model {
 
 
 	/**
-	 *
+	 * Define attribute accessors for the specified {attrs}.
 	 */
 	defineAttributes( attrs ) {
 		let self = this;
@@ -344,6 +345,7 @@ export class Model {
 		this[ DIRTY_FIELDS ].clear();
 	}
 
+
 	/**
 	 * Validate the model object by calling its validation methods.
 	 *
@@ -392,7 +394,7 @@ export class Model {
 
 
 	/**
-	 * Return the object's data as string containing fields and values suitable
+	 * Return the object's data as a String containing fields and values suitable
 	 * for debugging.
 	 */
 	[ VALUE_STRING ]() {

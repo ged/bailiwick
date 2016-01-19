@@ -62,18 +62,16 @@
     "dependencies": {
       "bluebird": "npm:bluebird@^2.9.25",
       "inflection": "npm:inflection@^1.7.0",
+      "jasmine": "npm:jasmine@^2.3.2",
+      "jasmine-core": "npm:jasmine-core@^2.3.4",
       "parse-headers": "npm:parse-headers@^2.0.0"
     },
     "devDependencies": {
       "babel": "npm:babel-core@^5.1.13",
       "babel-runtime": "npm:babel-runtime@^5.1.13",
-      "core-js": "npm:core-js@^0.9.4"
+      "core-js": "npm:core-js@^1.2.6"
     },
-    "overrides": {
-      "npm:httpplease@0.16.1": {
-        "format": "cjs"
-      }
-    }
+    "overrides": {}
   },
   "dependencies": {}
 }
