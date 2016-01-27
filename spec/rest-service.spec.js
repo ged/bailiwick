@@ -6,7 +6,6 @@ import 'babel/polyfill';
 
 import {Model, RESTService} from '../src/index';
 import {RequestError} from '../src/errors';
-import {Xhr} from '../src/rest-service/xhr';
 import {customMatchers} from './helpers';
 
 
@@ -30,11 +29,14 @@ describe( 'REST Service datastore class', () => {
 
 	describe( 'get', () => {
 
-		it( 'has an Xhr object set up with its baseUrl', () => {
-			expect( datastore.http instanceof Xhr ).toBeTruthy();
-			expect( datastore.http.options.baseUrl ).toEqual( baseUrl );
+		it( 'knows what its baseUrl is', () => {
+			expect( datastore.baseUrl ).toEqual( baseUrl );
 		});
 
+
+		it( 'has a fetch client', () => {
+			expect( datastore.httpClient ).toEqual( fetch );
+		});
 
 		it( 'fetches the object with the specified ID', done => {
 			var testData = { id: 17, firstName: "Michael", lastName: "Carthwaite" };

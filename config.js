@@ -18,10 +18,11 @@ System.config({
 
 System.config({
   "map": {
-    "babel": "npm:babel-core@5.8.33",
-    "babel-runtime": "npm:babel-runtime@5.8.29",
+    "babel": "npm:babel-core@5.8.34",
+    "babel-runtime": "npm:babel-runtime@5.8.34",
     "bluebird": "npm:bluebird@2.10.2",
     "core-js": "npm:core-js@0.9.18",
+    "fetch": "github:github/fetch@0.11.0",
     "inflection": "npm:inflection@1.7.2",
     "jasmine": "npm:jasmine@2.3.2",
     "jasmine-core": "npm:jasmine-core@2.3.4",
@@ -64,13 +65,19 @@ System.config({
     "npm:babel-runtime@5.8.29": {
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
+    "npm:babel-runtime@5.8.34": {
+      "process": "github:jspm/nodelibs-process@0.1.2"
+    },
     "npm:bluebird@2.10.2": {
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
     "npm:buffer@3.5.2": {
       "base64-js": "npm:base64-js@0.0.8",
+      "child_process": "github:jspm/nodelibs-child_process@0.1.0",
+      "fs": "github:jspm/nodelibs-fs@0.1.2",
       "ieee754": "npm:ieee754@1.1.6",
-      "is-array": "npm:is-array@1.0.1"
+      "is-array": "npm:is-array@1.0.1",
+      "process": "github:jspm/nodelibs-process@0.1.2"
     },
     "npm:core-js@0.9.18": {
       "fs": "github:jspm/nodelibs-fs@0.1.2",

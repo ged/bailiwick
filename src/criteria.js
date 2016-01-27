@@ -30,7 +30,7 @@ export class Criteria {
 
 
 	clone() {
-		var newObj = Reflect.construct( this.constructor );
+		var newObj = Reflect.construct( this.constructor, [{}] );
 		newObj.filterClauses = new Map( this.filterClauses );
 		newObj.maxResultCount = this.maxResultCount;
 		newObj.resultOffset = this.resultOffset;

@@ -14,20 +14,6 @@ export class NotImplementedError extends Error {
 
 export class HTTPError extends Error {
 
-	static fromXMLHttpRequest( xhr ) {
-		if ( !xhr.status || xhr.status === 0 ) { return null; }
-		switch( Math.floor(xhr.status / 100) ) {
-		case 4:
-			return new RequestError( xhr.status, xhr.statusText, xhr.response );
-		case 5:
-			return new ServerError( xhr.status, xhr.statusText, xhr.response );
-		default:
-			var msg = `Oops, don't know how to handle a ${xhr.status} error.`;
-			console.error( msg );
-			return new HTTPError( xhr.status, xhr.statusText, xhr.response );
-		}
-	}
-
 	constructor( status, statusText, body ) {
 		super( `${status} ${statusText}` );
 		this.status = status;

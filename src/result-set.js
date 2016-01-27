@@ -50,13 +50,8 @@ export class ResultSet {
 	 * @return {ResultSet} the cloned result set
 	 */
 	clone() {
-		console.debug( "Cloning result set from: %o (%o) with %o.", this, this.constructor, Reflect.construct );
-		var newObj = Reflect.construct( this.constructor );
-		console.debug( "Reflected: %o", newObj );
+		var newObj = Reflect.construct( this.constructor, [this.criteria] );
 		newObj.model = this.model;
-		console.debug( "Set the model to: %o", this.model );
-		newObj.criteria = this.criteria;
-		console.debug( "Set the criteria to: %o", this.criteria );
 		return newObj;
 	}
 
