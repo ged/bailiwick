@@ -50,9 +50,7 @@ export class ResultSet {
 	 * @return {ResultSet} the cloned result set
 	 */
 	clone() {
-		var newObj = Reflect.construct( this.constructor, [this.criteria] );
-		newObj.model = this.model;
-		return newObj;
+		return Reflect.construct( this.constructor, [this.model, this.criteria] );
 	}
 
 
