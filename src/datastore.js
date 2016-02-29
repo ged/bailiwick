@@ -16,7 +16,7 @@ import {Criteria} from './criteria';
 export function datastore( type, ...args ) {
 	return function decorator( target ) {
 		var ds = Reflect.construct( type, args );
-		console.debug( "Setting datastore of ", target, " to ", ds );
+		// console.debug( "Setting datastore of ", target, " to ", ds );
 		target.datastore = ds;
 	};
 }
@@ -58,10 +58,10 @@ export class Datastore {
 	get( type, criteria=null ) {
 		// Collection API if the criteria is a Criteria
 		if ( criteria instanceof Criteria ) {
-			console.debug( "Fetch with criteria!" );
+			// console.debug( "Fetch with criteria!" );
 			return this.getCollection( type, criteria );
 		} else {
-			console.debug( "Fetch by ID!" );
+			// console.debug( "Fetch by ID!" );
 			return this.getInstance( type, criteria );
 		}
 	}

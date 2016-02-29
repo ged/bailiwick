@@ -18,6 +18,7 @@ class User extends Model {
 
 	@validator( 'firstName' )
 	validateFirstName() {
+		console.debug( "validateFirstName called!" );
 		if ( this.firstName === 'Nate' ) {
 			throw "no Nates allowed.";
 		} else if ( !this.firstName || this.firstName === '' ) {
@@ -27,6 +28,7 @@ class User extends Model {
 
 	@validator( 'lastName' )
 	validateLastName() {
+		console.debug( "validateLastName called!" );
 		if ( !this.lastName || this.lastName === '' ) { throw "missing"; }
 	}
 
@@ -136,9 +138,26 @@ describe( 'Model class', () => {
 			var failure = jasmine.createSpy( 'promise rejected' );
 
 			var promise = user.validate();
-			// expect( promise ).toBeA( Promise );
+			expect( promise ).toBeA( Promise );
 
 			promise.then( success ).catch( failure ).finally( () => {
+				expect( success ).toHaveBeenCalled();
+				expect( failure ).not.toHaveBeenCalled();
+				done();
+			} );
+		} );
+
+		it( 'returns a Promise that rejects if the object is valid', done => {
+			var success = jasmine.createSpy( 'promise resolved' );
+			var failure = jasmine.createSpy( 'promise rejected' );
+
+			user.firstName = 'Nate'; // No Nates allowed
+			user.lastName = null; // missing
+
+			var promise = user.validate();
+			expect( promise ).toBeA( Promise );
+
+			promise.then( failure ).catch( success ).finally( () => {
 				expect( success ).toHaveBeenCalled();
 				expect( failure ).not.toHaveBeenCalled();
 				done();

@@ -78,7 +78,7 @@ export class Model {
 	 * Set the datastore associated with this model.
 	 */
 	static set datastore( datastore ) {
-		console.info( `Datastore for ${this} set to ${datastore}` );
+		// console.debug( `Datastore for ${this} set to ${datastore}` );
 		this[ DATASTORE ] = datastore;
 	}
 
@@ -353,31 +353,37 @@ export class Model {
 	 *   validation failures if not.
 	 */
 	validate() {
-		return new Promise( (resolve, reject) => {
-			this.errors = new ValidationErrors();
-			var promises = [];
+		this.errors = new ValidationErrors();
+		var promises = [];
 
-			for ( let [field, validationMethod] of this.validators ) {
-                console.debug( `Adding validation promise for ${field}` );
-				promises.push( validationMethod.apply(this) );
-			}
+		for ( let [field, validationMethod] of this.validators ) {
+            console.debug( `Adding validation promise for ${field}` );
+			let pr = Promise.try( () => validationMethod.call(this) );
+			promises.push( pr );
+		}
 
-			Promise.settle( promises ).then( results => {
-				results.
-					filter( promise => promise.isRejected() ).
-					forEach( promise => {
-						var [field, reason] = promise.reason();
-						this.errors.add( field, reason );
-						console.debug( `Validation failed for ${field}: ${reason}` );
-					});
-
+		// Wait for all validation promises to settle, then add errors
+		// for those which were rejected.
+		return Promise.
+			all( promises.map(pr => pr.reflect()) ).
+			each( promise => {
+				console.debug( "Settled promise inspection: ", promise );
+			}).
+			filter( promise => promise.isRejected() ).
+			each( promise => {
+				var [field, reason] = promise.reason();
+				this.errors.add( field, reason );
+				console.debug( `Validation failed for ${field}: ${reason}` );
+			}).
+			then( () => {
+				console.debug( "Resolved validation promise, errors is: ", this.errors );
 				if ( this.errors.isEmpty() ) {
-					resolve( true );
+					return Promise.resolve( true );
 				} else {
-					reject( "Validation failed." );
+					let err = new ValidationError( `${this.errors.length} validation failures.` );
+					return Promise.reject( err );
 				}
 			});
-		});
 	}
 
 

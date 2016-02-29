@@ -27,6 +27,9 @@ export class HTTPError extends Error {
 export class RequestError extends HTTPError {}
 export class ServerError extends HTTPError {}
 
+export class ValidationError extends Error {}
+
+
 /**
  *
  */
