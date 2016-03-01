@@ -67,7 +67,7 @@
   },
   "dependencies": {
     "bluebird": "npm:bluebird@^3.3.3",
-    "fetch": "github:github/fetch%40%5E0.11.0",
+    "fetch": "github:github/fetch@^0.11.0",
     "inflection": "npm:inflection@^1.8.0"
   }
 }
