@@ -1,5 +1,3 @@
-build/
-dist/
 jspm_packages/
 node_modules/
 coverage/
