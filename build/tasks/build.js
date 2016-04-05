@@ -1,58 +1,42 @@
 var gulp        = require( 'gulp' );
+var gutil       = require( 'gulp-util' );
+var debug       = require( 'gulp-debug' );
 var runSequence = require( 'run-sequence' );
+var changed     = require( 'gulp-changed' );
+var plumber     = require( 'gulp-plumber' );
 var babel       = require( 'gulp-babel' );
 var sourcemaps  = require( 'gulp-sourcemaps' );
+var assign      = Object.assign || require( 'object.assign' );
+var prefixer    = require( 'gulp-autoprefixer' );
+var concat      = require( "gulp-concat" );
+var debug       = require( 'gulp-debug' );
+var notify      = require( 'gulp-notify' );
 
-var paths           = require( '../paths' );
+var paths = require( '../paths' );
+var compilerOptions = require( '../babel-options' );
 
-var assign = Object.assign || require( 'object.assign' );
+var plumberErrorHandler = {
+	errorHandler: function(err) {
+		gutil.log( err );
+		notify.onError( 'Error: <%= error.message %>' );
+	}
+};
 
-var babelOptions = {
-    presets: ["stage-1"],
-    plugins: [
-		"transform-decorators-legacy",
-		"transform-runtime"
-	]
-}
-
-
-
-gulp.task('build-es6', function () {
-  return gulp.src(paths.source).
-	pipe(gulp.dest(paths.output + 'es6'));
-});
-
-gulp.task('build-commonjs', function () {
-  var plugins = babelOptions.plugins.concat('transform-es2015-modules-commonjs');
-  return gulp.src(paths.source).
-	pipe(sourcemaps.init()).
-	pipe(babel(assign({}, babelOptions, {plugins: plugins}))).
-	pipe(sourcemaps.write()).
-	pipe(gulp.dest(paths.output + 'commonjs'));
-});
-
-gulp.task('build-amd', function () {
-  var plugins = babelOptions.plugins.concat('transform-es2015-modules-amd');
-  return gulp.src(paths.source).
-	pipe(sourcemaps.init()).
-	pipe(babel(assign({}, babelOptions, {plugins: plugins}))).
-	pipe(sourcemaps.write()).
-	pipe(gulp.dest(paths.output + 'amd'));
-});
-
-gulp.task('build-system', function () {
-  var plugins = babelOptions.plugins.concat('transform-es2015-modules-systemjs');
-  return gulp.src(paths.source).
-	pipe(sourcemaps.init()).
-	pipe(babel(assign({}, babelOptions, {plugins: plugins}))).
-	pipe(sourcemaps.write()).
-	pipe(gulp.dest(paths.output + 'system'));
+gulp.task('build-system', function() {
+	return gulp.src( paths.source ).
+		pipe( plumber(plumberErrorHandler) ).
+		pipe( changed(paths.output, {extension: '.js'}) ).
+		pipe( sourcemaps.init({loadMaps: true}) ).
+		pipe( debug({title: 'build-system'}) ).
+		pipe( babel(assign({}, compilerOptions.system())) ).
+		pipe( sourcemaps.write({includeContent: false, sourceRoot: '/lib'}) ).
+		pipe( gulp.dest(paths.output) );
 });
 
 gulp.task('build', function(callback) {
-  return runSequence(
-    'clean',
-    ['build-es6', 'build-commonjs', 'build-amd', 'build-system'],
-    callback
-  );
+	return runSequence(
+		'clean',
+		'build-system',
+		callback
+	);
 });

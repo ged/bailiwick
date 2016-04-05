@@ -3,8 +3,6 @@
  /* global it, describe, expect, console */
 'use strict';
 
-import 'babel/polyfill';
-
 import {Criteria} from '../src/index';
 
 

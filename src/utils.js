@@ -1,6 +1,19 @@
 /* -*- javascript -*- */
 "use strict";
 
+const DEBUGGING_ENABLED = false;
+
+
+/**
+ * Enable/disable console debugging en masse if DEBUGGING_ENABLED is set.
+ */
+export function debug( ...args ) {
+	if ( DEBUGGING_ENABLED ) {
+		console.debug( ...args );
+	}
+}
+
+
 /**
  * Decorator: @monadic
  *
@@ -10,9 +23,9 @@
 export function monadic( target, name, descriptor ) {
 	var realfunc = descriptor.value;
 	descriptor.value = function( ...args ) {
-		console.debug( `Cloning for monadic method ${name}` );
+		debug( `Cloning for monadic method ${name}` );
 		var dup = this.clone();
-		console.debug( "  cloned: %o... applying method", dup );
+		debug( "  cloned: %o... applying method", dup );
 		realfunc.apply( dup, args );
 		return dup;
 	};
@@ -40,15 +53,18 @@ export function monadic( target, name, descriptor ) {
  *     objects
  */
 export function mapify( obj ) {
-	if ( obj instanceof Map ) { return obj; }
-
-	let m = new Map();
-
-	if ( typeof obj !== 'object' || obj === null ) {
+	// FIXME: 'instanceof' in this doesn't work (but it does in the Chrome console), 
+	//        but looking at the constructor name does for some reason
+	// if ( obj instanceof Map || typeof obj !== 'object' ) {
+	if ( typeof obj !== 'object' || obj.constructor.name === 'Map' ) {
+		debug( "Nothing to mapify!" );
 		return obj;
 	}
 
+	debug( "Mapifying ", obj );
+
 	if ( obj instanceof Array ) {
+		debug( "It's an Array, mapifying its members." );
 		let newArr = [];
 		for ( let x of obj ) {
 			newArr.push( mapify(x) );
@@ -56,13 +72,8 @@ export function mapify( obj ) {
 		return newArr;
 	}
 
-	for (let k in obj) {
-		if ( obj.hasOwnProperty(k) ) {
-			m.set( k, mapify(obj[k]) );
-		}
-	}
-
-	return m;
+	debug( `It's a ${typeof obj}, using Object.entries.` );
+	return new Map( Object.entries(obj) );
 }
 
 
@@ -94,3 +105,4 @@ export function demapify( map ) {
 
 	return obj;
 }
+

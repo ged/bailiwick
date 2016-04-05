@@ -1,76 +1,63 @@
 /* -*- javascript -*- */
 "use strict";
 
-import 'babel/polyfill';
+import ExtendableError from 'es6-error';
 
-export class NotImplementedError extends Error {
+
+export class NotImplementedError extends ExtendableError {
 
 	constructor( methodname ) {
-		super();
-		this.message = `No implementation provided for ${methodname}(...)`;
+		super(`No implementation provided for ${methodname}(...)`);
 	}
 
 }
 
-export class HTTPError extends Error {
+export class HTTPError extends ExtendableError {
 
-	constructor( status, statusText, body ) {
-		super( `${status} ${statusText}` );
-		this.status = status;
-		this.statusText = statusText;
-		this.body = body;
-	}
-
-}
+	status = 500;
+	statusText = "Unknown error";
+	response = null;
 
 
-export class RequestError extends HTTPError {}
-export class ServerError extends HTTPError {}
-
-export class ValidationError extends Error {}
-
-
-/**
- *
- */
-export class ValidationErrors {
-
-	constructor() {
-		this.failures = new Map();
-	}
-
-
-	get fields() {
-		var fields = [];
-		// :FIXME: Use an Array comprehension once those are stable
-		for ( let field of this.failures.keys() ) fields.push( field );
-
-		return fields;
-	}
-
-
-	get fullMessages() {
-		var messages = [];
-		for( let [field, reason] of this.failures ) {
-			messages.push( `${field} ${reason}` );
+	static fromResponse( response ) {
+		if ( response.ok ) {
+			raise `Expected an error response, but got: ${response}`;
 		}
 
-		return messages;
+		switch( Math.floor(response.status / 100) ) {
+			case 4:
+				return new RequestError( response );
+				break;
+			case 5:
+				return new ServerError( response );
+				break;
+			default:
+				return new HTTPError( response );
+		}
 	}
 
 
-	get size() {
-		return this.failures.size;
+	constructor( response ) {
+		super( `[${response.status}] ${response.statusText}` );
+		this.status = response.status;
+		this.statusText = response.statusText;
+		this.response = response;
 	}
 
 
-	add( field, reason ) {
-		this.failures.set( field, reason );
-	}
-
-
-	isEmpty() {
-		return ( this.size === 0 );
+	/**
+	 * toString() API -- return a human-readable representation of the object.
+	 */
+	get [Symbol.toStringTag]() {
+		return `<${this.constructor.name} [${this.status}]: ${this.statusText}>`;
 	}
 
 }
+
+
+// 4xx responses
+export class RequestError extends HTTPError {}
+
+// 5xx responses
+export class ServerError extends HTTPError {}
+

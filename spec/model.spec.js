@@ -7,10 +7,9 @@
 "use strict";
 
 import Promise from 'bluebird';
-import 'babel/polyfill';
 
 import {NullDatastore, Model, ResultSet, Criteria} from '../src/index';
-import {validator} from '../src/validations';
+import {validator, ValidationError} from '../src/validations';
 import {customMatchers} from './helpers';
 
 
@@ -20,24 +19,30 @@ class User extends Model {
 	validateFirstName() {
 		console.debug( "validateFirstName called!" );
 		if ( this.firstName === 'Nate' ) {
-			throw "no Nates allowed.";
+			throw new ValidationError( "no Nates allowed." );
 		} else if ( !this.firstName || this.firstName === '' ) {
-			throw "missing";
+			throw new ValidationError( "missing" );
 		}
 	}
 
 	@validator( 'lastName' )
 	validateLastName() {
 		console.debug( "validateLastName called!" );
-		if ( !this.lastName || this.lastName === '' ) { throw "missing"; }
+		if ( !this.lastName || this.lastName === '' ) {
+			throw new ValidationError( "missing" );
+		}
 	}
 
 	// @validator( 'email' )
 	// validateEmail() {
-	// 	return new Promise( (resolve, reject) => {
-	// 		if ( this.email === '' ) reject( 'missing' );
-	// 		this.constructor.filter({ email: this.email })
-	// 	});
+	// 	if ( this.email === '' ) { return Promise.reject('missing'); }
+	// 	return this.constructor.get({ email: this.email }).
+	// 		then( response => {
+	// 			return Promise.reject( "User already exists" );
+	// 		}).
+	// 		catch( reason => {
+	// 			return Promise.resolve( true );
+	// 		});
 	// }
 
 }
@@ -147,7 +152,7 @@ describe( 'Model class', () => {
 			} );
 		} );
 
-		it( 'returns a Promise that rejects if the object is valid', done => {
+		it( 'returns a Promise that rejects if the object is not valid', done => {
 			var success = jasmine.createSpy( 'promise resolved' );
 			var failure = jasmine.createSpy( 'promise rejected' );
 
@@ -157,9 +162,9 @@ describe( 'Model class', () => {
 			var promise = user.validate();
 			expect( promise ).toBeA( Promise );
 
-			promise.then( failure ).catch( success ).finally( () => {
-				expect( success ).toHaveBeenCalled();
-				expect( failure ).not.toHaveBeenCalled();
+			promise.then( success ).catch( failure ).finally( () => {
+				expect( failure ).toHaveBeenCalled();
+				expect( success ).not.toHaveBeenCalled();
 				done();
 			} );
 		} );

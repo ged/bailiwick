@@ -4,10 +4,10 @@
 'use strict';
 
 import Promise from 'bluebird';
-import 'babel/polyfill';
 
 import {NotImplementedError} from './errors';
 import {Criteria} from './criteria';
+import {debug} from './utils';
 
 /**
  * Datastore decorator -- syntactic sugar for setting the `datastore`
@@ -15,7 +15,7 @@ import {Criteria} from './criteria';
  */
 export function datastore( type, ...args ) {
 	return function decorator( target ) {
-		var ds = Reflect.construct( type, args );
+		let ds = Reflect.construct( type, args );
 		// console.debug( "Setting datastore of ", target, " to ", ds );
 		target.datastore = ds;
 	};
@@ -39,7 +39,7 @@ export class Datastore {
 	/**
 	 * Create a new Datastore -- not used directly, as this is an abstract class.
 	 */
-	constructor() {}
+	// constructor() {}
 
 	/**
 	 * Get the data associated with the model class of the specified {type} and
@@ -58,10 +58,10 @@ export class Datastore {
 	get( type, criteria=null ) {
 		// Collection API if the criteria is a Criteria
 		if ( criteria instanceof Criteria ) {
-			// console.debug( "Fetch with criteria!" );
+			debug( "Fetch with criteria!" );
 			return this.getCollection( type, criteria );
 		} else {
-			// console.debug( "Fetch by ID!" );
+			debug( "Fetch by ID!" );
 			return this.getInstance( type, criteria );
 		}
 	}

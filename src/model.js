@@ -5,7 +5,8 @@ import Promise from 'bluebird';
 import inflection from 'inflection';
 
 import {ResultSet} from './result-set';
-import {ValidationErrors} from './errors';
+import {ValidationErrors, ValidationError} from './validations';
+import {debug} from './utils';
 
 /*
  * Use symbols for model object properties so they don't collide with
@@ -78,7 +79,7 @@ export class Model {
 	 * Set the datastore associated with this model.
 	 */
 	static set datastore( datastore ) {
-		// console.debug( `Datastore for ${this} set to ${datastore}` );
+		debug( `Datastore for ${this} set to ${datastore}` );
 		this[ DATASTORE ] = datastore;
 	}
 
@@ -120,7 +121,7 @@ export class Model {
 	 * Create one or more instances of the model from the specified {data}.
 	 */
 	static fromData( data ) {
-		console.debug( "Constructing %s objects from datastore data %o", this.name, data );
+		debug( "Constructing %s objects from datastore data %o", this.name, data );
 		if ( Array.isArray(data) ) {
 			return data.map( record => Reflect.construct(this, [record, false]) );
 		} else {
@@ -146,7 +147,7 @@ export class Model {
 	 *
 	 */
 	static create( fields ) {
-		var instance = Reflect.construct( this, [fields] );
+		let instance = Reflect.construct( this, [fields] );
 		return instance.create();
 	}
 
@@ -163,7 +164,7 @@ export class Model {
 
 		this[ DATASTORE ] = this.constructor.datastore;
 
-		// console.debug( `Created a new %s: %o`, this.constructor.name, data );
+		debug( `Created a new %s: %o`, this.constructor.name, data );
 		this.defineAttributes( data );
 	}
 
@@ -210,7 +211,8 @@ export class Model {
 		return this.validate().
 			then( () => {
 				return this[ DATASTORE ].store( this.constructor, this[ DATA ] );
-			}).then( result => {
+			}).
+			then( result => {
 				if ( typeof result === 'object' ) {
 					Object.assign( this[ DATA ], result );
 				} else {
@@ -231,15 +233,16 @@ export class Model {
      * and return a Promise that will resolve to the result.
 	 */
 	update() {
-		var dirtyData = {};
-		for ( var field of this[ DIRTY_FIELDS ] ) {
+		let dirtyData = {};
+		for ( let field of this[ DIRTY_FIELDS ] ) {
 			dirtyData[ field ] = this[ DATA ][ field ];
 		}
 
 		return this.validate().
 			then( () => {
 				return this[ DATASTORE ].update( this.constructor, this.id, dirtyData );
-			}).then( mergedData => {
+			}).
+			then( mergedData => {
 				Object.assign( this[ DATA ], mergedData );
 				this[ NEW_OBJECT ] = false;
 				this[ DIRTY_FIELDS ].clear();
@@ -285,7 +288,7 @@ export class Model {
 	 * Data property writer
 	 */
 	setValue( name, value ) {
-		// console.debug(`Setting ${name} to ${value}`);
+		debug(`Setting ${name} to ${value}`);
 		if ( this[ DATA ][name] !== value ) {
             this[ DIRTY_FIELDS ].add( name );
         }
@@ -310,7 +313,7 @@ export class Model {
 				});
                 /* eslint-enable no-loop-func */
 			} else {
-				console.debug( `Already has a ${name} property.` );
+				debug( `Already has a ${name} property.` );
 			}
 		}
 
@@ -354,10 +357,10 @@ export class Model {
 	 */
 	validate() {
 		this.errors = new ValidationErrors();
-		var promises = [];
+		let promises = [];
 
 		for ( let [field, validationMethod] of this.validators ) {
-            console.debug( `Adding validation promise for ${field}` );
+            debug( `Adding validation promise for ${field}` );
 			let pr = Promise.try( () => validationMethod.call(this) );
 			promises.push( pr );
 		}
@@ -371,9 +374,14 @@ export class Model {
 			}).
 			filter( promise => promise.isRejected() ).
 			each( promise => {
-				var [field, reason] = promise.reason();
-				this.errors.add( field, reason );
-				console.debug( `Validation failed for ${field}: ${reason}` );
+				let err = promise.reason();
+				console.debug( `Validation promise rejected with: ${err}` );
+				if ( err instanceof ValidationError ) {
+					this.errors.add( err.field, err.reason );
+					console.error( `Validation failed for ${field}: ${reason}` );
+				} else {
+					this.errors.add( 'unknown', err.toString() );
+				}
 			}).
 			then( () => {
 				console.debug( "Resolved validation promise, errors is: ", this.errors );
@@ -404,7 +412,7 @@ export class Model {
 	 * for debugging.
 	 */
 	[ VALUE_STRING ]() {
-		var values = [];
+		let values = [];
 		for ( let field in this[ DATA ] ) {
 			let val = this[ DATA ][ field ];
 			values.push( `${field}: ${val}` );

@@ -6,8 +6,6 @@
  */
 'use strict';
 
-import 'babel/polyfill';
-
 import {mapify,demapify} from '../src/utils';
 import {customMatchers} from './helpers';
 

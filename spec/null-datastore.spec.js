@@ -7,7 +7,6 @@
 'use strict';
 
 import Promise from 'bluebird';
-import 'babel/polyfill';
 
 import {NullDatastore, Criteria, Model} from '../src/index';
 

@@ -6,7 +6,8 @@ import Promise from 'bluebird';
 import 'fetch';
 
 import {Datastore} from './datastore';
-import {mapify, monadic} from './utils';
+import {HTTPError} from './errors';
+import {debug, mapify, monadic} from './utils';
 
 
 /**
@@ -38,7 +39,7 @@ export class RESTService extends Datastore {
 	 * Return a copy of the reciving object.
 	 */
 	clone() {
-		var newObj = Reflect.construct( this.constructor, [this.baseUrl] );
+		let newObj = Reflect.construct( this.constructor, [this.baseUrl] );
 		newObj.httpClient = this.httpClient;
 		return newObj;
 	}
@@ -88,12 +89,17 @@ export class RESTService extends Datastore {
 		return this.httpClient.
 			fetch( url, info ).
 			then( response => {
+				if ( !response.ok ) {
+					let err = HTTPError.fromResponse( response );
+					return Promise.reject( err );
+				}
+
 				let mediatype = response.headers.get( 'content-type' );
 				if ( mediatype.startsWith('application/json') ) {
-					console.debug( "Got JSON response; deserializing." );
+					debug( "Got JSON response; deserializing." );
 					return response.json();
 				} else {
-					console.debug( "Got a %s response; using the raw text.", mediatype );
+					debug( "Got a %s response; using the raw text.", mediatype );
 					return response.text();
 				}
 			});
@@ -105,7 +111,7 @@ export class RESTService extends Datastore {
 	 * a Promise that resolves to it.
 	 */
 	getInstance( type, id ) {
-		var uri = type.uri;
+		let uri = type.uri;
 		if ( id ) { uri += '/' + id.toString(); }
 		return this.sendJsonRequest( uri );
 	}
@@ -117,9 +123,9 @@ export class RESTService extends Datastore {
 	 * Array.
 	 */
 	getCollection( type, criteria ) {
-		var uri = criteria.location || type.uri;
-		var params = this.makeParamsFromCriteria( criteria );
-		var queryString = this.queryStringFromParams( params );
+		let uri = criteria.location || type.uri;
+		let params = this.makeParamsFromCriteria( criteria );
+		let queryString = this.queryStringFromParams( params );
 
 		console.info( "GET %s params: %o", uri, params );
 		if ( queryString !== '' ) {
@@ -144,7 +150,7 @@ export class RESTService extends Datastore {
 	 * service using the specified {data}, and return a Promise that resolves to the result.
 	 */
 	update( type, id, data ) {
-		var url = `${type.uri}/${id}`;
+		let uri = `${type.uri}/${id}`;
 		return this.sendJsonRequest( uri, 'POST', data );
 	}
 
@@ -154,7 +160,7 @@ export class RESTService extends Datastore {
 	 * service using the specified {data}, and return a Promise that resolves to the result.
 	 */
 	replace( type, id, data ) {
-		var uri = `${type.uri}/${id}`;
+		let uri = `${type.uri}/${id}`;
 		return this.sendJsonRequest( uri, 'PUT', data );
 	}
 
@@ -164,7 +170,7 @@ export class RESTService extends Datastore {
 	 * return a Promise that resolves to the result.
 	 */
 	remove( type, id ) {
-		var uri = `${type.uri}/${id}`;
+		let uri = `${type.uri}/${id}`;
 		return this.sendJsonRequest( uri, 'DELETE' );
 	}
 
@@ -180,10 +186,10 @@ export class RESTService extends Datastore {
 	makeParamsFromCriteria( criteria ) {
 		if ( !criteria ) { return null; }
 
-		var params = new Map();
+		let params = new Map();
 
 		for ( let [key, val] of criteria.filterClauses ) {
-			console.debug( `Adding parameter ${key}=${val} from criteria's filter clauses.` );
+			debug( `Adding parameter ${key}=${val} from criteria's filter clauses.` );
 			params.set( key, val );
 		}
 
@@ -198,22 +204,22 @@ export class RESTService extends Datastore {
 	 * Turn the specified {params} Object into a URL-encoded query string.
 	 */
 	queryStringFromParams( params ) {
-		console.debug( "Making query string from params: %o", params );
+		debug( "Making query string from params: %o", params );
 
 		if ( !params ) { return ''; }
 
 		let paramMap = mapify( params );
-		console.debug( "Param map is: %o", paramMap );
+		debug( "Param map is: %o", paramMap );
 
 		let pairs = [];
 		for ( let [key, val] of paramMap ) {
 			let encKey = encodeURIComponent( key );
 			let encVal = encodeURIComponent( val );
-			console.debug( "  adding pair: %s=%s", encKey, encVal );
+			debug( "  adding pair: %s=%s", encKey, encVal );
 			pairs.push( `${encKey}=${encVal}` );
 		}
 
-		console.debug( "Returning query string of %d param pairs.", pairs.length );
+		debug( "Returning query string of %d param pairs.", pairs.length );
 		return pairs.join( '&' );
 	}
 

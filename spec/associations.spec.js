@@ -6,8 +6,6 @@
 'use strict';
 
 import Promise from 'bluebird';
-import 'babel/polyfill';
-
 import {Model} from '../src/index';
 // import * from '../src/associations';
 

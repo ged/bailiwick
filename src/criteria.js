@@ -14,7 +14,7 @@ import {monadic} from './utils';
 export class Criteria {
 
 	static all() {
-		return Reflect.construct( this );
+		return Reflect.construct( this, [] );
 	}
 
 	constructor( pairs={} ) {
@@ -30,7 +30,7 @@ export class Criteria {
 
 
 	clone() {
-		var newObj = Reflect.construct( this.constructor, [{}] );
+		let newObj = Reflect.construct( this.constructor, [{}] );
 		newObj.filterClauses = new Map( this.filterClauses );
 		newObj.maxResultCount = this.maxResultCount;
 		newObj.resultOffset = this.resultOffset;

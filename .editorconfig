@@ -11,4 +11,9 @@ insert_final_newline = true
 # Tab indentation
 [**.*]
 indent_style = tab
+indent_size = 4
 
+# 2-Space indent for JSON
+[**.json]
+indent_style = space
+indent_size = 2

@@ -2,9 +2,9 @@
 'use strict';
 
 import Promise from 'bluebird';
-import 'babel/polyfill';
 
 import {Datastore} from './datastore';
+import {debug} from './utils';
 
 
 /**
@@ -63,8 +63,8 @@ export class NullDatastore extends Datastore {
 	 * @returns {Promise} the promise that resolves to the object data.
 	 */
 	getInstance( type, id ) {
-		console.debug( `Getting instance ${id} of ${type.name}` );
-		var collection = this.getCollectionForType( type );
+		debug( `Getting instance ${id} of ${type.name}` );
+		let collection = this.getCollectionForType( type );
 
 		if ( collection.has(id) ) {
 			return Promise.resolve( collection.get(id) );
@@ -85,21 +85,21 @@ export class NullDatastore extends Datastore {
 	 * @returns {Promise} the promise that resolves to an Array of matching object data.
 	 */
 	getCollection( type, criteria ) {
-		console.debug( `Getting %s collection matching: %o`, type.name, criteria );
-		var collection = this.getCollectionForType( type );
-		var results;
+		debug( `Getting %s collection matching: %o`, type.name, criteria );
+		let collection = this.getCollectionForType( type );
+		let results;
 
 		if ( criteria ) {
-			console.debug( "Filtered fetch over collection of %d objects!", collection.size );
-			var matches = this.findMatchingObjects( collection, criteria );
-			console.debug( "Found %d matches: %o", matches.length, matches );
+			debug( "Filtered fetch over collection of %d objects!", collection.size );
+			let matches = this.findMatchingObjects( collection, criteria );
+			debug( "Found %d matches: %o", matches.length, matches );
 			results = Array.from( matches );
 		} else {
-			console.debug( "Unfiltered fetch!" );
+			debug( "Unfiltered fetch!" );
 			results = Array.from( collection.values() );
 		}
 
-		console.debug( `result is a ${typeof results}` );
+		debug( `result is a ${typeof results}` );
 		return Promise.resolve( results );
 	}
 
@@ -116,8 +116,8 @@ export class NullDatastore extends Datastore {
 	 */
 	findMatchingObjects( collection, criteria ) {
 		// This should filter, limit, offset, etc.
-		var filterFunc = this.makeFilterFunction( criteria );
-		var matches = [];
+		let filterFunc = this.makeFilterFunction( criteria );
+		let matches = [];
 
 		for ( let obj of collection.values() ) {
 			if ( filterFunc(obj) ) { matches.push( obj ); }
@@ -138,7 +138,7 @@ export class NullDatastore extends Datastore {
 	 * @protected
 	 */
 	makeFilterFunction( criteria ) {
-		var clauses = [];
+		let clauses = [];
 
 		if ( criteria.filterClauses ) {
 			for ( let key of criteria.filterClauses.keys() )
@@ -164,10 +164,10 @@ export class NullDatastore extends Datastore {
 	 * @returns {Promise} the promise that resolves to the ID assigned to the new object
 	 */
 	store( type, data ) {
-		var collection = this.getCollectionForType( type );
-		var id = this.ids.get( type ).next().value;
+		let collection = this.getCollectionForType( type );
+		let id = this.ids.get( type ).next().value;
 
-		console.debug( `Storing ${type.name} ID=${id}` );
+		debug( `Storing ${type.name} ID=${id}` );
 		collection.set( id, data );
 		return Promise.resolve( id );
 	}
@@ -184,14 +184,14 @@ export class NullDatastore extends Datastore {
 	 * @returns {Promise} the promise that resolves to the updated object data
 	 */
 	update( type, id, data ) {
-		var collection = this.getCollectionForType( type );
-		var current = collection.get( id );
+		let collection = this.getCollectionForType( type );
+		let current = collection.get( id );
 
 		if ( !current ) {
 			return Promise.reject( new Error(`No such ${type.name} ID=${id}`) );
 		}
 
-		console.debug( `Merging ${type.name} ID=${id}` );
+		debug( `Merging ${type.name} ID=${id}` );
 		Object.assign( current, data );
 
 		return Promise.resolve( current );
@@ -209,8 +209,8 @@ export class NullDatastore extends Datastore {
 	 * @returns {Promise} the promise that resolves to the new object data
 	 */
 	replace( type, id, data ) {
-		var collection = this.getCollectionForType( type );
-		var current = collection.get( id );
+		let collection = this.getCollectionForType( type );
+		let current = collection.get( id );
 		collection.set( id, data );
 		return Promise.resolve( current );
 	}
@@ -227,8 +227,8 @@ export class NullDatastore extends Datastore {
 	 *                    or `false` if it did not.
 	 */
 	remove( type, id ) {
-		var collection = this.getCollectionForType( type );
-		var result = collection.delete( id );
+		let collection = this.getCollectionForType( type );
+		let result = collection.delete( id );
 		return Promise.resolve( result );
 	}
 

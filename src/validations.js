@@ -1,6 +1,13 @@
 /* -*- javascript -*- */
 "use strict";
 
+import Promise from 'bluebird';
+import ExtendableError from 'es6-error';
+
+
+const VALIDATORS = Symbol.for("validators");
+
+
 /**
  * Decorator: @validator
  * Marks the decorated method as a validator
@@ -9,20 +16,14 @@ export function validator( field ) {
 	return function decorator( target, name, descriptor ) {
 		var methodBody = descriptor.value;
 
-		if ( !target.validators ) {
-			target.validators = new Map();
+		// :TODO: Should this error instead?
+		if ( !target[ VALIDATORS ] ) {
+			target[ VALIDATORS ] = new Map();
 		}
 
-		descriptor.value = function() {
-			return new Promise( (resolve, reject) => {
-				try {
-					resolve( methodBody.apply(this) );
-				} catch( e ) {
-					reject([ field, e.message || e ]);
-				}
-			});
-		};
-		target.validators.set( field, descriptor.value );
+		// Promisify the method and add it to the list of validators
+		descriptor.value = Promise.method( methodBody );
+		target[ VALIDATORS ].set( field, descriptor.value );
 
 		return descriptor;
 	};
@@ -30,3 +31,60 @@ export function validator( field ) {
 
 
 
+// Model validation failures
+export class ValidationError extends ExtendableError {
+
+	field = null;
+
+	constructor( message, field=null ) {
+		super( message );
+		this.field = field;
+	}
+
+}
+
+
+/**
+ * Validation error container
+ */
+export class ValidationErrors {
+
+	constructor() {
+		this.failures = new Map();
+	}
+
+
+	get fields() {
+		let fields = [];
+		// :FIXME: Use an Array comprehension once those are stable
+		for ( let field of this.failures.keys() ) fields.push( field );
+
+		return fields;
+	}
+
+
+	get fullMessages() {
+		let messages = [];
+		for( let [field, reason] of this.failures ) {
+			messages.push( `${field} ${reason}` );
+		}
+
+		return messages;
+	}
+
+
+	get size() {
+		return this.failures.size;
+	}
+
+
+	add( field, reason ) {
+		this.failures.set( field, reason );
+	}
+
+
+	isEmpty() {
+		return ( this.size === 0 );
+	}
+
+}

@@ -7,13 +7,12 @@
  */
 
 import Promise from 'bluebird';
-import 'babel/polyfill';
 
 /**
  * The default namespace
  */
 
-export var VERSION = '0.0.1.dev';
+export var VERSION = '0.0.1-alpha.1';
 
 export * from './model';
 export * from './datastore';
