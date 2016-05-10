@@ -3,7 +3,7 @@
  /* global it, describe, expect, beforeEach, console */
 'use strict';
 
-import {Model, Criteria, Datastore, NotImplementedError} from '../src/index';
+import {Model, Criteria, Datastore, NotImplementedError} from 'bailiwick';
 import * as helpers from './helpers';
 
 class Profile extends Model {}

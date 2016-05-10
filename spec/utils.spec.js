@@ -6,7 +6,7 @@
  */
 'use strict';
 
-import {mapify,demapify} from '../src/utils';
+import {mapify,demapify} from 'bailiwick/utils';
 import {customMatchers} from './helpers';
 
 

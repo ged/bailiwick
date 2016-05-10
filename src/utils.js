@@ -1,7 +1,7 @@
 /* -*- javascript -*- */
 "use strict";
 
-const DEBUGGING_ENABLED = false;
+const DEBUGGING_ENABLED = true;
 
 
 /**
@@ -52,29 +52,26 @@ export function monadic( target, name, descriptor ) {
  * @returns {Map}  the newly-created Map object, or an Array of converted Map
  *     objects
  */
-export function mapify( obj ) {
-	// FIXME: 'instanceof' in this doesn't work (but it does in the Chrome console), 
-	//        but looking at the constructor name does for some reason
-	// if ( obj instanceof Map || typeof obj !== 'object' ) {
-	if ( typeof obj !== 'object' || obj.constructor.name === 'Map' ) {
-		debug( "Nothing to mapify!" );
+export function mapify (obj) {
+	let m = new Map();
+	if (typeof obj !== 'object' || obj === null || obj.prototype === m.prototype) {
 		return obj;
 	}
-
-	debug( "Mapifying ", obj );
-
-	if ( obj instanceof Array ) {
-		debug( "It's an Array, mapifying its members." );
+	if (obj instanceof Array) {
 		let newArr = [];
-		for ( let x of obj ) {
-			newArr.push( mapify(x) );
+		for (let x of obj) {
+			newArr.push(mapify(x));
 		}
 		return newArr;
 	}
-
-	debug( `It's a ${typeof obj}, using Object.entries.` );
-	return new Map( Object.entries(obj) );
+	for (let k in obj) {
+		if (obj.hasOwnProperty(k)) {
+			m.set(k, mapify(obj[k]));
+		}
+	};
+	return m;
 }
+
 
 
 /**
@@ -87,22 +84,20 @@ export function mapify( obj ) {
  *
  * @returns {Object}  the newly-created Object, or an Array of converted Object
  */
-export function demapify( map ) {
-	if ( map instanceof Array ) {
+export function demapify (map) {
+	if (map instanceof Array) {
 		let newArr = [];
-		for ( let x of map ) {
-			newArr.push( demapify(x) );
+		for (let x of map) {
+			newArr.push(demapify(x));
 		}
 		return newArr;
-	} else if ( !(map instanceof Map) ) {
+	} else if (!(map instanceof Map)) {
 		return map;
 	}
-
 	let obj = {};
-	for ( let [k, v] of map ) {
-		obj[ k ] = demapify( v );
+	for (let [k, v] of map) {
+		obj[k] = demapify(v);
 	}
-
 	return obj;
-}
+};
 

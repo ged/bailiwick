@@ -13,7 +13,7 @@ module.exports = {
 	config: appRoot + '**/*.json',
 	output: outputRoot,
 	sourceMapRelativePath: '../' + appRoot,
-	doc:'./doc',
+	docs:'./docs',
 	semantic: './semantic',
 	e2eSpecsSrc: 'test/e2e/src/*.js',
 	e2eSpecsDist: 'test/e2e/dist/'

@@ -5,7 +5,7 @@ import Promise from 'bluebird';
 import inflection from 'inflection';
 
 import {ResultSet} from './result-set';
-import {ValidationErrors, ValidationError} from './validations';
+import {ValidationErrors} from './validations';
 import {debug} from './utils';
 
 /*
@@ -19,7 +19,8 @@ const NEW_OBJECT         = Symbol.for("newObject"),
       DATASTORE          = Symbol.for("datastore"),
       VALIDATORS         = Symbol.for("validators"),
       ASSOCIATIONS       = Symbol.for("associations"),
-      VALUE_STRING       = Symbol.for("valueString");
+      VALUE_STRING       = Symbol.for("valueString"),
+      SCHEMA             = Symbol.for("schema");
 
 
 /**
@@ -121,7 +122,7 @@ export class Model {
 	 * Create one or more instances of the model from the specified {data}.
 	 */
 	static fromData( data ) {
-		debug( "Constructing %s objects from datastore data %o", this.name, data );
+		// debug( "Constructing %s objects from datastore data %o", this.name, data );
 		if ( Array.isArray(data) ) {
 			return data.map( record => Reflect.construct(this, [record, false]) );
 		} else {
@@ -157,6 +158,9 @@ export class Model {
 	 * if {isNew} is true.
 	 */
 	constructor( data={}, isNew=true ) {
+		let schema = this.constructor[ SCHEMA ] || {};
+		data = Object.assign( {}, schema, data );
+
 		this[ NEW_OBJECT ] = isNew;
 		this[ DATA ] = data;
 		this[ DIRTY_FIELDS ] = new Set();
@@ -164,7 +168,7 @@ export class Model {
 
 		this[ DATASTORE ] = this.constructor.datastore;
 
-		debug( `Created a new %s: %o`, this.constructor.name, data );
+		// debug( `Created a new %s: %o`, this.constructor.name, data );
 		this.defineAttributes( data );
 	}
 
@@ -288,7 +292,7 @@ export class Model {
 	 * Data property writer
 	 */
 	setValue( name, value ) {
-		debug(`Setting ${name} to ${value}`);
+		// debug(`Setting ${name} to ${value}`);
 		if ( this[ DATA ][name] !== value ) {
             this[ DIRTY_FIELDS ].add( name );
         }
@@ -359,7 +363,7 @@ export class Model {
 		this.errors = new ValidationErrors();
 		let promises = [];
 
-		for ( let [field, validationMethod] of this.validators ) {
+		for ( let [field, validationMethod] of this[VALIDATORS] ) {
             debug( `Adding validation promise for ${field}` );
 			let pr = Promise.try( () => validationMethod.call(this) );
 			promises.push( pr );
@@ -368,29 +372,9 @@ export class Model {
 		// Wait for all validation promises to settle, then add errors
 		// for those which were rejected.
 		return Promise.
-			all( promises.map(pr => pr.reflect()) ).
-			each( promise => {
-				console.debug( "Settled promise inspection: ", promise );
-			}).
-			filter( promise => promise.isRejected() ).
-			each( promise => {
-				let err = promise.reason();
-				console.debug( `Validation promise rejected with: ${err}` );
-				if ( err instanceof ValidationError ) {
-					this.errors.add( err.field, err.reason );
-					console.error( `Validation failed for ${field}: ${reason}` );
-				} else {
-					this.errors.add( 'unknown', err.toString() );
-				}
-			}).
+			all( promises ).
 			then( () => {
-				console.debug( "Resolved validation promise, errors is: ", this.errors );
-				if ( this.errors.isEmpty() ) {
-					return Promise.resolve( true );
-				} else {
-					let err = new ValidationError( `${this.errors.length} validation failures.` );
-					return Promise.reject( err );
-				}
+				debug( "Validation successful!" );
 			});
 	}
 
@@ -419,4 +403,32 @@ export class Model {
 		}
 		return values.join( ', ' );
 	}
+}
+
+
+/**
+ * Bailiwick.schema
+ *
+ * A decorator for declaring fields for a Model.
+ */
+export function schema( fields ) {
+
+	return function decorator( modelClass ) {
+		modelClass[ SCHEMA ] = fields;
+		for ( let name in fields ) {
+			if ( !Object.hasOwnProperty(modelClass, name) ) {
+                /* eslint-disable no-loop-func */
+				Object.defineProperty( modelClass, name, {
+					configurable: true,
+					enumerable: true,
+					get: () => { return this.getValue(name); },
+					set: newval => { this.setValue(name, newval); }
+				});
+                /* eslint-enable no-loop-func */
+			} else {
+				debug( `Already has a ${name} property.` );
+			}
+		}
+	};
+
 }

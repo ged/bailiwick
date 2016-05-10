@@ -3,7 +3,7 @@
  /* global it, describe, expect, console */
 'use strict';
 
-import {Criteria} from '../src/index';
+import {Criteria} from 'bailiwick';
 
 
 describe( 'Criteria', () => {

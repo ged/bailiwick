@@ -1,6 +1,8 @@
 /* -*- javascript -*- */
 "use strict";
 
+import 'babel/polyfill';
+
 export var customMatchers = {
 
 	toBeA: function() {

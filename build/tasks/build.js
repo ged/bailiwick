@@ -30,13 +30,31 @@ gulp.task('build-system', function() {
 		pipe( debug({title: 'build-system'}) ).
 		pipe( babel(assign({}, compilerOptions.system())) ).
 		pipe( sourcemaps.write({includeContent: false, sourceRoot: '/lib'}) ).
-		pipe( gulp.dest(paths.output) );
+		pipe( gulp.dest(paths.output + '/system') );
+});
+
+gulp.task('build-es6', function() {
+	return gulp.src( paths.source ).
+		pipe( plumber(plumberErrorHandler) ).
+		pipe( debug({title: 'build-es6'}) ).
+		pipe( gulp.dest(paths.output + '/es6') );
+});
+
+gulp.task('build-amd', function() {
+	return gulp.src( paths.source ).
+		pipe( plumber(plumberErrorHandler) ).
+		pipe( changed(paths.output, {extension: '.js'}) ).
+		pipe( sourcemaps.init({loadMaps: true}) ).
+		pipe( debug({title: 'build-amd'}) ).
+		pipe( babel(assign({}, compilerOptions.amd())) ).
+		pipe( sourcemaps.write({includeContent: false, sourceRoot: '/lib'}) ).
+		pipe( gulp.dest(paths.output + '/amd') );
 });
 
 gulp.task('build', function(callback) {
 	return runSequence(
 		'clean',
-		'build-system',
+		['build-system', 'build-es6', 'build-amd'],
 		callback
 	);
 });

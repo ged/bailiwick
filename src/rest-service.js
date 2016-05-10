@@ -3,7 +3,7 @@
 'use strict';
 
 import Promise from 'bluebird';
-import 'fetch';
+import 'whatwg-fetch';
 
 import {Datastore} from './datastore';
 import {HTTPError} from './errors';

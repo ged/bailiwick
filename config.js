@@ -1,14 +1,17 @@
 System.config({
-  baseURL: "/",
+  baseURL: "",
   defaultJSExtensions: true,
   transpiler: "babel",
   babelOptions: {
     "optional": [
       "runtime",
-      "optimisation.modules.system"
+      "es7.decorators",
+      "es7.classProperties"
     ]
   },
   paths: {
+    "bailiwick": "dist/amd/index",
+    "bailiwick/*": "dist/amd/*",
     "github:*": "jspm_packages/github/*",
     "npm:*": "jspm_packages/npm/*"
   },
@@ -16,7 +19,11 @@ System.config({
   map: {
     "babel": "npm:babel-core@5.8.38",
     "babel-runtime": "npm:babel-runtime@5.8.38",
+    "bluebird": "npm:bluebird@3.3.4",
     "core-js": "npm:core-js@1.2.6",
+    "es6-error": "npm:es6-error@2.1.0",
+    "inflection": "npm:inflection@1.8.0",
+    "whatwg-fetch": "npm:whatwg-fetch@0.11.0",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.3.0"
     },
@@ -33,6 +40,9 @@ System.config({
       "util": "npm:util@0.10.3"
     },
     "npm:babel-runtime@5.8.38": {
+      "process": "github:jspm/nodelibs-process@0.1.2"
+    },
+    "npm:bluebird@3.3.4": {
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
     "npm:core-js@1.2.6": {

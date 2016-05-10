@@ -8,7 +8,7 @@
 
 import Promise from 'bluebird';
 
-import {NullDatastore, Criteria, Model} from '../src/index';
+import {NullDatastore, Criteria, Model} from 'bailiwick';
 
 
 class User extends Model {}

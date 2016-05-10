@@ -6,8 +6,8 @@
 'use strict';
 
 import Promise from 'bluebird';
-import {Model} from '../src/index';
-// import * from '../src/associations';
+import {Model} from 'bailiwick';
+// import * from 'bailiwick/associations';
 
 
 // class Base  extends Model {}

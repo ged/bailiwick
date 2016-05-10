@@ -8,8 +8,8 @@
 
 import Promise from 'bluebird';
 
-import {NullDatastore, Model, ResultSet, Criteria} from '../src/index';
-import {validator, ValidationError} from '../src/validations';
+import {NullDatastore, Model, ResultSet, Criteria} from 'bailiwick';
+import {validator, ValidationError} from 'bailiwick/validations';
 import {customMatchers} from './helpers';
 
 
