@@ -95,7 +95,7 @@ export class RESTService extends Datastore {
 				}
 
 				let mediatype = response.headers.get( 'content-type' );
-				if ( mediatype.startsWith('application/json') ) {
+				if ( mediatype && mediatype.startsWith('application/json') ) {
 					debug( "Got JSON response; deserializing." );
 					return response.json();
 				} else {
