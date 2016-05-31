@@ -369,8 +369,7 @@ export class Model {
 			promises.push( pr );
 		}
 
-		// Wait for all validation promises to settle, then add errors
-		// for those which were rejected.
+		// Wait for all validation promises to settle
 		return Promise.
 			all( promises ).
 			then( () => {
