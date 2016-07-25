@@ -5,7 +5,7 @@ var shell       = require( 'gulp-shell' );
 var paths       = require( '../paths' );
 
 gulp.task('link-jspm', shell.task([
-	'jspm link github:ged/bailiwick@dev -y'
+	'jspm link npm:bailiwick@dev -y'
 ]));
 
 

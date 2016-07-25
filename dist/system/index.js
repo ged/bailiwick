@@ -1,6 +1,8 @@
 'use strict';
 
 System.register(['bluebird', './model', './datastore', './criteria', './associations', './validations', './result-set', './null-datastore', './rest-service', './errors'], function (_export, _context) {
+  "use strict";
+
   var Promise, VERSION;
   return {
     setters: [function (_bluebird) {
@@ -85,4 +87,4 @@ System.register(['bluebird', './model', './datastore', './criteria', './associat
     }
   };
 });
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImluZGV4LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7OztBQVFPOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7eUJBTUksVUFBVSIsImZpbGUiOiJpbmRleC5qcyIsInNvdXJjZVJvb3QiOiIvbGliIn0=
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImluZGV4LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7O0FBUU8sYTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O3lCQU1JLE8sR0FBVSxlIiwiZmlsZSI6ImluZGV4LmpzIiwic291cmNlUm9vdCI6Ii9saWIifQ==
