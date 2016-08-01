@@ -68,7 +68,10 @@
     "vinyl-paths": "^2.1.0"
   },
   "dependencies": {
-    "inflection": "^1.8.0"
+    "bluebird": "^3.3.3",
+    "es6-mapify": "^1.0.0",
+    "inflection": "^1.8.0",
+    "whatwg-fetch": "^0.11.0"
   },
   "jspm": {
     "registry": "npm",
@@ -79,7 +82,10 @@
       "lib": "dist/amd"
     },
     "dependencies": {
-      "inflection": "^1.8.0"
+      "bluebird": "^3.3.4",
+      "es6-error": "^2.1.0",
+      "inflection": "^1.8.0",
+      "whatwg-fetch": "^0.11.0"
     },
     "devDependencies": {
       "babel": "babel-core@^5.8.24",

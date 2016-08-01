@@ -6,6 +6,7 @@
  * - Michael Granger <ged@FaerieMUD.org>
  */
 
+import Promise from 'bluebird';
 
 /**
  * The default namespace

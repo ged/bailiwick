@@ -6,6 +6,7 @@
  */
 'use strict';
 
+import Promise from 'bluebird';
 
 import {NullDatastore, Criteria, Model} from 'bailiwick';
 
