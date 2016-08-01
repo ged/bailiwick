@@ -1,5 +1,5 @@
 
 TM_JSLINTMATE_DEFAULT_LINTER="${TM_PROJECT_DIRECTORY}/node_modules/eslint/bin/eslint.js"
 
-exclude = {$exclude,jspm_packages,node_modules}
+exclude = {$exclude,dist,jspm_packages,node_modules}
 

@@ -2,7 +2,6 @@
  /* global it, describe, expect, beforeEach, beforeAll, console, jasmine */
 'use strict';
 
-import Promise from 'bluebird';
 import {Model, Criteria, RESTService} from 'bailiwick';
 import * as errors from 'bailiwick/errors';
 import {customMatchers} from './helpers';

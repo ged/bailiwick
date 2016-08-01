@@ -9,6 +9,15 @@ As of this writing, it's far from ready for production use. These are the things
 3. Work out the ES6 issues. Browers' support for ES6 is currently very spotty, and Babel (which is otherwise an amazing piece of software) doesn't always handle the mixed support for some features and not others really well. I'll need to either find workarounds for these or just wait until ES6 support is more ubiquitous.
 
 
+## Requirements
+
+This library requires:
+
+1. ES6 Promises -- I use the `Bluebird` library if I need a polyfill.
+2. ES6 Errors -- I use the `es6-errors` library if I need a polyfill.
+3. fetch -- I use the `whatwg-fetch` library if I need a polyfill.
+
+
 ## Current API
 
 

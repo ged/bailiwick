@@ -1,7 +1,6 @@
 /* -*- javascript -*- */
 "use strict";
 
-import Promise from 'bluebird';
 import ExtendableError from 'es6-error';
 
 

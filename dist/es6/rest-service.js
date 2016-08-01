@@ -2,8 +2,6 @@
 /* eslint-disable no-unused-vars */
 'use strict';
 
-import Promise from 'bluebird';
-import 'whatwg-fetch';
 
 import {Datastore} from './datastore';
 import {HTTPError} from './errors';

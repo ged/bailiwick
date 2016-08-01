@@ -1,7 +1,6 @@
 /* -*- javascript -*- */
 "use strict";
 
-import Promise from 'bluebird';
 import inflection from 'inflection';
 
 import {ResultSet} from './result-set';

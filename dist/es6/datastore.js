@@ -3,7 +3,6 @@
 /* eslint-disable no-unused-vars */
 'use strict';
 
-import Promise from 'bluebird';
 
 import {NotImplementedError} from './errors';
 import {Criteria} from './criteria';

@@ -1,7 +1,6 @@
 /* -*- javascript -*- */
 'use strict';
 
-import Promise from 'bluebird';
 import 'babel/polyfill';
 
 import {Datastore} from './datastore';

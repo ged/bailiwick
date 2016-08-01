@@ -5,7 +5,6 @@
 /* global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console */
 'use strict';
 
-import Promise from 'bluebird';
 import {Model} from 'bailiwick';
 // import * from 'bailiwick/associations';
 

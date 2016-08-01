@@ -6,7 +6,6 @@
 /* global it, beforeEach, describe, expect, console, jasmine */
 "use strict";
 
-import Promise from 'bluebird';
 
 import {NullDatastore, Model, ResultSet, Criteria} from 'bailiwick';
 import {validator, ValidationError} from 'bailiwick/validations';
