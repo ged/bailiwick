@@ -3,7 +3,6 @@
 'use strict';
 
 import Promise from 'bluebird';
-import 'whatwg-fetch';
 
 import {Datastore} from './datastore';
 import {HTTPError} from './errors';
@@ -127,7 +126,7 @@ export class RESTService extends Datastore {
 		let params = this.makeParamsFromCriteria( criteria );
 		let queryString = this.queryStringFromParams( params );
 
-		console.info( "GET %s params: %o", uri, params );
+		debug( "GET %s params: %o", uri, params );
 		if ( queryString !== '' ) {
 			uri += '?' + queryString;
 		}
@@ -196,6 +195,7 @@ export class RESTService extends Datastore {
 		if ( criteria.maxResultCount ) { params.set( 'limit', criteria.maxResultCount ); }
 		if ( criteria.resultOffset ) { params.set( 'offset', criteria.resultOffset ); }
 
+		debug( `Returning Map with ${params.size} params` );
 		return params;
 	}
 
@@ -204,15 +204,12 @@ export class RESTService extends Datastore {
 	 * Turn the specified {params} Object into a URL-encoded query string.
 	 */
 	queryStringFromParams( params ) {
-		debug( "Making query string from params: %o", params );
+		debug( `Making query string from ${params.size} params: `, Array.from(params.entries()) );
 
 		if ( !params ) { return ''; }
 
-		let paramMap = mapify( params );
-		debug( "Param map is: %o", paramMap );
-
 		let pairs = [];
-		for ( let [key, val] of paramMap ) {
+		for ( let [key, val] of params.entries() ) {
 			let encKey = encodeURIComponent( key );
 			let encVal = encodeURIComponent( val );
 			debug( "  adding pair: %s=%s", encKey, encVal );

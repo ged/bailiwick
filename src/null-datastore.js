@@ -2,7 +2,6 @@
 'use strict';
 
 import Promise from 'bluebird';
-import 'babel/polyfill';
 
 import {Datastore} from './datastore';
 import {debug} from './utils';
@@ -45,7 +44,7 @@ export class NullDatastore extends Datastore {
 	 */
 	getCollectionForType( type ) {
 		if ( !this.objects.has(type) ) {
-			console.info( "ObjectStore doesn't have a %s collection; creating one.", type );
+			debug( "ObjectStore doesn't have a %s collection; creating one.", type );
 			this.objects.set( type, new Map() );
 			this.ids.set( type, NullDatastore.genId() );
 		}

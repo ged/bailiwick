@@ -1,7 +1,7 @@
 /* -*- javascript -*- */
 "use strict";
 
-const DEBUGGING_ENABLED = true;
+const DEBUGGING_ENABLED = false;
 
 
 /**
@@ -36,11 +36,12 @@ export function monadic( target, name, descriptor ) {
 
 
 /*
- * Extracted from es6-mapify by Jonathan Lipps <jlipps (at) gmail.com> to avoid
+ * Originall extracted from es6-mapify by Jonathan Lipps <jlipps (at) gmail.com> to avoid
  * the dependency on Traceur.
  *
  * Used under the terms of the Apache-2.0 license.
  */
+
 
 /**
  * Return a Map containing the properties of the specified {object}.
@@ -52,24 +53,21 @@ export function monadic( target, name, descriptor ) {
  * @returns {Map}  the newly-created Map object, or an Array of converted Map
  *     objects
  */
-export function mapify (obj) {
-	let m = new Map();
-	if (typeof obj !== 'object' || obj === null || obj.prototype === m.prototype) {
+export function mapify( obj ) {
+	if ( typeof obj !== 'object' || obj === null || obj instanceof Map ) {
 		return obj;
 	}
+
 	if (obj instanceof Array) {
-		let newArr = [];
-		for (let x of obj) {
-			newArr.push(mapify(x));
-		}
-		return newArr;
+		return obj.map( x => mapify(x) );
+	} else {
+		let m = new Map();
+		Object.keys( obj ).forEach( k => {
+			m.set( k, mapify(obj[k]) );
+		});
+		return m;
 	}
-	for (let k in obj) {
-		if (obj.hasOwnProperty(k)) {
-			m.set(k, mapify(obj[k]));
-		}
-	};
-	return m;
+
 }
 
 
@@ -84,20 +82,20 @@ export function mapify (obj) {
  *
  * @returns {Object}  the newly-created Object, or an Array of converted Object
  */
-export function demapify (map) {
-	if (map instanceof Array) {
-		let newArr = [];
-		for (let x of map) {
-			newArr.push(demapify(x));
-		}
-		return newArr;
-	} else if (!(map instanceof Map)) {
-		return map;
+export function demapify( obj ) {
+	if (obj instanceof Array) {
+		debug( "Demapifying an Array of Maps." );
+		return obj.map( x => demapify(x) );
+	} else if ( !(obj instanceof Map) ) {
+		debug( "Not a Map, returning it as-is." );
+		return obj;
 	}
-	let obj = {};
-	for (let [k, v] of map) {
-		obj[k] = demapify(v);
+
+	debug( "Turning a Map into an Object." );
+	let rval = {};
+	for (let [k, v] of obj) {
+		rval[k] = demapify(v);
 	}
-	return obj;
+	return rval;
 };
 

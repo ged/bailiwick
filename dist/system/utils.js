@@ -6,6 +6,107 @@ System.register([], function (_export, _context) {
 
 	var _slicedToArray, _typeof, DEBUGGING_ENABLED;
 
+	function debug() {
+		if (DEBUGGING_ENABLED) {
+			var _console;
+
+			(_console = console).debug.apply(_console, arguments);
+		}
+	}
+
+	_export("debug", debug);
+
+	function monadic(target, name, descriptor) {
+		var realfunc = descriptor.value;
+		descriptor.value = function () {
+			debug("Cloning for monadic method " + name);
+			var dup = this.clone();
+			debug("  cloned: %o... applying method", dup);
+
+			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+				args[_key] = arguments[_key];
+			}
+
+			realfunc.apply(dup, args);
+			return dup;
+		};
+
+		return descriptor;
+	}
+
+	_export("monadic", monadic);
+
+	function mapify(obj) {
+		if ((typeof obj === "undefined" ? "undefined" : _typeof(obj)) !== 'object' || obj === null || obj instanceof Map) {
+			return obj;
+		}
+
+		if (obj instanceof Array) {
+			return obj.map(function (x) {
+				return mapify(x);
+			});
+		} else {
+			var _ret = function () {
+				var m = new Map();
+				Object.keys(obj).forEach(function (k) {
+					m.set(k, mapify(obj[k]));
+				});
+				return {
+					v: m
+				};
+			}();
+
+			if ((typeof _ret === "undefined" ? "undefined" : _typeof(_ret)) === "object") return _ret.v;
+		}
+	}
+
+	_export("mapify", mapify);
+
+	function demapify(obj) {
+		if (obj instanceof Array) {
+			debug("Demapifying an Array of Maps.");
+			return obj.map(function (x) {
+				return demapify(x);
+			});
+		} else if (!(obj instanceof Map)) {
+			debug("Not a Map, returning it as-is.");
+			return obj;
+		}
+
+		debug("Turning a Map into an Object.");
+		var rval = {};
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = obj[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var _step$value = _slicedToArray(_step.value, 2);
+
+				var k = _step$value[0];
+				var v = _step$value[1];
+
+				rval[k] = demapify(v);
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+
+		return rval;
+	}
+	_export("demapify", demapify);
+
 	return {
 		setters: [],
 		execute: function () {
@@ -52,148 +153,9 @@ System.register([], function (_export, _context) {
 			} : function (obj) {
 				return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
 			};
-			DEBUGGING_ENABLED = true;
-			function debug() {
-				if (DEBUGGING_ENABLED) {
-					var _console;
-
-					(_console = console).debug.apply(_console, arguments);
-				}
-			}
-
-			_export("debug", debug);
-
-			function monadic(target, name, descriptor) {
-				var realfunc = descriptor.value;
-				descriptor.value = function () {
-					debug("Cloning for monadic method " + name);
-					var dup = this.clone();
-					debug("  cloned: %o... applying method", dup);
-
-					for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-						args[_key] = arguments[_key];
-					}
-
-					realfunc.apply(dup, args);
-					return dup;
-				};
-
-				return descriptor;
-			}
-
-			_export("monadic", monadic);
-
-			function mapify(obj) {
-				var m = new Map();
-				if ((typeof obj === "undefined" ? "undefined" : _typeof(obj)) !== 'object' || obj === null || obj.prototype === m.prototype) {
-					return obj;
-				}
-				if (obj instanceof Array) {
-					var newArr = [];
-					var _iteratorNormalCompletion = true;
-					var _didIteratorError = false;
-					var _iteratorError = undefined;
-
-					try {
-						for (var _iterator = obj[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-							var x = _step.value;
-
-							newArr.push(mapify(x));
-						}
-					} catch (err) {
-						_didIteratorError = true;
-						_iteratorError = err;
-					} finally {
-						try {
-							if (!_iteratorNormalCompletion && _iterator.return) {
-								_iterator.return();
-							}
-						} finally {
-							if (_didIteratorError) {
-								throw _iteratorError;
-							}
-						}
-					}
-
-					return newArr;
-				}
-				for (var k in obj) {
-					if (obj.hasOwnProperty(k)) {
-						m.set(k, mapify(obj[k]));
-					}
-				};
-				return m;
-			}
-
-			_export("mapify", mapify);
-
-			function demapify(map) {
-				if (map instanceof Array) {
-					var newArr = [];
-					var _iteratorNormalCompletion2 = true;
-					var _didIteratorError2 = false;
-					var _iteratorError2 = undefined;
-
-					try {
-						for (var _iterator2 = map[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-							var x = _step2.value;
-
-							newArr.push(demapify(x));
-						}
-					} catch (err) {
-						_didIteratorError2 = true;
-						_iteratorError2 = err;
-					} finally {
-						try {
-							if (!_iteratorNormalCompletion2 && _iterator2.return) {
-								_iterator2.return();
-							}
-						} finally {
-							if (_didIteratorError2) {
-								throw _iteratorError2;
-							}
-						}
-					}
-
-					return newArr;
-				} else if (!(map instanceof Map)) {
-					return map;
-				}
-				var obj = {};
-				var _iteratorNormalCompletion3 = true;
-				var _didIteratorError3 = false;
-				var _iteratorError3 = undefined;
-
-				try {
-					for (var _iterator3 = map[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-						var _step3$value = _slicedToArray(_step3.value, 2);
-
-						var k = _step3$value[0];
-						var v = _step3$value[1];
-
-						obj[k] = demapify(v);
-					}
-				} catch (err) {
-					_didIteratorError3 = true;
-					_iteratorError3 = err;
-				} finally {
-					try {
-						if (!_iteratorNormalCompletion3 && _iterator3.return) {
-							_iterator3.return();
-						}
-					} finally {
-						if (_didIteratorError3) {
-							throw _iteratorError3;
-						}
-					}
-				}
-
-				return obj;
-			}
-			_export("demapify", demapify);
-
+			DEBUGGING_ENABLED = false;
 			;
 		}
 	};
 });
-//# sourceMappingURL=data:application/json;base64,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
+//# sourceMappingURL=data:application/json;base64,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

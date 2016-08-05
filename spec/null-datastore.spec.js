@@ -9,6 +9,7 @@
 import Promise from 'bluebird';
 
 import {NullDatastore, Criteria, Model} from 'bailiwick';
+import {debug} from 'bailiwick/utils';
 
 
 class User extends Model {}
@@ -95,7 +96,7 @@ describe( 'Null Datastore class', () => {
 						expect( result ).toEqual( jasmine.arrayContaining(objects) );
 					}).
 					catch( err => {
-						console.error( err );
+						debug( err );
 					}).
 					finally( done );
 			});
@@ -138,7 +139,7 @@ describe( 'Null Datastore class', () => {
 					return datastore.store( User, obj );
 				}).
 				then( newIds => {
-					console.debug( `Got IDS=${newIds}` );
+					debug( `Got IDS=${newIds}` );
 					ids = newIds;
 				}).
 				finally( done );
@@ -163,7 +164,7 @@ describe( 'Null Datastore class', () => {
 
 		it( 'rejects the returned Promise when attempting to update a non-existent object', done => {
 			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
-			console.debug( `Non-existent ID = ${nonexistentId}` );
+			debug( `Non-existent ID = ${nonexistentId}` );
 
 			datastore.update( User, nonexistentId, {firstName: 'Jaime'} ).
 				catch( err => {
@@ -190,7 +191,7 @@ describe( 'Null Datastore class', () => {
 					return datastore.store( User, obj );
 				}).
 				then( newIds => {
-					console.debug( `Got IDS=${newIds}` );
+					debug( `Got IDS=${newIds}` );
 					ids = newIds;
 				}).
 				finally( done );
@@ -215,7 +216,7 @@ describe( 'Null Datastore class', () => {
 
 		it( 'rejects the returned Promise when attempting to replace a non-existent object', done => {
 			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
-			console.debug( `Non-existent ID = ${nonexistentId}` );
+			debug( `Non-existent ID = ${nonexistentId}` );
 
 			datastore.replace( User, nonexistentId, {firstName: 'Jaime'} ).
 				catch( err => {
@@ -242,7 +243,7 @@ describe( 'Null Datastore class', () => {
 					return datastore.store( User, obj );
 				}).
 				then( newIds => {
-					console.debug( `Got IDS=${newIds}` );
+					debug( `Got IDS=${newIds}` );
 					ids = newIds;
 				}).
 				finally( done );
@@ -270,7 +271,7 @@ describe( 'Null Datastore class', () => {
 
 		it( 'resolves the returned Promise when removing a non-existent object', done => {
 			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
-			console.debug( `Non-existent ID = ${nonexistentId}` );
+			debug( `Non-existent ID = ${nonexistentId}` );
 
 			datastore.remove( User, nonexistentId ).
 				then( result => {

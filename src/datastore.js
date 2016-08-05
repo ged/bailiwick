@@ -16,7 +16,7 @@ import {debug} from './utils';
 export function datastore( type, ...args ) {
 	return function decorator( target ) {
 		let ds = Reflect.construct( type, args );
-		// console.debug( "Setting datastore of ", target, " to ", ds );
+		debug( "Setting datastore of ", target, " to ", ds );
 		target.datastore = ds;
 	};
 }

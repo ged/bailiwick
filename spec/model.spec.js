@@ -11,13 +11,14 @@ import Promise from 'bluebird';
 import {NullDatastore, Model, ResultSet, Criteria} from 'bailiwick';
 import {validator, ValidationError} from 'bailiwick/validations';
 import {customMatchers} from './helpers';
+import {debug} from 'bailiwick/utils';
 
 
 class User extends Model {
 
 	@validator( 'firstName' )
 	validateFirstName() {
-		console.debug( "validateFirstName called!" );
+		debug( "validateFirstName called!" );
 		if ( this.firstName === 'Nate' ) {
 			throw new ValidationError( "no Nates allowed." );
 		} else if ( !this.firstName || this.firstName === '' ) {
@@ -27,7 +28,7 @@ class User extends Model {
 
 	@validator( 'lastName' )
 	validateLastName() {
-		console.debug( "validateLastName called!" );
+		debug( "validateLastName called!" );
 		if ( !this.lastName || this.lastName === '' ) {
 			throw new ValidationError( "missing" );
 		}
@@ -188,7 +189,7 @@ describe( 'ResultSet class', () => {
 			User.create( { firstName: "Alia", lastName: "Atreides", nickName: "St. Alia of the Knife" } ),
 			User.create( { firstName: "Duncan", lastName: "Idaho" } ),
 			( paul, alia, duncan ) => {
-				console.debug( `Alia is ${alia}` );
+				debug( `Alia is ${alia}` );
 				user1 = paul;
 				user2 = alia;
 				user3 = duncan;

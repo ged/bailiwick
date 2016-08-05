@@ -9,6 +9,11 @@ As of this writing, it's far from ready for production use. These are the things
 3. Work out the ES6 issues. Browers' support for ES6 is currently very spotty, and Babel (which is otherwise an amazing piece of software) doesn't always handle the mixed support for some features and not others really well. I'll need to either find workarounds for these or just wait until ES6 support is more ubiquitous.
 
 
+## Requirements
+
+1. fetch -- I use the `whatwg-fetch` library as a polyfill
+
+
 ## Current API
 
 

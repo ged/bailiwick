@@ -5,6 +5,8 @@
 
 import {Model, Criteria, Datastore, NotImplementedError} from 'bailiwick';
 import * as helpers from './helpers';
+import {debug} from 'bailiwick/utils';
+
 
 class Profile extends Model {}
 
@@ -24,7 +26,7 @@ describe( 'Datastore class', () => {
 		it( 'rejects with "not implemented"', done => {
 			store.get( Profile, 1 ).
 				catch( err => {
-					console.log( `Caught error: ${err}` );
+					debug( `Caught error: ${err}` );
 					expect( err ).toBeA( NotImplementedError );
 					expect( err.message ).
 						toEqual( "No implementation provided for getInstance(...)" );
@@ -40,7 +42,7 @@ describe( 'Datastore class', () => {
 		it( 'rejects with "not implemented"', done => {
 			store.get( Profile, Criteria.all() ).
 				catch( err => {
-					console.error( err );
+					debug( err );
 					expect( err ).toBeA( NotImplementedError );
 					expect( err.message ).
 						toEqual( "No implementation provided for getCollection(...)" );

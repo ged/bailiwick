@@ -5,6 +5,7 @@
 import Promise from 'bluebird';
 import {Model, Criteria, RESTService} from 'bailiwick';
 import * as errors from 'bailiwick/errors';
+import {debug} from 'bailiwick/utils';
 import {customMatchers} from './helpers';
 
 Promise.config({
@@ -25,12 +26,12 @@ function makeResolvingResponsePromise( data, status=200, statusText="Ok", header
 	headers = Object.assign( {}, DEFAULT_HEADERS, headers );
 	headers = new Headers( headers );
 
-	let body = null;
+	let body = undefined;
 
-	if ( typeof data === 'object' ) {
+	if ( data && typeof data === 'object' ) {
 		let json = JSON.stringify( data );
 		body = new Blob( [json], {type : 'application/json'} );
-	} else if ( data != null ) {
+	} else if ( data ) {
 		body = new Blob( [data.toString()], {type: 'application/octet-stream'} );
 	}
 
@@ -82,7 +83,7 @@ describe( 'REST Service datastore class', () => {
 				expect( result ).toEqual( responseData );
 			}).
 			catch( e => {
-				console.error( e );
+				debug( e );
 			}).
 			finally( done );
 
@@ -105,7 +106,7 @@ describe( 'REST Service datastore class', () => {
 					fail( "Didn't get an error response: ", result );
 				}).
 				catch( err => {
-					console.error( err );
+					debug( err );
 					expect( err ).toBeA( errors.RequestError );
 					expect( err.response.status ).toEqual( 404 );
 					expect( err.response.body.json().message ).toEqual( "No such user." );
@@ -131,7 +132,7 @@ describe( 'REST Service datastore class', () => {
 					fail( "Didn't get an error response: ", result );
 				}).
 				catch( err => {
-					console.error( err );
+					debug( err );
 					expect( err ).toBeA( errors.ServerError );
 					expect( err.response.status ).toEqual( 500 );
 					expect( err.response.body.json().message ).toEqual( "Internal error." );
@@ -169,7 +170,7 @@ describe( 'REST Service datastore class', () => {
 				expect( result ).toEqual( responseData );
 			}).
 			catch( e => {
-				console.error( e );
+				debug( e );
 			}).
 			finally( done );
 
@@ -192,7 +193,7 @@ describe( 'REST Service datastore class', () => {
 				expect( result ).toEqual( objects );
 			}).
 			catch( e => {
-				console.error( e );
+				debug( e );
 			}).
 			finally( done );
 
@@ -212,7 +213,8 @@ describe( 'REST Service datastore class', () => {
 
 		it( 'resolves if it is successfully stored', done => {
 			let objectData = {firstName: "Jimiril", lastName: "Pan"};
-			let responsePromise = makeResolvingResponsePromise( null, 201, 'Created', {
+			let responseData = { ...objectData,  id: 21 };
+			let responsePromise = makeResolvingResponsePromise( responseData, 201, 'Created', {
 				Location: baseUrl + '/users/21'
 			} );
 
@@ -221,7 +223,8 @@ describe( 'REST Service datastore class', () => {
 
 			datastore.store( User, objectData ).
 				then( result => {
-					expect( result ).toEqual( 21 );
+					expect( result ).toBeAn( Object );
+					expect( result.id ).toEq( 21 );
 				}).
 				finally( done );
 
@@ -250,7 +253,7 @@ describe( 'REST Service datastore class', () => {
 					fail( "Didn't get an error response: ", result );
 				}).
 				catch( err => {
-					console.error( err );
+					debug( err );
 					expect( err ).toBeA( errors.RequestError );
 					expect( err.response.status ).toEqual( 409 );
 					expect( err.response.body.json().message ).toEqual( "Already exists" );
@@ -269,7 +272,6 @@ describe( 'REST Service datastore class', () => {
 		});
 
 	});
-
 
 
 	describe( 'updating an object returns a Promise that', () => {
@@ -300,112 +302,152 @@ describe( 'REST Service datastore class', () => {
 
 
 		it( 'rejects if the update fails', done => {
+			let objectData = {firstName: "Jimiril", lastName: "Pan"};
+			let responsePromise =
+				makeResolvingResponsePromise({ message: "Validation error" }, 400, 'Request error' );
+
+			spyOn( datastore.httpClient, "fetch" ).and.
+				returnValue( responsePromise );
+
+			datastore.update( User, 32, objectData ).
+				then( result => {
+					fail( "Didn't get an error response: ", result );
+				}).
+				catch( err => {
+					debug( err );
+					expect( err ).toBeA( errors.RequestError );
+					expect( err.response.status ).toEqual( 400 );
+					expect( err.response.body.json().message ).toEqual( "Validation error" );
+				}).
+				finally( done );
+
+			expect( datastore.httpClient.fetch ).toHaveBeenCalledTimes( 1 );
+			expect( datastore.httpClient.fetch ).
+				toHaveBeenCalledWith( baseUrl + '/users/32', {
+					method: 'POST',
+					body: JSON.stringify(objectData),
+					headers: {
+						'Content-type': 'application/json; charset=UTF-8'
+					}
+				});
 		});
 
 	});
 
 
-	describe( 'replacing', () => {
+	describe( 'replacing an object returns a Promise that', () => {
 
-		let objects = [
-			{ firstName: "Petyr", lastName: "Baelish", alias: "Little Finger" },
-			{ firstName: "Jeyne", lastName: "Poole" },
-			{ firstName: "Arya", lastName: "Stark", alias: "Waterdancer" }
-		];
-		let ids;
+		it( 'resolves if the replacement was successful', done => {
+			let objectData = {id: 18, firstName: "Cat", lastName: "of the Canals"};
+			let responsePromise = makeResolvingResponsePromise( objectData, 200, 'Ok' );
 
-		beforeEach( done => {
-			Promise.map( objects, obj => {
-					return datastore.store( User, obj );
-				}).
-				then( newIds => {
-					console.debug( `Got IDS=${newIds}` );
-					ids = newIds;
+			spyOn( datastore.httpClient, "fetch" ).and.
+				returnValue( responsePromise );
+
+			datastore.replace( User, 18, objectData ).
+				then( result => {
+					expect( result ).toEqual( objectData );
 				}).
 				finally( done );
-		});
 
-
-		it( 'can replace the data for an existing object', done => {
-			let objId = ids[ 2 ];
-			datastore.replace( User, objId, {firstName: "Cat", lastName: "of the Canals"} ).
-				then( replacedData => {
-					expect( replacedData ).
-						toEqual({ firstName: "Arya", lastName: "Stark", alias: "Waterdancer" });
-					datastore.get( User, objId ).then( obj => {
-						expect( obj ).
-							toEqual({ firstName: "Cat", lastName: "of the Canals" });
-					});
-				}).
-				finally( done );
+			expect( datastore.httpClient.fetch ).toHaveBeenCalledTimes( 1 );
+			expect( datastore.httpClient.fetch ).
+				toHaveBeenCalledWith( baseUrl + '/users/18', {
+					method: 'PUT',
+					body: JSON.stringify(objectData),
+					headers: {
+						'Content-type': 'application/json; charset=UTF-8'
+					}
+				});
 
 		});
 
 
 		it( 'rejects the returned Promise when attempting to replace a non-existent object', done => {
-			let nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
-			console.debug( `Non-existent ID = ${nonexistentId}` );
+			let objectData = {id: 28, firstName: "Jeyne", lastName: "Poole" };
+			let responsePromise =
+				makeResolvingResponsePromise({ message: "No such user (28)" }, 404, 'Not found' );
 
-			datastore.replace( User, nonexistentId, {firstName: 'Jaime'} ).
+			spyOn( datastore.httpClient, "fetch" ).and.
+				returnValue( responsePromise );
+
+			datastore.replace( User, 28, objectData ).
+				then( result => {
+					fail( "Didn't get an error response: ", result );
+				}).
 				catch( err => {
-					expect( err.name ).toEqual( "Error" );
-					expect( err.message ).toEqual( `No such User ID=${nonexistentId}` );
+					debug( err );
+					expect( err ).toBeA( errors.RequestError );
+					expect( err.response.status ).toEqual( 404 );
+					expect( err.response.body.json().message ).toEqual( "No such user (28)" );
 				}).
 				finally( done );
+
+			expect( datastore.httpClient.fetch ).toHaveBeenCalledTimes( 1 );
+			expect( datastore.httpClient.fetch ).
+				toHaveBeenCalledWith( baseUrl + '/users/28', {
+					method: 'PUT',
+					body: JSON.stringify(objectData),
+					headers: {
+						'Content-type': 'application/json; charset=UTF-8'
+					}
+				});
 		});
 
 	});
 
 
-	describe( 'removing', () => {
+	describe( 'removing an object returns a Promise that', () => {
 
-		let objects = [
-			{ firstName: "Lukas-Kasha", alias: "the King" },
-			{ firstName: "Kayim" },
-			{ firstName: "Nur-Jehan" }
-		];
-		let ids;
+		it( 'resolves if the removal was successful', done => {
+			let responsePromise = makeResolvingResponsePromise( null, 204, 'No content' );
 
-		beforeEach( done => {
-			Promise.map( objects, obj => {
-					return datastore.store( User, obj );
-				}).
-				then( newIds => {
-					console.debug( `Got IDS=${newIds}` );
-					ids = newIds;
-				}).
-				finally( done );
-		});
+			spyOn( datastore.httpClient, "fetch" ).and.
+				returnValue( responsePromise );
 
-
-		it( 'can remove the data for an existing object', done => {
-			let objId = ids[ 1 ];
-			datastore.remove( User, objId ).
-				then( removedData => {
-					expect( removedData ).toBe( true );
-
-					datastore.get( User, objId ).then( obj => {
-						fail( `User ${objId} was not removed.` );
-					}).
-					catch( err => {
-						expect( err.name ).toEqual( "Error" );
-						expect( err.message ).toEqual( `No such User ID=${objId}` );
-					});
-				}).
-				finally( done );
-
-		});
-
-
-		it( 'resolves the returned Promise when removing a non-existent object', done => {
-			let nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
-			console.debug( `Non-existent ID = ${nonexistentId}` );
-
-			datastore.remove( User, nonexistentId ).
+			datastore.remove( User, 136 ).
 				then( result => {
-					expect( result ).toBe( false );
+					expect( result ).toBeNull();
 				}).
 				finally( done );
+
+			expect( datastore.httpClient.fetch ).toHaveBeenCalledTimes( 1 );
+			expect( datastore.httpClient.fetch ).
+				toHaveBeenCalledWith( baseUrl + '/users/136', {
+					method: 'DELETE',
+					body: null,
+					headers: {}
+				});
+
+		});
+
+
+		it( 'rejects if the removal failed', done => {
+			let responsePromise =
+				makeResolvingResponsePromise({ message: "Permission denied." }, 403, 'Forbidden' );
+
+			spyOn( datastore.httpClient, "fetch" ).and.
+				returnValue( responsePromise );
+
+			datastore.remove( User, 136 ).
+				then( result => {
+					fail( "Didn't get an error response: ", result );
+				}).
+				catch( err => {
+					debug( err );
+					expect( err ).toBeA( errors.RequestError );
+					expect( err.response.status ).toEqual( 403 );
+					expect( err.response.body.json().message ).toEqual( "Permission denied." );
+				}).
+				finally( done );
+
+			expect( datastore.httpClient.fetch ).toHaveBeenCalledTimes( 1 );
+			expect( datastore.httpClient.fetch ).
+				toHaveBeenCalledWith( baseUrl + '/users/136', {
+					method: 'DELETE',
+					body: null,
+					headers: {}
+				});
 		});
 
 	});

@@ -10,22 +10,13 @@ module.exports = function(config) {
 		],
 		jspm: {
 			loadFiles: [ 'spec/helpers', 'spec/**/*.js' ],
-			serveFiles: [ 'dist/amd/**/*.js' ]
+			serveFiles: [ 'dist/es6/**/*.js' ]
 		},
-		preprocessors: {
-			'spec/**/*.js': ['babel']
-		},
-		babelPreprocessor: {
-			options: {
-				sourceMap: 'inline',
-				presets: [ 'stage-1' ],
-				plugins: [ 'transform-decorators-legacy' ]
-			}
-		},
+		preprocessors: {},
 		files: [],
 		exclude: [],
 		preprocessors: {},
-		reporters: ['progress'],
+		reporters: ['spec'],
 		port: 9876,
 		colors: true,
 		logLevel: config.LOG_INFO,

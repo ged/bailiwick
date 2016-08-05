@@ -1,16 +1,15 @@
 /* -*- javascript -*- */
 "use strict";
 
-import 'babel/polyfill';
+import 'es6-error';
 
 export var customMatchers = {
 
 	toBeA: function() {
 		return {
 			compare: function( actual, expected ) {
-				console.debug( `Checking to see if ${actual} is an instanceof ${expected}` );
 				var result = {
-					pass: actual instanceof expected
+					pass: actual instanceof expected || actual.constructor.name == expected.name
 				};
 				if ( result.pass ) {
 					result.message = `${actual} is a ${expected.name}`;
