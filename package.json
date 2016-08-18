@@ -2,7 +2,7 @@
   "name": "bailiwick",
   "description": "This is an experimental model toolkit for web applications. It's meant to allow for a model that is closer to the Domain Model pattern.",
   "homepage": "https://bitbucket.org/ged/bailiwick#readme",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.3",
   "scripts": {
     "postinstall": "jspm install -y",
     "test": "gulp test"
@@ -25,6 +25,7 @@
     "lib": "dist",
     "packages": "jspm_packages"
   },
+  "format": "es6",
   "main": "es6/index.js",
   "devDependencies": {
     "babel-core": "^6.5.2",
@@ -78,7 +79,7 @@
   "jspm": {
     "registry": "npm",
     "main": "index",
-    "format": "amd",
+    "format": "es6",
     "directories": {
       "doc": "doc",
       "lib": "dist/es6"
