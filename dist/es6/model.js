@@ -363,7 +363,7 @@ export class Model {
 		this.errors = new ValidationErrors();
 		let promises = [];
 
-		for ( let [field, validationMethod] of this[VALIDATORS] ) {
+		for ( let [field, validationMethod] of this.constructor.validators ) {
             debug( `Adding validation promise for ${field}` );
 			let pr = Promise.try( () => validationMethod.call(this) );
 			promises.push( pr );

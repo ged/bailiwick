@@ -16,14 +16,9 @@ export function validator( field ) {
 	return function decorator( target, name, descriptor ) {
 		var methodBody = descriptor.value;
 
-		// :TODO: Should this error instead?
-		if ( !target[ VALIDATORS ] ) {
-			target[ VALIDATORS ] = new Map();
-		}
-
 		// Promisify the method and add it to the list of validators
 		descriptor.value = Promise.method( methodBody );
-		target[ VALIDATORS ].set( field, descriptor.value );
+		target.constructor.validators.set( field, descriptor.value );
 
 		return descriptor;
 	};
