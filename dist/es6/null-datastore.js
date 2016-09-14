@@ -17,18 +17,6 @@ import {debug} from './utils';
 export class NullDatastore extends Datastore {
 
 	/**
-	 * ID-generator function.
-	 * @static
-	 */
-	static *genId() {
-		let i = 0;
-		for( ;; ) {
-			yield( ++i );
-		}
-	}
-
-
-	/**
 	 * Create a new NullDatastore
 	 */
 	constructor() {
@@ -46,7 +34,7 @@ export class NullDatastore extends Datastore {
 		if ( !this.objects.has(type) ) {
 			debug( "ObjectStore doesn't have a %s collection; creating one.", type );
 			this.objects.set( type, new Map() );
-			this.ids.set( type, NullDatastore.genId() );
+			this.ids.set( type, 0 );
 		}
 
 		return this.objects.get( type );
@@ -165,7 +153,8 @@ export class NullDatastore extends Datastore {
 	 */
 	store( type, data ) {
 		let collection = this.getCollectionForType( type );
-		let id = this.ids.get( type ).next().value;
+		let id = this.ids.get( type ) + 1;
+		this.ids.set( type, id );
 
 		debug( `Storing ${type.name} ID=${id}` );
 		collection.set( id, data );
