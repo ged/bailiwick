@@ -81,7 +81,7 @@ System.register(['bluebird', './model', './datastore', './criteria', './associat
       _export(_exportObj9);
     }],
     execute: function () {
-      _export('VERSION', VERSION = '0.0.1-alpha.3');
+      _export('VERSION', VERSION = '0.0.1-alpha.4');
 
       _export('VERSION', VERSION);
     }
