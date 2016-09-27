@@ -19,9 +19,12 @@ module.exports = function(config) {
 		reporters: ['spec'],
 		port: 9876,
 		colors: true,
-		logLevel: config.LOG_INFO,
+		// logLevel: config.LOG_INFO,
+		logLevel: config.LOG_DEBUG,
 		autoWatch: true,
-		browsers: ['ChromeCanary'],
+		browsers: [
+			'ChromeCanary'
+		],
 		singleRun: true,
 		concurrency: Infinity
 	})

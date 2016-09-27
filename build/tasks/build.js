@@ -54,7 +54,7 @@ gulp.task('build-amd', function() {
 gulp.task('build', function(callback) {
 	return runSequence(
 		'clean',
-		['build-system', 'build-es6'],
+		['build-system', 'build-amd', 'build-es6'],
 		callback
 	);
 });

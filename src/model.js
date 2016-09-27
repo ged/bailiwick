@@ -258,6 +258,28 @@ export class Model {
 
 
 	/**
+	 * Replace the data in the object's store with all values from the object
+     * and return a Promise that will resolve to the result.
+	 */
+	replace() {
+		let data = Object.assign( {}, this[DATA] );
+
+		return this.validate().
+			then( () => {
+				return this[ DATASTORE ].replace( this.constructor, this.id, data );
+			}).
+			then( mergedData => {
+				Object.assign( this[ DATA ], mergedData );
+				this[ NEW_OBJECT ] = false;
+				this[ DIRTY_FIELDS ].clear();
+				this.defineAttributes( this[DATA] );
+
+				return this;
+			});
+	}
+
+
+	/**
 	 * Delete the object from the object's store and return a Promise that will resolve to the
      * result.
 	 */
@@ -281,7 +303,7 @@ export class Model {
 	getValue( name ) {
 		if ( this.constructor.associations.has(name) ) {
 			let fn = this.constructor.associations.get( name );
-            return fn( this[DATA][name] );
+            return Reflect.apply( this, fn, )
 		} else {
 			return this[ DATA ][ name ];
 		}
