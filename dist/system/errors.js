@@ -75,7 +75,7 @@ System.register(["es6-error"], function (_export, _context) {
 				function NotImplementedError(methodname) {
 					_classCallCheck(this, NotImplementedError);
 
-					return _possibleConstructorReturn(this, Object.getPrototypeOf(NotImplementedError).call(this, "No implementation provided for " + methodname + "(...)"));
+					return _possibleConstructorReturn(this, (NotImplementedError.__proto__ || Object.getPrototypeOf(NotImplementedError)).call(this, "No implementation provided for " + methodname + "(...)"));
 				}
 
 				return NotImplementedError;
@@ -109,7 +109,7 @@ System.register(["es6-error"], function (_export, _context) {
 				function HTTPError(response) {
 					_classCallCheck(this, HTTPError);
 
-					var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(HTTPError).call(this, "[" + response.status + "] " + response.statusText));
+					var _this2 = _possibleConstructorReturn(this, (HTTPError.__proto__ || Object.getPrototypeOf(HTTPError)).call(this, "[" + response.status + "] " + response.statusText));
 
 					_this2.status = 500;
 					_this2.statusText = "Unknown error";
@@ -139,7 +139,7 @@ System.register(["es6-error"], function (_export, _context) {
 				function RequestError() {
 					_classCallCheck(this, RequestError);
 
-					return _possibleConstructorReturn(this, Object.getPrototypeOf(RequestError).apply(this, arguments));
+					return _possibleConstructorReturn(this, (RequestError.__proto__ || Object.getPrototypeOf(RequestError)).apply(this, arguments));
 				}
 
 				return RequestError;
@@ -153,7 +153,7 @@ System.register(["es6-error"], function (_export, _context) {
 				function ServerError() {
 					_classCallCheck(this, ServerError);
 
-					return _possibleConstructorReturn(this, Object.getPrototypeOf(ServerError).apply(this, arguments));
+					return _possibleConstructorReturn(this, (ServerError.__proto__ || Object.getPrototypeOf(ServerError)).apply(this, arguments));
 				}
 
 				return ServerError;
@@ -163,4 +163,4 @@ System.register(["es6-error"], function (_export, _context) {
 		}
 	};
 });
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImVycm9ycy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiO0FBQ0E7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBRU8sa0I7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O2tDQUdNLG1COzs7QUFFWixpQ0FBYSxVQUFiLEVBQTBCO0FBQUE7O0FBQUEsdUlBQ2UsVUFEZjtBQUV6Qjs7O0tBSnVDLGU7Ozs7d0JBUTVCLFM7Ozs7O2tDQU9TLFEsRUFBVztBQUMvQixVQUFLLFNBQVMsRUFBZCxFQUFtQjtBQUNsQiw4QkFBOEMsUUFBOUM7QUFDQTs7QUFFRCxjQUFRLEtBQUssS0FBTCxDQUFXLFNBQVMsTUFBVCxHQUFrQixHQUE3QixDQUFSO0FBQ0MsWUFBSyxDQUFMO0FBQ0MsZUFBTyxJQUFJLFlBQUosQ0FBa0IsUUFBbEIsQ0FBUDtBQUNBO0FBQ0QsWUFBSyxDQUFMO0FBQ0MsZUFBTyxJQUFJLFdBQUosQ0FBaUIsUUFBakIsQ0FBUDtBQUNBO0FBQ0Q7QUFDQyxlQUFPLElBQUksU0FBSixDQUFlLFFBQWYsQ0FBUDtBQVJGO0FBVUE7OztBQUdELHVCQUFhLFFBQWIsRUFBd0I7QUFBQTs7QUFBQSxxR0FDWixTQUFTLE1BREcsVUFDUSxTQUFTLFVBRGpCOztBQUFBLFlBdkJ4QixNQXVCd0IsR0F2QmYsR0F1QmU7QUFBQSxZQXRCeEIsVUFzQndCLEdBdEJYLGVBc0JXO0FBQUEsWUFyQnhCLFFBcUJ3QixHQXJCYixJQXFCYTs7QUFFdkIsWUFBSyxNQUFMLEdBQWMsU0FBUyxNQUF2QjtBQUNBLFlBQUssVUFBTCxHQUFrQixTQUFTLFVBQTNCO0FBQ0EsWUFBSyxRQUFMLEdBQWdCLFFBQWhCO0FBSnVCO0FBS3ZCOzs7VUFNSSxPQUFPLFc7eUJBQWU7QUFDMUIsbUJBQVcsS0FBSyxXQUFMLENBQWlCLElBQTVCLFVBQXFDLEtBQUssTUFBMUMsV0FBc0QsS0FBSyxVQUEzRDtBQUNBOzs7O0tBdEM2QixlOzs7OzJCQTRDbEIsWTs7Ozs7Ozs7OztLQUFxQixTOzs7OzBCQUdyQixXOzs7Ozs7Ozs7O0tBQW9CLFMiLCJmaWxlIjoiZXJyb3JzLmpzIiwic291cmNlUm9vdCI6Ii9saWIifQ==
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImVycm9ycy5qcyJdLCJuYW1lcyI6WyJFeHRlbmRhYmxlRXJyb3IiLCJOb3RJbXBsZW1lbnRlZEVycm9yIiwibWV0aG9kbmFtZSIsIkhUVFBFcnJvciIsInJlc3BvbnNlIiwib2siLCJyYWlzZSIsIk1hdGgiLCJmbG9vciIsInN0YXR1cyIsIlJlcXVlc3RFcnJvciIsIlNlcnZlckVycm9yIiwic3RhdHVzVGV4dCIsIlN5bWJvbCIsInRvU3RyaW5nVGFnIiwiY29uc3RydWN0b3IiLCJuYW1lIl0sIm1hcHBpbmdzIjoiO0FBQ0E7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBRU9BLGtCOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztrQ0FHTUMsbUI7OztBQUVaLGlDQUFhQyxVQUFiLEVBQTBCO0FBQUE7O0FBQUEsMEtBQ2VBLFVBRGY7QUFFekI7OztLQUp1Q0YsZTs7Ozt3QkFRNUJHLFM7Ozs7O2tDQU9TQyxRLEVBQVc7QUFDL0IsVUFBS0EsU0FBU0MsRUFBZCxFQUFtQjtBQUNsQkMsOEJBQThDRixRQUE5QztBQUNBOztBQUVELGNBQVFHLEtBQUtDLEtBQUwsQ0FBV0osU0FBU0ssTUFBVCxHQUFrQixHQUE3QixDQUFSO0FBQ0MsWUFBSyxDQUFMO0FBQ0MsZUFBTyxJQUFJQyxZQUFKLENBQWtCTixRQUFsQixDQUFQO0FBQ0E7QUFDRCxZQUFLLENBQUw7QUFDQyxlQUFPLElBQUlPLFdBQUosQ0FBaUJQLFFBQWpCLENBQVA7QUFDQTtBQUNEO0FBQ0MsZUFBTyxJQUFJRCxTQUFKLENBQWVDLFFBQWYsQ0FBUDtBQVJGO0FBVUE7OztBQUdELHVCQUFhQSxRQUFiLEVBQXdCO0FBQUE7O0FBQUEsOEhBQ1pBLFNBQVNLLE1BREcsVUFDUUwsU0FBU1EsVUFEakI7O0FBQUEsWUF2QnhCSCxNQXVCd0IsR0F2QmYsR0F1QmU7QUFBQSxZQXRCeEJHLFVBc0J3QixHQXRCWCxlQXNCVztBQUFBLFlBckJ4QlIsUUFxQndCLEdBckJiLElBcUJhOztBQUV2QixZQUFLSyxNQUFMLEdBQWNMLFNBQVNLLE1BQXZCO0FBQ0EsWUFBS0csVUFBTCxHQUFrQlIsU0FBU1EsVUFBM0I7QUFDQSxZQUFLUixRQUFMLEdBQWdCQSxRQUFoQjtBQUp1QjtBQUt2Qjs7O1VBTUlTLE9BQU9DLFc7eUJBQWU7QUFDMUIsbUJBQVcsS0FBS0MsV0FBTCxDQUFpQkMsSUFBNUIsVUFBcUMsS0FBS1AsTUFBMUMsV0FBc0QsS0FBS0csVUFBM0Q7QUFDQTs7OztLQXRDNkJaLGU7Ozs7MkJBNENsQlUsWTs7Ozs7Ozs7OztLQUFxQlAsUzs7OzswQkFHckJRLFc7Ozs7Ozs7Ozs7S0FBb0JSLFMiLCJmaWxlIjoiZXJyb3JzLmpzIiwic291cmNlUm9vdCI6Ii9saWIifQ==

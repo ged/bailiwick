@@ -81,7 +81,7 @@
   "jspm": {
     "registry": "npm",
     "main": "index",
-    "format": "amd",
+	"format": "amd",
     "directories": {
       "doc": "doc",
       "lib": "dist/amd"
@@ -91,6 +91,10 @@
       "es6-error": "^3.0.1",
       "inflection": "^1.8.0"
     },
-    "devDependencies": {}
+    "devDependencies": {
+      "babel": "babel-core@^5.8.24",
+      "babel-runtime": "^5.8.24",
+      "core-js": "^1.1.4"
+    }
   }
 }
