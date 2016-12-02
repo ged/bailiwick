@@ -36,7 +36,7 @@ export class ResultSet {
 		if ( limit ) { cr = cr.limit( limit ); }
 		if ( offset ) { cr = cr.offset( offset ); }
 
-		debug( "Fetching %s results matching criteria: %o", this.model.name, cr );
+		debug( `Fetching ${this.model.name} results matching criteria: `, cr );
 		return this.model.get( cr );
 	}
 

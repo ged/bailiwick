@@ -7,11 +7,8 @@ const DEBUGGING_ENABLED = false;
 /**
  * Enable/disable console debugging en masse if DEBUGGING_ENABLED is set.
  */
-export function debug( ...args ) {
-	if ( DEBUGGING_ENABLED ) {
-		console.debug( ...args );
-	}
-}
+export var debug = DEBUGGING_ENABLED ? console.debug : function() {}
+
 
 
 /**
@@ -23,9 +20,7 @@ export function debug( ...args ) {
 export function monadic( target, name, descriptor ) {
 	var realfunc = descriptor.value;
 	descriptor.value = function( ...args ) {
-		debug( `Cloning for monadic method ${name}` );
 		var dup = this.clone();
-		debug( "  cloned: %o... applying method", dup );
 		realfunc.apply( dup, args );
 		return dup;
 	};

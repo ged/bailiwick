@@ -10,9 +10,30 @@ module.exports = function(config) {
 		],
 		jspm: {
 			loadFiles: [ 'spec/helpers', 'spec/**/*.js' ],
-			serveFiles: [ 'dist/es6/**/*.js' ]
+			serveFiles: [ 'dist/es6/**/*.js' ],
+			paths: {
+				'*': 'src/*',
+				'spec/*': 'spec/*',
+				'github:*': 'jspm_packages/github/*',
+				'npm:*': 'jspm_packages/npm/*'
+			}
 		},
-		preprocessors: {},
+		preprocessors: {
+			'test/**/*.js': ['babel'],
+			'src/**/*.js': ['babel']
+		},
+		'babelPreprocessor': {
+			options: {
+				sourceMap: 'inline',
+				presets: [ ['es2015', { loose: true }], 'stage-1'],
+				plugins: [
+					'syntax-flow',
+					'transform-decorators-legacy',
+					'transform-flow-strip-types',
+					[ 'istanbul', { 'ignore': 'test/' } ]
+				]
+			}
+		},
 		files: [],
 		exclude: [],
 		preprocessors: {},
