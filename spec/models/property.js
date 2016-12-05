@@ -7,6 +7,6 @@ import {Base} from './base';
 import {User} from './user';
 
 
-class Property extends Base {
+export class Property extends Base {
 	@manyToOne( 'owner', User ) owner;
 }

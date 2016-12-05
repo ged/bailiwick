@@ -3,5 +3,5 @@
 
 import {Model} from 'bailiwick';
 
-class Base extends Model {}
+export class Base extends Model {}
 
