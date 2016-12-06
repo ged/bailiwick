@@ -53,7 +53,7 @@ var config = {
 			root: "Promise"
 		},
 		"inflection": "inflection",
-		"es6-error": "es6-errors"
+		"es6-error": "es6-error"
 	}
 };
 
