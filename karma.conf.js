@@ -3,45 +3,23 @@
 
 module.exports = function(config) {
 	config.set({
-		basePath: '',
+		basePath: '.',
 		frameworks: [
-			'jasmine',
-			'jspm'
+			'jasmine'
 		],
-		jspm: {
-			loadFiles: [ 'spec/helpers', 'spec/**/*.js' ],
-			serveFiles: [ 'dist/es6/**/*.js' ],
-			paths: {
-				'*': 'src/*',
-				'spec/*': 'spec/*',
-				'github:*': 'jspm_packages/github/*',
-				'npm:*': 'jspm_packages/npm/*'
-			}
-		},
+		files: [
+			'./lib/bailiwick.js'
+		],
 		preprocessors: {
-			'test/**/*.js': ['babel'],
-			'src/**/*.js': ['babel']
+			'spec/**/*.js': ['babel'],
+			'src/**/*.js': ['webpack']
 		},
-		'babelPreprocessor': {
-			options: {
-				sourceMap: 'inline',
-				presets: [ ['es2015', { loose: true }], 'stage-1'],
-				plugins: [
-					'syntax-flow',
-					'transform-decorators-legacy',
-					'transform-flow-strip-types',
-					[ 'istanbul', { 'ignore': 'test/' } ]
-				]
-			}
-		},
-		files: [],
 		exclude: [],
-		preprocessors: {},
 		reporters: ['spec'],
 		port: 9876,
 		colors: true,
-    logLevel: config.LOG_INFO,
-    // logLevel: config.LOG_DEBUG,
+		logLevel: config.LOG_INFO,
+		// logLevel: config.LOG_DEBUG,
 		autoWatch: true,
 		browsers: [
 			'ChromeCanary'

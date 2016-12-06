@@ -46,7 +46,6 @@ export class Criteria {
 	/**
 	 * Create clone of the current criteria with the additional filter
 	 * {pairs}.
-	 * 
 	 */
 	@monadic
 	filter( pairs ) {

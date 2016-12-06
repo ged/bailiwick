@@ -4,8 +4,9 @@
   "homepage": "https://bitbucket.org/ged/bailiwick#readme",
   "version": "0.1.0-alpha.5",
   "scripts": {
-    "postinstall": "jspm install -y",
-    "test": "gulp test"
+    "build": "WEBPACK_ENV=build webpack",
+    "dev": "webpack --progress --colors --watch --mode=dev",
+    "test": "karma start karma.conf.js --single-run"
   },
   "keywords": [
     "domain",
@@ -22,75 +23,44 @@
   },
   "directories": {
     "doc": "doc",
-    "lib": "dist",
-    "packages": "jspm_packages"
+    "lib": "lib"
   },
-  "format": "amd",
-  "main": "amd/index.js",
+  "format": "umd",
+  "main": "lib/bailiwick.js",
   "devDependencies": {
-    "babel-core": "^6.5.2",
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.18.2",
     "babel-eslint": "^7.1.1",
+    "babel-loader": "^6.2.8",
+    "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-decorators-legacy": "^1.3.4",
     "babel-plugin-transform-es2015-modules-amd": "^6.6.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.6.0",
     "babel-plugin-transform-es2015-modules-systemjs": "^6.6.0",
-    "babel-plugin-transform-runtime": "^6.6.0",
+    "babel-plugin-transform-runtime": "^6.15.0",
     "babel-polyfill": "^6.3.14",
     "babel-preset-es2015": "^6.6.0",
-    "babel-preset-stage-1": "^6.3.13",
-    "conventional-changelog": "^1.1.0",
-    "del": "^2.2.0",
-    "gulp": "^3.9.1",
-    "gulp-autoprefixer": "^3.1.0",
-    "gulp-babel": "^6.1.2",
-    "gulp-bump": "^1.0.0",
-    "gulp-changed": "^1.3.0",
-    "gulp-concat": "^2.6.0",
-    "gulp-debug": "^2.1.2",
-    "gulp-documentation": "^2.2.0",
-    "gulp-eslint": "^2.0.0",
-    "gulp-notify": "^2.2.0",
-    "gulp-plumber": "^1.1.0",
-    "gulp-shell": "^0.5.2",
-    "gulp-sourcemaps": "^1.6.0",
-    "gulp-util": "^3.0.7",
+    "babel-preset-latest": "^6.16.0",
+    "babel-preset-stage-1": "^6.16.0",
+    "eslint": "^3.11.1",
+    "eslint-loader": "^1.6.1",
     "jasmine": "^2.4.1",
     "jasmine-core": "^2.4.1",
-    "jspm": "^0.16.0",
     "karma": "^0.13.19",
     "karma-babel-preprocessor": "^6.0.1",
     "karma-chrome-launcher": "^0.2.2",
-    "karma-coverage": "^1.1.1",
     "karma-firefox-launcher": "^1.0.0",
     "karma-jasmine": "^0.3.7",
-    "karma-jspm": "^2.1.0",
     "karma-phantomjs-launcher": "^1.0.0",
     "karma-sourcemap-loader": "^0.3.5",
     "karma-spec-reporter": "0.0.26",
-    "karma-systemjs": "^0.12.0",
-    "object.assign": "^4.0.4",
-    "phantomjs-prebuilt": "^2.1.3",
-    "require-dir": "^0.3.0",
-    "run-sequence": "^1.1.5",
-    "systemjs": "^0.19.23",
-    "vinyl-paths": "^2.1.0"
+    "karma-webpack": "^1.8.0",
+    "webpack": "^1.13.3",
+    "yargs": "^6.5.0"
   },
   "dependencies": {
     "bluebird": "^3.3.3",
     "es6-error": "^3.0.1",
     "inflection": "^1.8.0"
-  },
-  "jspm": {
-    "registry": "npm",
-    "main": "index",
-    "directories": {
-      "doc": "doc",
-      "lib": "dist/amd"
-    },
-    "dependencies": {
-      "bluebird": "^3.3.4",
-      "es6-error": "^3.0.1",
-      "inflection": "^1.8.0"
-    }
   }
 }

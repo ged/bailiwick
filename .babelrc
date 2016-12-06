@@ -1,0 +1,11 @@
+{
+  "sourceMap": "inline",
+  "presets": [
+    "latest", "stage-1"
+  ],
+  "plugins": [
+    "transform-decorators-legacy",
+    "babel-plugin-add-module-exports"
+  ]
+}
+
