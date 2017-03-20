@@ -186,7 +186,8 @@ describe( 'ResultSet class', () => {
 		User.datastore = new NullDatastore();
 		Promise.join(
 			User.create( { firstName: "Paul", lastName: "Atreides", nickName: "Muad'Dib" } ),
-			User.create( { firstName: "Alia", lastName: "Atreides", nickName: "St. Alia of the Knife" } ),
+			User.create( { firstName: "Alia", lastName: "Atreides",
+				nickName: "St. Alia of the Knife" } ),
 			User.create( { firstName: "Duncan", lastName: "Idaho" } ),
 			( paul, alia, duncan ) => {
 				debug( `Alia is ${alia}` );

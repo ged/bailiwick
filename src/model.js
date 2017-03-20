@@ -286,7 +286,15 @@ export class Model {
 	delete() {
 		if ( this.id ) {
 			return this[ DATASTORE ].remove( this.constructor, this.id ).
-				then( () => this );
+				then( deletedData => {
+					console.debug( "Updating ", this, " with results from deletion." );
+					Object.assign( this[ DATA ], deletedData );
+					this[ NEW_OBJECT ] = true;
+					this[ DIRTY_FIELDS ].clear();
+					this.defineAttributes( this[DATA] );
+
+					return this;
+				});
 		} else {
 			return Promise.resolve( this[ DATA ] );
 		}
@@ -316,9 +324,17 @@ export class Model {
 	setValue( name, value ) {
 		// debug(`Setting ${name} to ${value}`);
 		if ( this[ DATA ][name] !== value ) {
-            this[ DIRTY_FIELDS ].add( name );
+            this.markDirty( name );
         }
 		this[ DATA ][ name ] = value;
+	}
+
+
+	/**
+	 * Mark the field with the specified {name} as dirty (changed since the object was loaded.)
+	 */
+	markDirty( fieldName ) {
+		this[ DIRTY_FIELDS ].add( fieldName );
 	}
 
 
