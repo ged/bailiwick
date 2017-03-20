@@ -16,11 +16,13 @@ $(BUNDLE): $(SOURCES)
 	@echo "Bundling..."
 	$(webpack)
 
+.PHONY: all clean test
 .DEFAULT: $(BUNDLE)
-	@echo $(ES5_SOURCES)
-	@echo $(ES6_SOURCES)
+
+all: clean $(BUNDLE) test
 
 clean:
 	rm -rf $(LIB)
 
-
+test:
+	yarn run test
