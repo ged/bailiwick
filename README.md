@@ -2,16 +2,19 @@
 
 This is an experimental model toolkit for web applications. It's meant to allow for a model that is closer to the Domain Model pattern. It's been factored out of working domain models in several web applications to make it as practical and useful as possible while avoiding chrome plating and the geegaws that sometimes accompany such frameworks or toolkits.
 
-As of this writing, it's far from ready for production use. These are the things which must be done, at a minimum, before it's ready for a 1.0 release:
+The code is getting close to being useful for production code. There are a few things left to work out before I'd feel comfortable saying it's 1.0, but I'm using it in a few applications now and really enjoying it.
 
-1. Testing. I started the library test-first, but it was difficult to stick to that and still base the code on refactored application code. It has a testing setup, but it's fragile. Cross-compilation and heavy use of promises make it extremely difficult to figure out sometimes why failures happen. I may need to just burn it down and start over, especially if I can find a less-finicky setup than Karma+Jasmine for ES6 testing. Or maybe I just need to level up my Javascript testing skills.
-2. Flesh out the API. There are several big features which I think are necessary for any domain model library which are current not implemented. I'm hoping by using the library in a couple of different scenarios to factor the rest of the functionality out of the working code like the rest of it has been.
-3. Work out the ES6 issues. Browers' support for ES6 is currently very spotty, and Babel (which is otherwise an amazing piece of software) doesn't always handle the mixed support for some features and not others really well. I'll need to either find workarounds for these or just wait until ES6 support is more ubiquitous.
+I think I've ironed out the testing and packaging, but I'm still unsure of what the best way to package an ES6 library for NPM is.
+
+The things left to work on are:
+
+* Associations: because ES6's `import` isn't really fully implemented, especially in the browser, mutual associations can't be declared via the decorators; the second association to be added always sees the associated class as `undefined`. You *can*, however, declare them after the class declaration using the `associations` delegator. I think this is workable for now, it's just not quite as pretty.
+* 
 
 
 ## Requirements
 
-1. fetch -- I use the `whatwg-fetch` library as a polyfill
+1. fetch -- this library uses the `isomorphic-fetch` library for testing.
 
 
 ## Current API
@@ -84,6 +87,7 @@ As of this writing, it's far from ready for production use. These are the things
 
 	let smiths = [],
 	    adminRole = null;
+
 	User.where({ lastName: 'Smith' }).get().
 		then( users => smiths.push(...users) ).
 		catch( err => console.error("Couldn't fetch Smiths: ", err) );
@@ -106,37 +110,36 @@ As of this writing, it's far from ready for production use. These are the things
 		})
 
 
-## Proposed Additional API
-
 ### Associations
 
-This will allow auto-generation of methods on model objects that return other related model objects.
+This allows auto-generation of methods on model objects that return other related model objects.
 
 	import {manyToMany} from 'bailiwick';
 
 	export class User extends AcmeModel {
 	
-		@manyToMany('roles');
+        @oneToMany('orders', Order);
 		
 	}
 
-	export class Role extends AcmeModel {
+    export class Order extends AcmeModel {
 	
-		@manyToMany('members', User);
+        @manyToOne('customer', User);
 	
 	}
 
-	let user = null, userRoles = [];
+    let user = null, orders = [];
 
-	User.get( 23 ).then( user23 => {
-		user = user23;
-		return this.getRoles().then( roles => userRoles.push(...roles) );
+    User.get( 23 ).then( result => {
+        user = result;
+        return user.getOrders().
+      then( results => orders.push(...results) );
 	});
 
 
 ### Schema Declaration
 
-This will allow model classes to (optionally) pre-define their API without needing to fetch a record from the datastore first. This will make it easier to construct new instances, provide defaults, etc.
+This will allow model classes to (optionally) pre-define their API without needing to fetch a record from the datastore first. This is used when constructing new instances so you don't have to provide every field:
 
 	import {schema} from 'bailiwick';
 	
@@ -148,23 +151,31 @@ This will allow model classes to (optionally) pre-define their API without needi
 	})
 	export class User extends AcmeModel {}
 	
-Or maybe:
-
-	export class User extends AcmeModel {
-		@schema({
-			firstName: null,
-			lastName: null,
-			login: null,
-			roles: []
-		});
-	}
+  let u = new User({ firstName: 'Lana', lastName: 'Del Rey' });
 
 
 ### Validation Utilities
 
-This will be a library of decorators that can be used to declare common validations for attributes (e.g., present, type, minLength, maxLength, matchesPattern, etc.).
+This provides decorators that can be used to declare validation functions for attributes.
 
-This would be basically the same as the User in the Current API example:
+    import {validator} from 'bailiwick';
+
+    export class User extends AcmeModel {
+      @validator('type')
+      validateLogin() {
+          if ( !this.login ) {
+            throw new Error("login must be set");
+          } else if ( this.login !~ /^[a-z]\w{2,16}$/ ) {
+              throw new Error( `invalid login: ${this.login}` );
+          }
+      }    
+    }
+
+Validator methods are called by the `validate` method, which returns a Promise the resolves iff all of its validators run with no errors being raised.
+
+The `validate` method is called automatically by `create`, `update`, and `replace`.
+
+I'm planning on adding some canned validation functions for common checks:
 
 	import {
 		validatesPresence,
