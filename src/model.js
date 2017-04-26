@@ -6,21 +6,22 @@ import inflection from 'inflection';
 
 import {ResultSet} from './result-set';
 import {ValidationErrors} from './validations';
+import {associationDelegator} from './associations';
 import {debug} from './utils';
 
 /*
  * Use symbols for model object properties so they don't collide with
  * data properties.
  */
-const NEW_OBJECT         = Symbol.for("newObject"),
-      DATA               = Symbol.for("data"),
-      DIRTY_FIELDS       = Symbol.for("dirtyFields"),
+const ASSOCIATIONS       = Symbol.for("associations"),
       ASSOCIATIONS_CACHE = Symbol.for("associationsCache"),
+      DATA               = Symbol.for("data"),
       DATASTORE          = Symbol.for("datastore"),
+      DIRTY_FIELDS       = Symbol.for("dirtyFields"),
+      NEW_OBJECT         = Symbol.for("newObject"),
+      SCHEMA             = Symbol.for("schema"),
       VALIDATORS         = Symbol.for("validators"),
-      ASSOCIATIONS       = Symbol.for("associations"),
-      VALUE_STRING       = Symbol.for("valueString"),
-      SCHEMA             = Symbol.for("schema");
+      VALUE_STRING       = Symbol.for("valueString");
 
 
 /**
@@ -32,11 +33,11 @@ const NEW_OBJECT         = Symbol.for("newObject"),
 export class Model {
 
 	/**
-	 * Get the Map of associations defined for the class.
+	 * Get the association delegator for this model class.
 	 */
 	static get associations() {
 		if ( !this[ASSOCIATIONS] ) {
-			this[ ASSOCIATIONS ] = new Map();
+			this[ ASSOCIATIONS ] = associationDelegator( this );
 		}
 		return this[ ASSOCIATIONS ];
 	}
@@ -122,7 +123,7 @@ export class Model {
 	 * Create one or more instances of the model from the specified {data}.
 	 */
 	static fromData( data ) {
-		// debug( "Constructing %s objects from datastore data %o", this.name, data );
+		// debug( "Constructing %s objects from datastore data ", this.name, data );
 		if ( Array.isArray(data) ) {
 			return data.map( record => Reflect.construct(this, [record, false]) );
 		} else {
@@ -168,7 +169,7 @@ export class Model {
 
 		this[ DATASTORE ] = this.constructor.datastore;
 
-		// debug( `Created a new %s: %o`, this.constructor.name, data );
+		// debug( `Created a new %s: `, this.constructor.name, data );
 		this.defineAttributes( data );
 	}
 
@@ -309,13 +310,8 @@ export class Model {
 	 * Data property reader
 	 */
 	getValue( name ) {
-		if ( this.constructor.associations.has(name) ) {
-			let fn = this.constructor.associations.get( name );
-            return Reflect.apply( this, fn, )
-		} else {
 			return this[ DATA ][ name ];
 		}
-	}
 
 
 	/**
@@ -368,7 +364,7 @@ export class Model {
 	 * @return {Boolean}
 	 */
 	isDirty() {
-		return ( this.isNew() || this[ DIRTY_FIELDS ].size !== 0 );
+		return ( this.isNew() || (this[DIRTY_FIELDS] && this[DIRTY_FIELDS].size !== 0) );
 	}
 
 

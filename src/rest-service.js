@@ -126,7 +126,7 @@ export class RESTService extends Datastore {
 		let params = this.makeParamsFromCriteria( criteria );
 		let queryString = this.queryStringFromParams( params );
 
-		debug( "GET %s params: %o", uri, params );
+		debug( `GET ${uri} params: `, params );
 		if ( queryString !== '' ) {
 			uri += '?' + queryString;
 		}

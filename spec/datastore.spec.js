@@ -1,37 +1,41 @@
-/* -*- Criteria tests -*- */
+/* -*- javascript -*- */
 
- /* global it, describe, expect, beforeEach, console */
+/* eslint-disable */
+
+/* global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console */
 'use strict';
 
-import {Model, Criteria, Datastore, NotImplementedError} from 'bailiwick';
-import * as helpers from './helpers';
-import {debug} from 'bailiwick/utils';
+import Promise from 'bluebird';
 
+import chai from 'chai';
+import sinon from 'sinon';
+import chaiAsPromised from 'chai-as-promised';
 
-class Profile extends Model {}
+import {Datastore, Criteria, Model, NotImplementedError} from '../src/index';
+import {debug} from '../src/utils';
+import {customMatchers} from './helpers';
+
+const expect = chai.expect;
 
 
 describe( 'Datastore class', () => {
 
-	var store;
+	var Profile = class extends Model {},
+	    store = null;
+
 
 	beforeEach( () => {
 		store = new Datastore();
-		jasmine.addMatchers( helpers.customMatchers );
+		chai.use( chaiAsPromised );
 	});
 
 
 	describe( 'get', () => {
 
-		it( 'rejects with "not implemented"', done => {
-			store.get( Profile, 1 ).
-				catch( err => {
-					debug( `Caught error: ${err}` );
-					expect( err ).toBeA( NotImplementedError );
-					expect( err.message ).
-						toEqual( "No implementation provided for getInstance(...)" );
-					done();
-				});
+		it( 'rejects with "not implemented"', () => {
+			return expect( store.get(Profile, 1) ).
+				// to.be.rejectedWith( NotImplementedError, "No implementation provided for getInstance(...)" );
+				to.be.rejectedWith( "No implementation provided for getInstance(...)" );
 		});
 
 	});
@@ -39,15 +43,10 @@ describe( 'Datastore class', () => {
 
 	describe( 'getCollection', () => {
 
-		it( 'rejects with "not implemented"', done => {
-			store.get( Profile, Criteria.all() ).
-				catch( err => {
-					debug( err );
-					expect( err ).toBeA( NotImplementedError );
-					expect( err.message ).
-						toEqual( "No implementation provided for getCollection(...)" );
-					done();
-				});
+		it( 'rejects with "not implemented"', () => {
+			return expect( store.get(Profile, Criteria.all()) ).
+				// to.be.rejectedWith( NotImplementedError, "No implementation provided for getCollection(...)" );
+				to.be.rejectedWith( "No implementation provided for getCollection(...)" );
 		});
 
 	});
@@ -55,14 +54,10 @@ describe( 'Datastore class', () => {
 
 	describe( 'store', () => {
 
-		it( 'rejects with "not implemented"', done => {
-			store.store( Profile, {} ).
-				catch( err => {
-					expect( err ).toBeA( NotImplementedError );
-					expect( err.message ).
-						toEqual( "No implementation provided for store(...)" );
-					done();
-				});
+		it( 'rejects with "not implemented"', () => {
+			return expect( store.store(Profile, {}) ).
+				// to.be.rejectedWith( NotImplementedError, "No implementation provided for store(...)" );
+				to.be.rejectedWith( "No implementation provided for store(...)" );
 		});
 
 	});
@@ -70,14 +65,10 @@ describe( 'Datastore class', () => {
 
 	describe( 'update', () => {
 
-		it( 'rejects with "not implemented"', done => {
-			store.update( Profile, 1, {} ).
-				catch( err => {
-					expect( err ).toBeA( NotImplementedError );
-					expect( err.message ).
-						toEqual( "No implementation provided for update(...)" );
-					done();
-				});
+		it( 'rejects with "not implemented"', () => {
+			return expect( store.update(Profile, 1, {}) ).
+				// to.be.rejectedWith( NotImplementedError, "No implementation provided for update(...)" );
+				to.be.rejectedWith( "No implementation provided for update(...)" );
 		});
 
 	});
@@ -85,14 +76,10 @@ describe( 'Datastore class', () => {
 
 	describe( 'replace', () => {
 
-		it( 'rejects with "not implemented"', done => {
-			store.replace( Profile, {} ).
-				catch( err => {
-					expect( err ).toBeA( NotImplementedError );
-					expect( err.message ).
-						toEqual( "No implementation provided for replace(...)" );
-					done();
-				});
+		it( 'rejects with "not implemented"', () => {
+			return expect( store.replace(Profile, {}) ).
+				// to.be.rejectedWith( NotImplementedError, "No implementation provided for replace(...)" );
+				to.be.rejectedWith( "No implementation provided for replace(...)" );
 		});
 
 	});
@@ -100,14 +87,10 @@ describe( 'Datastore class', () => {
 
 	describe( 'remove', () => {
 
-		it( 'rejects with "not implemented"', done => {
-			store.remove( Profile, {} ).
-				catch( err => {
-					expect( err ).toBeA( NotImplementedError );
-					expect( err.message ).
-						toEqual( "No implementation provided for remove(...)" );
-					done();
-				});
+		it( 'rejects with "not implemented"', () => {
+			return expect( store.remove(Profile, {}) ).
+				// to.be.rejectedWith( NotImplementedError, "No implementation provided for remove(...)" );
+				to.be.rejectedWith( "No implementation provided for remove(...)" );
 		});
 
 	});

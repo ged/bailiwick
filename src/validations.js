@@ -2,8 +2,7 @@
 "use strict";
 
 import Promise from 'bluebird';
-import ExtendableError from 'es6-error';
-
+import {BailiwickError} from './errors';
 
 const VALIDATORS = Symbol.for("validators");
 
@@ -27,7 +26,7 @@ export function validator( field ) {
 
 
 // Model validation failures
-export class ValidationError extends ExtendableError {
+export class ValidationError extends BailiwickError {
 
 	field = null;
 

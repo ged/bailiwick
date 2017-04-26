@@ -11,6 +11,8 @@ BUNDLE     = $(LIB)/bailiwick.js
 
 webpack = ./node_modules/webpack/bin/webpack.js
 
+$(webpack):
+	@yarn
 
 $(BUNDLE): $(SOURCES)
 	@echo "Bundling..."

@@ -7,13 +7,11 @@
 .hgignore
 .idea/
 .tm_properties
-build/
-config.js
 coverage/
+scripts/
 docs/
-gulpfile.js
-jspm_packages/
 karma.conf.js
 node_modules/
 spec/
 src/
+yarn.lock
