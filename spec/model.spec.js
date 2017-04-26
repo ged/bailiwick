@@ -1,20 +1,26 @@
-/**
- * Model tests
- *
- */
+/* -*- javascript -*- */
 
-/* global it, beforeEach, describe, expect, console, jasmine */
-"use strict";
+/* eslint-disable */
+
+/* global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console */
+'use strict';
 
 import Promise from 'bluebird';
 
-import {NullDatastore, Model, ResultSet, Criteria} from 'bailiwick';
-import {validator, ValidationError} from 'bailiwick/validations';
+import chai from 'chai';
+import sinon from 'sinon';
+import chaiAsPromised from 'chai-as-promised';
+
+import {NullDatastore, Criteria, Model, ResultSet, validator, ValidationError} from '../src/index';
+import {debug} from '../src/utils';
 import {customMatchers} from './helpers';
-import {debug} from 'bailiwick/utils';
+
+const expect = chai.expect;
 
 
-class User extends Model {
+describe( 'Model class', () => {
+
+	var User = class extends Model {
 
 	@validator( 'firstName' )
 	validateFirstName() {
@@ -34,26 +40,12 @@ class User extends Model {
 		}
 	}
 
-	// @validator( 'email' )
-	// validateEmail() {
-	// 	if ( this.email === '' ) { return Promise.reject('missing'); }
-	// 	return this.constructor.get({ email: this.email }).
-	// 		then( response => {
-	// 			return Promise.reject( "User already exists" );
-	// 		}).
-	// 		catch( reason => {
-	// 			return Promise.resolve( true );
-	// 		});
-	// }
+	};
 
-}
-
-
-describe( 'Model class', () => {
 
 	beforeEach( () => {
 		User.datastore = new NullDatastore();
-		jasmine.addMatchers( customMatchers );
+		chai.use( chaiAsPromised );
 	} );
 
 
@@ -67,29 +59,18 @@ describe( 'Model class', () => {
 
 
 		it( 'are set up as object properties', () => {
-			expect( user.firstName ).toEqual( data.firstName );
-			expect( user.lastName ).toEqual( data.lastName );
-			expect( user.email ).toEqual( data.email );
+			expect( user.firstName ).to.equal( data.firstName );
+			expect( user.lastName ).to.equal( data.lastName );
+			expect( user.email ).to.equal( data.email );
 		} );
 
 
 		it( 'show up in the toString() of a model object', () => {
 			expect( user.toString() ).
-				toMatch( /\[object User values=\{firstName: Robin, lastName: Hood.*\]/i );
+				to.match( /\[object \w+ values=\{firstName: Robin, lastName: Hood.*\]/i );
 		} );
 
 	} );
-
-
-	class DirtyMatcher {
-		compare( actual ) {
-			var dirty = actual.isDirty();
-			return {
-				pass: dirty,
-				message: `${actual} is${dirty ? '' : ' not'} marked dirty.`
-			};
-		}
-	}
 
 
 	describe( 'dirty-marking', () => {
@@ -98,20 +79,17 @@ describe( 'Model class', () => {
 		beforeEach( () => {
 			data = { firstName: "Gavin", lastName: "Rossdale", email: "gavin@bush.group" };
 			user = new User( data );
-			jasmine.addMatchers( {
-				toBeDirty: () => new DirtyMatcher()
-			} );
 		} );
 
 
 		it( 'marks new objects as dirty', () => {
-			expect( user ).toBeDirty();
+			expect( user ).to.be.dirty;
 		} );
 
 
 		it( 'can remove all dirty flags', () => {
 			user.markClean();
-			expect( user ).not.toBeDirty();
+			expect( user ).not.to.be.dirty;
 		} );
 
 	} );
@@ -121,9 +99,9 @@ describe( 'Model class', () => {
 
 		it( '#where returns a resultset that combines the model and a criteria', () => {
 			var result = User.where( { firstName: 'Arya' } );
-			expect( result ).toBeA( ResultSet );
-			expect( result.criteria ).toBeA( Criteria );
-			expect( result.criteria.filterClauses.get('firstName') ).toEqual( 'Arya' );
+			expect( result ).to.be.an.instanceof( ResultSet );
+			expect( result.criteria ).to.be.an.instanceof( Criteria );
+			expect( result.criteria.filterClauses.get('firstName') ).to.equal( 'Arya' );
 		} );
 
 	} );
@@ -139,35 +117,15 @@ describe( 'Model class', () => {
 		} );
 
 
-		it( 'returns a Promise that resolves if the object is valid', done => {
-			var success = jasmine.createSpy( 'promise resolved' );
-			var failure = jasmine.createSpy( 'promise rejected' );
-
-			var promise = user.validate();
-			expect( promise ).toBeA( Promise );
-
-			promise.then( success ).catch( failure ).finally( () => {
-				expect( success ).toHaveBeenCalled();
-				expect( failure ).not.toHaveBeenCalled();
-				done();
-			} );
+		it( 'returns a Promise that resolves if the object is valid', () => {
+			return expect( user.validate() ).to.be.fulfilled;
 		} );
 
-		it( 'returns a Promise that rejects if the object is not valid', done => {
-			var success = jasmine.createSpy( 'promise resolved' );
-			var failure = jasmine.createSpy( 'promise rejected' );
-
+		it( 'returns a Promise that rejects if the object is not valid', () => {
 			user.firstName = 'Nate'; // No Nates allowed
 			user.lastName = null; // missing
 
-			var promise = user.validate();
-			expect( promise ).toBeA( Promise );
-
-			promise.then( success ).catch( failure ).finally( () => {
-				expect( failure ).toHaveBeenCalled();
-				expect( success ).not.toHaveBeenCalled();
-				done();
-			} );
+			return expect( user.validate() ).to.be.rejectedWith( "no Nates" );
 		} );
 
 	} );
@@ -175,43 +133,3 @@ describe( 'Model class', () => {
 } );
 
 
-describe( 'ResultSet class', () => {
-
-	var user1,
-		user2,
-		user3;
-
-	beforeEach( done => {
-		jasmine.addMatchers( customMatchers );
-		User.datastore = new NullDatastore();
-		Promise.join(
-			User.create( { firstName: "Paul", lastName: "Atreides", nickName: "Muad'Dib" } ),
-			User.create( { firstName: "Alia", lastName: "Atreides",
-				nickName: "St. Alia of the Knife" } ),
-			User.create( { firstName: "Duncan", lastName: "Idaho" } ),
-			( paul, alia, duncan ) => {
-				debug( `Alia is ${alia}` );
-				user1 = paul;
-				user2 = alia;
-				user3 = duncan;
-			}
-		).
-		finally( done );
-	} );
-
-
-	it( 'can be created with a Model and a Criteria', done => {
-		var criteria = Criteria.all();
-		var rs = new ResultSet( User, criteria );
-
-		rs.get().
-			then( users => {
-				expect( users.length ).toEqual( 3 );
-				expect( users[ 0 ].firstName ).toEqual( user1.firstName );
-				expect( users[ 1 ].firstName ).toEqual( user2.firstName );
-				expect( users[ 2 ].firstName ).toEqual( user3.firstName );
-			} ).
-			finally( done );
-	} );
-
-} );

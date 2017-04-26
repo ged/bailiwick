@@ -14,48 +14,162 @@ const DATA = Symbol.for( "data" ),
       DATASTORE = Symbol.for("datastore");
 
 
-function capitalize( string ) {
-	string = string.toString();
+class Association {
 
-	if ( string.length === 0 ) return '';
+	static decorate( target, ...args ) {
+		debug( "Decorating ", target, " with a ", this );
+		let association = Reflect.construct( this, args );
 
-	return string.charAt( 0 ).toUpperCase() + string.slice( 1 );
+		debug( "Association is: ", association );
+		// target.associations.set( name, association );
+
+		Object.assign( target, {
+			[ association.getMethodName ]: function(...args) {
+				return association.getFor( this, ...args );
+			},
+			[ association.addMethodName ]: function(...args) {
+				return association.addFor( this, ...args );
+			},
+			[ association.removeMethodName ]: function(...args) {
+				return association.removeFor( this, ...args );
+			}
+		});
+
+		debug( "Target after decoration is: ", target );
+	}
+
+	constructor( name, modelClassSpec, options={} ) {
+		this.name = name;
+		this.modelClassSpec = modelClassSpec;
+		this.options = options;
+	}
+
+	get getMethodName() {
+		return `get${ inflection.capitalize(this.name) }`;
+	}
+
+	get addMethodName() {
+		return `add${ inflection.capitalize(this.name) }`;
+	}
+
+	get removeMethodName() {
+		return `remove${ inflection.capitalize(this.name) }`;
+	}
+
+
+	get modelClass() {
+		// TODO: Handle the import type of spec, too: ['User', './user']
+		if ( Array.isArray(this.modelClassSpec) ) {
+			let [className, importPath] = this.modelClassSpec;
+			// System.import( importPath ).then( mod => {
+			// 	console.debug( `Importing model class ${className} from module: `, mod );
+			// 	this.modelClassSpec = mod[ className ];
+			// });
+			throw new Error( "Imported model class not yet supported." );
+		}
+		return this.modelClassSpec;
+	}
+
+	urlFrom( origin ) {
+		let base = origin.uri;
+		let path = this.options.subResourceUri || this.modelClass.uri;
+		return `${base}/${path}`;
+	}
+
 }
 
 
-export function oneToMany( associationName, modelClass, subResourceUri=null ) {
+export class OneToManyAssociation extends Association {
+
+	getFor( origin, avoidCache=false ) {
+		let targetClass = this.modelClass;
+
+		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
+			let url = this.urlFrom( origin );
+			debug( `Fetching ${this.name} for ${origin} from ${url}` );
+			return targetClass.from( url ).get().then( results => {
+				origin[ ASSOCIATIONS_CACHE ].set( this.name, results );
+				return Promise.resolve( results );
+			});
+		}
+
+		return Promise.resolve( origin[ASSOCIATIONS_CACHE].get(this.name) );
+	}
+
+
+
+}
+
+
+export class OneToOneAssociation extends OneToManyAssociation {
+}
+
+
+export class ManyToOneAssociation extends Association {
+
+	getFor( origin, avoidCache=false ) {
+		let targetClass = this.modelClass;
+
+		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
+			let promise = null;
+
+			if ( this.options.keyField ) {
+				debug( `Using keyField ${this.options.keyField}` );
+				let id = origin[ this.options.keyField ];
+				if ( id ) {
+					debug( `  ${this.options.keyField} is ${id}` );
+					promise = targetClass.get( id );
+				} else {
+					debug( `  ${this.options.keyField} isn't set.` );
+					promise = Promise.resolve( null );
+				}
+			} else {
+				debug( `  No keyField; using urlFrom.` );
+				let url = this.urlFrom( origin );
+				promise = targetClass.from( url ).get();
+			}
+
+			return promise.then( results => {
+				origin[ ASSOCIATIONS_CACHE ].set( this.name, results );
+				return Promise.resolve( results );
+			});
+		}
+
+		return Promise.resolve( origin[ASSOCIATIONS_CACHE].get(this.name) );
+	}
+
+}
+
+
+
+/**
+ * Delegator
+ */
+export function associationDelegator( targetClass ) {
+	return {
+		oneToMany: function( ...args ) {
+			OneToManyAssociation.decorate( targetClass.prototype, ...args );
+		},
+		oneToOne: function( ...args ) {
+			OneToOneAssociation.decorate( targetClass.prototype, ...args );
+		},
+		manyToOne: function( ...args ) {
+			ManyToOneAssociation.decorate( targetClass.prototype, ...args );
+		}
+	};
+}
+
+
+
+/**
+ * Decorators
+ */
+
+export function oneToMany( associationName, modelClass, options={} ) {
 	debug( `Defining oneToMany association: ${associationName}` );
-	let capitalized = capitalize( associationName );
 
 	return function( target, name, descriptor ) {
-
-		Object.assign( target, {
-			[`get${capitalized}`]: function( avoidCache=false ) {
-				if ( !subResourceUri ) {
-					subResourceUri = modelClass.uri;
-				}
-
-				if ( !this[ ASSOCIATIONS_CACHE ].has(associationName) ) {
-					let url = `${this.uri}/${subResourceUri}`;
-					debug( `Fetching ${associationName} for ${this} from ${url}` );
-					return modelClass.from( url ).get().then( results => {
-						this[ ASSOCIATIONS_CACHE ].set( associationName, results );
-						return Promise.resolve( results );
-					});
-				}
-
-				return Promise.resolve( this[ ASSOCIATIONS_CACHE ].get(associationName) );
-			},
-			[`add${capitalized}`]: function( ...objects ) {
-				return Promise.resolve( true );
-			},
-			[`remove${capitalized}`]: function( ...objects ) {
-				return Promise.resolve( true );
-			}
-		});
-		debug( "property descriptors are: ",
-			Object.getOwnPropertyDescriptors(target) );
-
+		OneToManyAssociation.decorate( target, associationName, modelClass, options );
 		return descriptor;
 	}
 }
@@ -63,77 +177,20 @@ export function oneToMany( associationName, modelClass, subResourceUri=null ) {
 
 export function oneToOne( associationName, modelClass, subResourceUri=null ) {
 	debug( `Defining oneToOne association: ${associationName}` );
-	let capitalized = capitalize( associationName );
 
 	return function( target, name, descriptor ) {
-
-		Object.assign( target, {
-			[`get${capitalized}`]: function( avoidCache=false ) {
-				if ( !subResourceUri ) {
-					subResourceUri = modelClass.uri;
-				}
-
-				if ( !this[ ASSOCIATIONS_CACHE ].has(associationName) ) {
-					let url = `${this.uri}/${subResourceUri}`;
-					debug( `Fetching ${associationName} for ${this} from ${url}` );
-					return modelClass.from( url ).get().then( result => {
-						this[ ASSOCIATIONS_CACHE ].set( associationName, result );
-						return Promise.resolve( result );
-					});
-				}
-
-				return Promise.resolve( this[ ASSOCIATIONS_CACHE ].get(associationName) );
-			},
-			[`set${capitalized}`]: function( ...objects ) {
-				return Promise.resolve( true );
-			},
-			[`remove${capitalized}`]: function( ...objects ) {
-				return Promise.resolve( true );
-			}
-		});
-		debug( "property descriptors are: ",
-			Object.getOwnPropertyDescriptors(target) );
-
+		OneToOneAssociation.decorate( target, associationName, modelClass, options );
 		return descriptor;
 	}
 }
 
 
 
-export function manyToOne( associationName, modelClass, keyField=null ) {
+export function manyToOne( associationName, modelClass, options={} ) {
 	debug( `Defining oneToMany association: ${associationName}` );
-	let capitalized = capitalize( associationName );
-	if ( !keyField ) {
-		keyField = inflection.underscore( associationName ) + '_id';
-	}
 
 	return function( target, name, descriptor ) {
-
-		Object.assign( target, {
-			[`get${capitalized}`]: function( avoidCache=false ) {
-				if ( !this[ ASSOCIATIONS_CACHE ].has(associationName) ) {
-					let id = this[ keyField ];
-
-					debug( `Fetching ${associationName} (${modelClass.name} id=${id}) for ${this}` );
-					return modelClass.get( id ).then( result => {
-						this[ ASSOCIATIONS_CACHE ].set( associationName, result );
-						return Promise.resolve( result );
-					});
-				}
-
-				return Promise.resolve( this[ ASSOCIATIONS_CACHE ].get(associationName) );
-			},
-			[`set${capitalized}`]: function( ...objects ) {
-				return Promise.resolve( true );
-			},
-			[`remove${capitalized}`]: function( ...objects ) {
-				return Promise.resolve( true );
-			}
-		});
-		debug( "property descriptors are: ",
-			Object.getOwnPropertyDescriptors(target) );
-
-		return descriptor;
+		ManyToOneAssociation.decorate( target, associationName, modelClass, options );
 	}
 }
 

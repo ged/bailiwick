@@ -1,49 +1,48 @@
-/**
- * NullDatastore tests
- *
- * jshint undef: true, unused: true, esnext: true
- * global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console
- */
+/* -*- javascript -*- */
+
+/* eslint-disable */
+
+/* global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console */
 'use strict';
 
 import Promise from 'bluebird';
 
-import {NullDatastore, Criteria, Model} from 'bailiwick';
-import {debug} from 'bailiwick/utils';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 
+import {NullDatastore, Criteria, Model} from '../src/index';
+import {debug} from '../src/utils';
 
-class User extends Model {}
+const expect = chai.expect;
 
 
 describe( 'Null Datastore class', () => {
 
-	var datastore;
+	var User = class extends Model {},
+	    datastore = null;
+
 
 	beforeEach( () => {
+		chai.use( chaiAsPromised );
 		datastore = new NullDatastore();
 	});
 
 
 	describe( 'get', () => {
 
-		it( 'fetches the object with the specified ID', done => {
+		it( 'fetches the object with the specified ID', () => {
 			var testData = { testing: "object" };
-			datastore.store( User, testData ).then( id => {
+			return datastore.store( User, testData ).then( id => {
 				datastore.get( User, id ).then( result => {
-					expect( result ).toEqual( testData );
+					expect( result ).to.deep.equal( testData );
 				});
-			}).
-			finally( done );
+			})
 		});
 
 
-		it( 'rejects with "no such object" when getting a non-existent object', done => {
-			datastore.get( User, 1 ).
-				catch( err => {
-					expect( err.name ).toEqual( "Error" );
-					expect( err.message ).toEqual( "No such User ID=1" );
-				}).
-				finally( done );
+		it( 'rejects with "no such object" when getting a non-existent object', () => {
+			return expect( datastore.get(User, 1) ).
+				to.be.rejectedWith( "No such User ID=1" );
 		});
 
 	});
@@ -53,15 +52,13 @@ describe( 'Null Datastore class', () => {
 
 		describe( 'with an empty store', () => {
 
-			it( 'resolves with an empty Array ', done => {
-				datastore.get( User ).
-					then( result => {
-						expect( result.length ).toBe( 0 );
-					}).
-					finally( done );
+			it( 'resolves with an empty Array ', () => {
+				return expect( datastore.get(User) ).
+					to.eventually.deep.equal( [] );
 			});
 
 		});
+
 
 		describe( 'with a store containing objects', () => {
 
@@ -71,58 +68,29 @@ describe( 'Null Datastore class', () => {
 				{ firstName: "Robin", lastName: "Leach" }
 			];
 
-			beforeEach( done => {
-				Promise.map( objects, obj => {
-					return datastore.store( User, obj );
-				}).finally( done );
+
+			beforeEach( () => {
+				return Promise.each( objects, obj => datastore.store(User, obj) );
 			});
 
 
-			it( "resolves with an empty Array if the criteria don't match anything", done => {
-				var criteria = new Criteria( User, { firstName: 'Rob' } );
-				datastore.get( criteria ).
-					then( result => {
-						expect( result.length ).toBe( 0 );
-					}).
-					finally( done );
-			});
-
-
-			it( "resolves with an Array of matches if the criteria match", done => {
+			it( "resolves with an Array of matches if the criteria match", () => {
 				var criteria = new Criteria( User, { firstName: 'Robin' } );
-				datastore.get( criteria ).
-					then( result => {
-						expect( result.length ).toBe( 3 );
-						expect( result ).toEqual( jasmine.arrayContaining(objects) );
-					}).
-					catch( err => {
-						debug( err );
-					}).
-					finally( done );
+				return expect( datastore.get(User, criteria) ).
+					to.eventually.deep.equal( objects );
 			});
 
+
+			it( "resolves with an empty Array if the criteria don't match anything", () => {
+				var criteria = new Criteria({ firstName: 'Rob' });
+				return expect( datastore.get(User, criteria) ).
+					to.eventually.deep.equal( [] );
+			});
+
+
 		});
 
 	});
-
-
-	describe( 'storing', () => {
-
-		it( 'can store an object', done => {
-			var objectData = {firstName: "Jimiril", lastName: "Pan"};
-
-			datastore.store( User, objectData ).
-				then( result => {
-					expect( typeof result ).toEqual( 'number' );
-					datastore.get( User, result ).then( obj => {
-						expect( obj ).toEqual( objectData );
-					});
-				}).
-				finally( done );
-		});
-
-	});
-
 
 
 	describe( 'updating', () => {
@@ -134,44 +102,39 @@ describe( 'Null Datastore class', () => {
 		];
 		var ids;
 
-		beforeEach( done => {
-			Promise.map( objects, obj => {
-					return datastore.store( User, obj );
-				}).
-				then( newIds => {
-					debug( `Got IDS=${newIds}` );
-					ids = newIds;
-				}).
-				finally( done );
+
+		beforeEach( () => {
+			return Promise.
+				map( objects, obj => datastore.store(User, obj) ).
+				then( results => ids = results );
 		});
 
 
-		it( 'can update the data for an existing object', done => {
+		it( 'can update the data for an existing object', () => {
 			var objId = ids[ 0 ];
-			datastore.update( User, objId, {firstName: 'Jemma'} ).
-				then( updatedData => {
-					expect( updatedData ).
-						toEqual({ firstName: "Jemma", lastName: "Cooper", alias: "Maid Marian" });
-					datastore.get( User, objId ).then( obj => {
-						expect( obj ).
-							toEqual({ firstName: "Jemma", lastName: "Cooper", alias: "Maid Marian" });
-					});
+			return expect( datastore.update(User, objId, {firstName: 'Jemma'}) ).
+				to.eventually.deep.equal({
+					firstName: "Jemma",
+					lastName: "Cooper",
+					alias: "Maid Marian"
 				}).
-				finally( done );
-
+				then( () => {
+					return expect( datastore.get(User, objId) ).
+						to.eventually.deep.equal({
+							firstName: "Jemma",
+							lastName: "Cooper",
+							alias: "Maid Marian"
+					});
+				});
 		});
 
 
-		it( 'rejects the returned Promise when attempting to update a non-existent object', done => {
+		it( 'rejects the returned Promise when attempting to update a non-existent object', () => {
 			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
 			debug( `Non-existent ID = ${nonexistentId}` );
 
-			datastore.update( User, nonexistentId, {firstName: 'Jaime'} ).
-				catch( err => {
-					expect( err.name ).toEqual( "Error" );
-					expect( err.message ).toEqual( `No such User ID=${nonexistentId}` );
-				}).
-				finally( done );
+			return expect( datastore.update(User, nonexistentId, {firstName: 'Jaime'}) ).
+				to.be.rejectedWith( `No such User ID=${nonexistentId}` );
 		});
 
 	});
@@ -186,44 +149,33 @@ describe( 'Null Datastore class', () => {
 		];
 		var ids;
 
-		beforeEach( done => {
-			Promise.map( objects, obj => {
-					return datastore.store( User, obj );
-				}).
-				then( newIds => {
-					debug( `Got IDS=${newIds}` );
-					ids = newIds;
-				}).
-				finally( done );
+
+		beforeEach( () => {
+			return Promise.map( objects, obj => datastore.store(User, obj) ).
+				then( newIds => ids = newIds );
 		});
 
 
-		it( 'can replace the data for an existing object', done => {
+		it( 'can replace the data for an existing object', () => {
 			var objId = ids[ 2 ];
-			datastore.replace( User, objId, {firstName: "Cat", lastName: "of the Canals"} ).
-				then( replacedData => {
-					expect( replacedData ).
-						toEqual({ firstName: "Arya", lastName: "Stark", alias: "Waterdancer" });
-					datastore.get( User, objId ).then( obj => {
-						expect( obj ).
-							toEqual({ firstName: "Cat", lastName: "of the Canals" });
+			var replaceData = {firstName: "Cat", lastName: "of the Canals"};
+
+			return expect( datastore.replace(User, objId, replaceData) ).
+				to.eventually.deep.equal( objects[2] ).
+				then( () => {
+					expect( datastore.get(User, objId) ).
+						to.eventually.deep.equal( replaceData );
 					});
-				}).
-				finally( done );
 
 		});
 
 
-		it( 'rejects the returned Promise when attempting to replace a non-existent object', done => {
-			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
+		it( 'rejects the returned Promise when attempting to replace a non-existent object', () => {
+			var nonexistentId = ids.reduce( (id1, id2) => Math.max(id1, id2) ) + 1;
 			debug( `Non-existent ID = ${nonexistentId}` );
 
-			datastore.replace( User, nonexistentId, {firstName: 'Jaime'} ).
-				catch( err => {
-					expect( err.name ).toEqual( "Error" );
-					expect( err.message ).toEqual( `No such User ID=${nonexistentId}` );
-				}).
-				finally( done );
+			return expect( datastore.replace(User, nonexistentId, {firstName: 'Jaime'}) ).
+				to.be.rejectedWith( `No such User ID=${nonexistentId}` );
 		});
 
 	});
@@ -238,46 +190,30 @@ describe( 'Null Datastore class', () => {
 		];
 		var ids;
 
-		beforeEach( done => {
-			Promise.map( objects, obj => {
-					return datastore.store( User, obj );
-				}).
-				then( newIds => {
-					debug( `Got IDS=${newIds}` );
-					ids = newIds;
-				}).
-				finally( done );
+		beforeEach( () => {
+			return Promise.map( objects, obj => datastore.store(User, obj) ).
+				then( newIds => ids = newIds );
 		});
 
 
-		it( 'can remove the data for an existing object', done => {
+		it( 'can remove the data for an existing object', () => {
 			var objId = ids[ 1 ];
-			datastore.remove( User, objId ).
-				then( removedData => {
-					expect( removedData ).toBe( true );
-
-					datastore.get( User, objId ).then( obj => {
-						fail( `User ${objId} was not removed.` );
-					}).
-					catch( err => {
-						expect( err.name ).toEqual( "Error" );
-						expect( err.message ).toEqual( `No such User ID=${objId}` );
+			return expect( datastore.remove(User, objId) ).
+				to.eventually.be.true.
+				then( () => {
+					expect( datastore.get(User, objId) ).
+						to.be.rejectedWith( `No such User ID=${objId}` );
 					});
-				}).
-				finally( done );
 
 		});
 
 
-		it( 'resolves the returned Promise when removing a non-existent object', done => {
+		it( 'resolves the returned Promise when removing a non-existent object', () => {
 			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
 			debug( `Non-existent ID = ${nonexistentId}` );
 
-			datastore.remove( User, nonexistentId ).
-				then( result => {
-					expect( result ).toBe( false );
-				}).
-				finally( done );
+			return expect( datastore.remove(User, nonexistentId) ).
+				to.eventually.be.false;
 		});
 
 	});

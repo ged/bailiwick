@@ -73,14 +73,14 @@ export class NullDatastore extends Datastore {
 	 * @returns {Promise} the promise that resolves to an Array of matching object data.
 	 */
 	getCollection( type, criteria ) {
-		debug( `Getting %s collection matching: %o`, type.name, criteria );
+		debug( `Getting ${type.name} collection matching: `, criteria );
 		let collection = this.getCollectionForType( type );
 		let results;
 
 		if ( criteria ) {
 			debug( "Filtered fetch over collection of %d objects!", collection.size );
 			let matches = this.findMatchingObjects( collection, criteria );
-			debug( "Found %d matches: %o", matches.length, matches );
+			debug( `Found ${matches.length} matches: `, matches );
 			results = Array.from( matches );
 		} else {
 			debug( "Unfiltered fetch!" );
@@ -200,6 +200,11 @@ export class NullDatastore extends Datastore {
 	replace( type, id, data ) {
 		let collection = this.getCollectionForType( type );
 		let current = collection.get( id );
+
+		if ( !current ) {
+			return Promise.reject( new Error(`No such ${type.name} ID=${id}`) );
+		}
+
 		collection.set( id, data );
 		return Promise.resolve( current );
 	}

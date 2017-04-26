@@ -38,7 +38,7 @@ export class Criteria {
 	}
 
 
-	hasFilter() {
+	get hasFilter() {
 		return ( this.filterClauses.size > 0 );
 	}
 

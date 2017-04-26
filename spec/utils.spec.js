@@ -1,13 +1,16 @@
-/**
- * RESTService tests
- *
- * jshint undef: true, unused: true, esnext: true
- * global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console, jasmine
- */
+/* -*- javascript -*- */
+
+/* eslint-disable */
+
+/* global it, describe, expect, beforeEach, afterEach, beforeAll, afterAll, console */
 'use strict';
 
-import {mapify,demapify} from 'bailiwick/utils';
-import {customMatchers} from './helpers';
+import chai from 'chai';
+
+import {mapify,demapify} from '../src/utils';
+
+
+var expect = chai.expect;
 
 
 /* The specs for mapify and demapify are originally from the tests for es6-mapify by
@@ -18,24 +21,20 @@ import {customMatchers} from './helpers';
 
 describe( 'Utility functions', () => {
 
-	beforeEach( () => {
-		jasmine.addMatchers( customMatchers );
-	} );
-
 
 	describe( "mapify", () => {
 
 		it( "can convert a basic object", () => {
 			let m = mapify({ a: 'b' });
-			expect( m ).toBeA( Map );
-			expect( m.get('a') ).toEqual( 'b' );
+			expect( m ).to.be.a( 'map' );
+			expect( m.get('a') ).to.equal( 'b' );
 		});
 
 
 		it( "converts an empty object to an empty Map", () => {
 			let m = mapify({});
-			expect( m ).toBeA( Map );
-			expect( m.get('a') ).toBeUndefined();
+			expect( m ).to.be.a( 'map' );
+			expect( m.get('a') ).to.be.undefined;
 		});
 
 
@@ -45,8 +44,8 @@ describe( 'Utility functions', () => {
 			m.set( 'baz', 'clang' );
 
 			let m2 = mapify( m );
-			expect( m2.get('foo') ).toEqual( 'bar' );
-			expect( m2.get('baz') ).toEqual( 'clang' );
+			expect( m2.get('foo') ).to.equal( 'bar' );
+			expect( m2.get('baz') ).to.equal( 'clang' );
 		});
 
 
@@ -57,25 +56,25 @@ describe( 'Utility functions', () => {
 				c: [1, "x", Array]
 			});
 
-			expect( m.get('a') ).toEqual( 'b' );
-			expect( m.get('foo-bar') ).toEqual( 3 );
+			expect( m.get('a') ).to.equal( 'b' );
+			expect( m.get('foo-bar') ).to.equal( 3 );
 			let c = m.get( 'c' );
-			expect( c.length ).toEqual( 3 );
-			expect( c[0] ).toEqual( 1 );
-			expect( c[1] ).toEqual( "x" );
-			expect( new c[2]() ).toBeA( Array );
+			expect( c.length ).to.equal( 3 );
+			expect( c[0] ).to.equal( 1 );
+			expect( c[1] ).to.equal( "x" );
+			expect( new c[2]() ).to.be.a( 'array' );
 		});
 
 
 		it( "converts an array with an embedded object", () => {
 			let a = mapify( [1, {a: 'b'}, 2] );
 
-			expect( a ).toBeA( Array )
-			expect( a[0] ).toEqual( 1 );
-			expect( a[1] ).toBeA( Map );
-			expect( a[2] ).toEqual( 2 );
+			expect( a ).to.be.a( 'array' )
+			expect( a[0] ).to.equal( 1 );
+			expect( a[1] ).to.be.a( 'map' );
+			expect( a[2] ).to.equal( 2 );
 
-			expect( a[1].get('a') ).toEqual( 'b' );
+			expect( a[1].get('a') ).to.equal( 'b' );
 		});
 
 
@@ -88,27 +87,27 @@ describe( 'Utility functions', () => {
 				g: true
 			});
 
-			expect( m ).toBeA( Map );
-			expect( m.get('a') ).toBeA( Map );
-			expect( m.get('g') ).toEqual( true );
+			expect( m ).to.be.a( 'map' );
+			expect( m.get('a') ).to.be.a( 'map' );
+			expect( m.get('g') ).to.equal( true );
 
 			let a = m.get( 'a' );
-			expect( a.get('b') ).toBeA( Array );
-			expect( a.get('b')[1] ).toBeA( Map );
-			expect( a.get('b')[1].get('c') ).toEqual( 'd' );
-			expect( a.get('e') ).toEqual( 'f' );
+			expect( a.get('b') ).to.be.a( 'array' );
+			expect( a.get('b')[1] ).to.be.a( 'map' );
+			expect( a.get('b')[1].get('c') ).to.equal( 'd' );
+			expect( a.get('e') ).to.equal( 'f' );
 
 		});
 
 
 		it( "returns a non-object as is", () => {
-			expect( mapify(2) ).toEqual( 2 );
-			expect( mapify('hi') ).toEqual( 'hi' );
+			expect( mapify(2) ).to.equal( 2 );
+			expect( mapify('hi') ).to.equal( 'hi' );
 
-			expect( typeof mapify(undefined) ).toEqual( 'undefined' );
+			expect( typeof mapify(undefined) ).to.equal( 'undefined' );
 
-			expect( mapify([1, 2, 3]) ).toEqual( [1, 2, 3] );
-			expect( mapify(null) === null ).toBeTruthy();
+			expect( mapify([1, 2, 3]) ).to.deep.equal( [1, 2, 3] );
+			expect( mapify(null) === null ).to.be.true;
 		});
 
 
@@ -120,25 +119,25 @@ describe( 'Utility functions', () => {
 		it( "converts a simple Map to an Object", () => {
 			let m = new Map();
 			m.set( 'a', 'b' );
-			expect( demapify(m) ).toEqual( {a: 'b'} );
+			expect( demapify(m) ).to.deep.equal( {a: 'b'} );
 		});
 
 
 		it( "converts an empty Map to an empty Object", () => {
 			let m = demapify(new Map());
-			expect( m ).toEqual( {} );
+			expect( m ).to.deep.equal( {} );
 		});
 
 
 		it( "returns a non-Map as is", () => {
-			expect( demapify(2) ).toEqual( 2 );
-			expect( demapify('hi') ).toEqual( 'hi' );
-			expect( demapify(undefined) ).toBeUndefined();
-			expect( demapify([1, 2, 3]) ).toEqual( [1, 2, 3] );
+			expect( demapify(2) ).to.equal( 2 );
+			expect( demapify('hi') ).to.equal( 'hi' );
+			expect( demapify(undefined) ).to.be.undefined;
+			expect( demapify([1, 2, 3]) ).to.deep.equal( [1, 2, 3] );
 		});
 
 
-		it( "converts a Map multiple non-object types", () => {
+		it( "converts a Map with multiple non-object types", () => {
 			let m = new Map();
 			m.set( 'a', 'b' );
 			m.set( 'foo-bar', 3 );
@@ -146,14 +145,14 @@ describe( 'Utility functions', () => {
 
 			let d = demapify( m );
 
-			expect( d ).toBeA( Object )
-			expect( d.a ).toEqual( 'b' );
-			expect( d['foo-bar'] ).toEqual( 3 );
-			expect( d.c ).toBeA( Array );
-			expect( d.c.length ).toEqual( 3 );
-			expect( d.c[0] ).toEqual( 1 );
-			expect( d.c[1] ).toEqual( "x" );
-			expect( new d.c[2]() ).toBeA( Array );
+			expect( d ).to.be.a( 'object' )
+			expect( d.a ).to.equal( 'b' );
+			expect( d['foo-bar'] ).to.equal( 3 );
+			expect( d.c ).to.be.a( 'array' );
+			expect( d.c.length ).to.equal( 3 );
+			expect( d.c[0] ).to.equal( 1 );
+			expect( d.c[1] ).to.equal( "x" );
+			expect( new d.c[2]() ).to.be.a( 'array' );
 		});
 
 
@@ -162,10 +161,10 @@ describe( 'Utility functions', () => {
 			m.set( 'a', 'b' );
 			let a = demapify([1, m, 2]);
 
-			expect( a ).toBeA( Array );
-			expect( a[0] ).toEqual( 1 );
-			expect( a[1] ).toEqual( {a: 'b'} );
-			expect( a[2] ).toEqual( 2 );
+			expect( a ).to.be.a( 'array' );
+			expect( a[0] ).to.equal( 1 );
+			expect( a[1] ).to.deep.equal( {a: 'b'} );
+			expect( a[2] ).to.equal( 2 );
 		});
 
 
@@ -181,8 +180,8 @@ describe( 'Utility functions', () => {
 			m1.set( 'g', true );
 
 			let d = demapify( m1 );
-			expect( d ).toBeA( Object );
-			expect( d ).toEqual({
+			expect( d ).to.be.a( 'object' );
+			expect( d ).to.deep.equal({
 				a: {
 					b: [1, {c: 'd'}],
 					e: 'f'

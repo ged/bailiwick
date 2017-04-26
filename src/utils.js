@@ -7,7 +7,13 @@ const DEBUGGING_ENABLED = false;
 /**
  * Enable/disable console debugging en masse if DEBUGGING_ENABLED is set.
  */
-export var debug = DEBUGGING_ENABLED ? console.debug : function() {}
+export var debug;
+if ( DEBUGGING_ENABLED ) {
+	debug = function( ...args ) { console.log(...args) };
+} else {
+	debug = function( ...args ) {};
+}
+
 
 
 

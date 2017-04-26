@@ -48,21 +48,24 @@ export class Datastore {
 	 * @method get
 	 * @param {Class} type  the type of data to fetch
 	 * @param {Criteria, Integer} criteria  the criteria that determines what
-	 *    specific data is fetched. If it's a Integer, it's assumed to be an ID,
+	 *    specific data is fetched. If it's an Integer, it's assumed to be an ID,
 	 *    and a single object is fetched. If it's either `null` or a `Criteria`
 	 *    object, an Array of all matching objects are fetched.
 	 *
 	 * @returns {Promise} the promise that resolves to the results, or rejects
 	 *    if fetching by ID and no data for that object is available.
 	 */
-	get( type, criteria=null ) {
+	get( type, criteria=Criteria.all() ) {
+
 		// Collection API if the criteria is a Criteria
 		if ( criteria instanceof Criteria ) {
 			debug( "Fetch with criteria!" );
 			return this.getCollection( type, criteria );
-		} else {
+		} else if ( criteria && Number.isInteger(criteria) ) {
 			debug( "Fetch by ID!" );
 			return this.getInstance( type, criteria );
+		} else {
+			throw new Error( `Don't know how to get a ${type.name} for ${criteria}` );
 		}
 	}
 
