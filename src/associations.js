@@ -96,12 +96,6 @@ export class OneToManyAssociation extends Association {
 		return Promise.resolve( origin[ASSOCIATIONS_CACHE].get(this.name) );
 	}
 
-
-
-}
-
-
-export class OneToOneAssociation extends OneToManyAssociation {
 }
 
 
@@ -150,9 +144,6 @@ export function associationDelegator( targetClass ) {
 		oneToMany: function( ...args ) {
 			OneToManyAssociation.decorate( targetClass.prototype, ...args );
 		},
-		oneToOne: function( ...args ) {
-			OneToOneAssociation.decorate( targetClass.prototype, ...args );
-		},
 		manyToOne: function( ...args ) {
 			ManyToOneAssociation.decorate( targetClass.prototype, ...args );
 		}
@@ -173,17 +164,6 @@ export function oneToMany( associationName, modelClass, options={} ) {
 		return descriptor;
 	}
 }
-
-
-export function oneToOne( associationName, modelClass, subResourceUri=null ) {
-	debug( `Defining oneToOne association: ${associationName}` );
-
-	return function( target, name, descriptor ) {
-		OneToOneAssociation.decorate( target, associationName, modelClass, options );
-		return descriptor;
-	}
-}
-
 
 
 export function manyToOne( associationName, modelClass, options={} ) {

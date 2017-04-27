@@ -8,6 +8,7 @@
 import Promise from 'bluebird';
 
 import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 
@@ -22,21 +23,18 @@ describe( 'Associations', () => {
 		Base     = class extends Model {},
 		User     = class extends Base {},
 		Property = class extends Base {},
-		Profile  = class extends Base {},
 		sandbox  = null,
-		user     = null,
-		property = null,
-		profile  = null;
+		user     = null;
 
 	beforeEach( () => {
 		sandbox = sinon.sandbox.create();
-		Base.datastore = new NullDatastore();
+
 		chai.use( sinonChai );
+		chai.use( chaiAsPromised );
 		chai.use( customMatchers );
 
+		Base.datastore = new NullDatastore();
 		user = new User({ id: 8, first_name: 'Bob', last_name: 'Martinez' });
-		property = new Property({ id: 12, name: "1212 Example Lane", owner_id: 8 });
-		profile = new Profile({ id: 111 });
 	});
 
 	afterEach( ()  => {
@@ -49,7 +47,6 @@ describe( 'Associations', () => {
 		it( 'has a delegator to add associations', () => {
 			expect( User.associations ).to.be.an( 'Object' );
 			expect( User.associations.oneToMany ).to.be.a( 'Function' );
-			expect( User.associations.oneToOne ).to.be.a( 'Function' );
 			expect( User.associations.manyToOne ).to.be.a( 'Function' );
 		});
 
@@ -59,25 +56,41 @@ describe( 'Associations', () => {
 
 	describe( 'oneToMany', () => {
 
+		var properties;
+
 		before( () => {
 			User.associations.oneToMany( 'properties', Property );
+			properties = [
+				new Property({ id: 12, name: "1212 Example Lane", owner_id: 8 }),
+				new Property({ id: 28, name: "812 Fancy Circle", owner_id: 8 }),
+				new Property({ id: 1262, name: "1333 E. Bantam St.", owner_id: 8 })
+			];
 		});
 
 
-		it( 'adds a collection getter method to the decorated Class', done => {
-			sandbox.stub( Property, 'get' ).resolves( [property] );
-			user.getProperties().
-				then( result => {
-					expect( result ).to.be.a( 'Array' );
-					expect( result[0] ).to.equal( property );
-					expect( Property.get ).to.have.been.called;
+		it( 'adds a collection getter method to the decorated Class', () => {
+			sandbox.stub( Property, 'get' ).resolves( properties );
+			return expect( user.getProperties() ).
+				to.eventually.deep.equal( properties ).
+				then( () => {
+					expect( Property.get ).to.have.been.calledOnce;
 
 					let criteria = Property.get.args[0][0];
 					expect( criteria ).to.be.a( 'object' );
 					expect( criteria.location ).to.equal( `users/${user.id}/properties` );
-				}).
-				then( done ).
-				catch( done.fail );
+				});
+		});
+
+
+		it( 'caches the fetched collection', () => {
+			sandbox.stub( Property, 'get' ).resolves( properties );
+
+			return expect( user.getProperties() ).
+				to.eventually.deep.equal( properties ).
+				then( () => user.getProperties() ).
+				then( () => {
+					expect( Property.get ).to.have.been.calledOnce;
+				});
 		});
 
 
@@ -87,40 +100,42 @@ describe( 'Associations', () => {
 	});
 
 
-	describe( 'oneToOne', () => {
-
-		before( () => {
-			User.associations.oneToOne( 'profile', Profile );
-		});
-
-
-		it( 'adds a getter method to the decorated Class' );
-		it( 'adds a setter method to the decorated Class' );
-		it( 'adds a deletion method to the decorated Class' );
-
-	});
-
-
 	describe( 'manyToOne', () => {
+
+		var property;
 
 		before( () => {
 			Property.associations.manyToOne( 'owner', User, {keyField: 'owner_id'} );
 		});
 
-
-		it( 'adds an object getter method to the decorated Class', done => {
-			sandbox.stub( User, 'get' ).resolves( user );
-			property.getOwner().
-				then( result => {
-					expect( result ).to.equal( user );
-					expect( User.get ).to.have.been.called;
-
-					let id = User.get.args[0][0];
-					expect( id ).to.equal( property.owner_id );
-				}).
-				then( done ).
-				catch( done.fail );
+		beforeEach( () => {
+			property = new Property({ id: 12, name: "1212 Example Lane", owner_id: 8 });
 		});
+
+
+		it( 'adds an object getter method to the decorated Class', () => {
+			sandbox.stub( User, 'get' ).resolves( user );
+
+			return expect( property.getOwner() ).
+				to.eventually.deep.equal( user ).
+				then( () => {
+					expect( User.get ).to.have.been.calledOnce;
+					expect( User.get ).to.have.been.calledWith( property.owner_id );
+				});
+		});
+
+
+		it( 'caches the fetched object', () => {
+			sandbox.stub( User, 'get' ).resolves( user );
+
+			return expect( property.getOwner() ).
+				to.eventually.deep.equal( user ).
+				then( () => property.getOwner() ).
+				then( () => {
+					expect( User.get ).to.have.been.calledOnce;
+				});
+		});
+
 
 		it( 'adds a setter method to the decorated Class' );
 		it( 'adds a deletion method to the decorated Class' );

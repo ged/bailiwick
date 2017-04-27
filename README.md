@@ -114,7 +114,7 @@ The things left to work on are:
 
 This allows auto-generation of methods on model objects that return other related model objects.
 
-	import {manyToMany} from 'bailiwick';
+	import {oneToMany, manyToOne} from 'bailiwick';
 
 	export class User extends AcmeModel {
 	
