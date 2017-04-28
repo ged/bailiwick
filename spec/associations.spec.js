@@ -21,6 +21,7 @@ import {
 	oneToMany,
 	manyToOne
 } from '../src/index';
+import {debug} from '../src/utils';
 import {customMatchers} from './helpers';
 
 const expect = chai.expect;
@@ -133,9 +134,8 @@ describe( 'Associations', () => {
 
 
 		before( () => {
-			User = class User extends Base {
-				@oneToMany( 'properties', Property ) properties;
-			};
+			User = class User extends Base {};
+			User = oneToMany( 'properties', Property )( User );
 		})
 
 		beforeEach( () => {
@@ -160,7 +160,7 @@ describe( 'Associations', () => {
 					expect( criteria.location ).to.equal( `users/${user.id}/properties` );
 				});
 		} );
-	
+
 	});
 
 
@@ -222,18 +222,19 @@ describe( 'Associations', () => {
 
 
 		before( () => {
-			Property = class Property extends Base {
-				@manyToOne( 'owner', User, 'owner_id' ) owner_id;
-			};
+			Property = class Property extends Base {};
+			Property = manyToOne( 'owner', User, 'owner_id' )( Property );
+			debug( "Property is: ", Property );
 		})
 
 		beforeEach( () => {
 			user = new User({ id: 8, first_name: 'Bob', last_name: 'Martinez' });
 			property = new Property({ id: 12, name: "1212 Example Lane", owner_id: 8 });
+			debug( property );
 		})
 
 
-		it.skip( 'adds an instance getter method to the decorated Class', () => {
+		it( 'adds an instance getter method to the decorated Class', () => {
 			expect( property ).to.have.property( 'owner_id', 8 );
 
 			sandbox.stub( User, 'get' ).resolves( user );
@@ -245,7 +246,7 @@ describe( 'Associations', () => {
 					expect( User.get ).to.have.been.calledWith( user.id );
 				});
 		} );
-	
+
 	});
 
 

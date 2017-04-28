@@ -50,6 +50,11 @@ class Association {
 			options = { subResourceUri: options };
 		}
 
+		if ( !modelClassSpec ) {
+			console.error( `Unresolved model class for ${name} association!` );
+			throw new Error( `Unresolved model class for ${name}!` );
+		}
+
 		this.name = name;
 		this.modelClassSpec = modelClassSpec;
 		this.options = options;
@@ -180,22 +185,17 @@ export function associationDelegator( targetClass ) {
  */
 
 export function oneToMany( associationName, modelClass, options={} ) {
-	debug( `Defining oneToMany association for ${modelClass}: ${associationName}` );
-
-	return function( target, name, descriptor ) {
-		OneToManyAssociation.decorate( target, associationName, modelClass, options );
-		return descriptor;
+	return function( target ) {
+		target.associations.oneToMany( associationName, modelClass, options );
+		return target;
 	}
 }
 
 
 export function manyToOne( associationName, modelClass, options={} ) {
-	debug( `Defining oneToMany association for ${modelClass}: ${associationName}` );
-
-	return function( target, name, descriptor ) {
-		ManyToOneAssociation.decorate( target, associationName, modelClass, options );
-		debug( `manyToOne Descriptor for ${name} is:` , descriptor );
-		return descriptor;
+	return function( target ) {
+		target.associations.manyToOne( associationName, modelClass, options );
+		return target;
 	}
 }
 
