@@ -169,8 +169,8 @@ export class Model {
 
 		this[ DATASTORE ] = this.constructor.datastore;
 
-		// debug( `Created a new %s: `, this.constructor.name, data );
 		this.defineAttributes( data );
+		debug( `Created a new %s: `, this.constructor.name, this[DATA] );
 	}
 
 
@@ -310,8 +310,8 @@ export class Model {
 	 * Data property reader
 	 */
 	getValue( name ) {
-			return this[ DATA ][ name ];
-		}
+		return this[ DATA ][ name ];
+	}
 
 
 	/**
@@ -341,6 +341,7 @@ export class Model {
 		let self = this;
 
 		for ( let name in attrs ) {
+			debug( `Adding ${name} attribute accessor.` );
 			if ( !Object.hasOwnProperty(self, name) ) {
                 /* eslint-disable no-loop-func */
 				Object.defineProperty( self, name, {

@@ -30,11 +30,30 @@ describe( 'Datastore class', () => {
 	});
 
 
+	// :TODO: This was originally testing that it threw NotImplementedErrors
+	// specifically, but subclassing Error still doesn't work quite right.
 	describe( 'get', () => {
 
-		it( 'rejects with "not implemented"', () => {
+		it( 'rejects with "not implemented" with Criteria argument', () => {
+			return expect( store.get(Profile, Criteria.all() ) ).
+				to.be.rejectedWith( "No implementation provided for getCollection(...)" );
+		});
+
+
+		it( 'rejects with "not implemented" with ID argument', () => {
 			return expect( store.get(Profile, 1) ).
-				// to.be.rejectedWith( NotImplementedError, "No implementation provided for getInstance(...)" );
+				to.be.rejectedWith( "No implementation provided for getInstance(...)" );
+		});
+
+
+		it( 'rejects with "not implemented" with no arguments', () => {
+			return expect( store.get(Profile) ).
+				to.be.rejectedWith( "No implementation provided for getCollection(...)" );
+		});
+
+
+		it( 'rejects with "not implemented" with a null argument', () => {
+			return expect( store.get(Profile, null) ).
 				to.be.rejectedWith( "No implementation provided for getInstance(...)" );
 		});
 

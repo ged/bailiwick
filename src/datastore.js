@@ -61,11 +61,9 @@ export class Datastore {
 		if ( criteria instanceof Criteria ) {
 			debug( "Fetch with criteria!" );
 			return this.getCollection( type, criteria );
-		} else if ( criteria && Number.isInteger(criteria) ) {
+		} else {
 			debug( "Fetch by ID!" );
 			return this.getInstance( type, criteria );
-		} else {
-			throw new Error( `Don't know how to get a ${type.name} for ${criteria}` );
 		}
 	}
 

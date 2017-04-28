@@ -13,25 +13,32 @@ const DATA = Symbol.for( "data" ),
       ASSOCIATIONS_CACHE = Symbol.for("associationsCache"),
       DATASTORE = Symbol.for("datastore");
 
+// Capitalize only the first letter; inflection.capitalize also lowercases
+// everything but the first letter.
+function ucFirst( string ) {
+	string = string.toString();
+	if ( string.length === 0 ) return '';
+	return string.charAt( 0 ).toUpperCase() + string.slice( 1 );
+}
 
 class Association {
 
 	static decorate( target, ...args ) {
-		debug( "Decorating ", target, " with a ", this );
+		debug( `Decorating ${target} with ${this.name}` );
 		let association = Reflect.construct( this, args );
 
 		debug( "Association is: ", association );
 		// target.associations.set( name, association );
 
 		Object.assign( target, {
-			[ association.getMethodName ]: function(...args) {
-				return association.getFor( this, ...args );
+			[ association.getMethodName ]: function(...methodArgs) {
+				return association.getFor( this, ...methodArgs );
 			},
-			[ association.addMethodName ]: function(...args) {
-				return association.addFor( this, ...args );
+			[ association.addMethodName ]: function(...methodArgs) {
+				return association.addFor( this, ...methodArgs );
 			},
-			[ association.removeMethodName ]: function(...args) {
-				return association.removeFor( this, ...args );
+			[ association.removeMethodName ]: function(...methodArgs) {
+				return association.removeFor( this, ...methodArgs );
 			}
 		});
 
@@ -39,21 +46,25 @@ class Association {
 	}
 
 	constructor( name, modelClassSpec, options={} ) {
+		if ( typeof options === 'string' ) {
+			options = { subResourceUri: options };
+		}
+
 		this.name = name;
 		this.modelClassSpec = modelClassSpec;
 		this.options = options;
 	}
 
 	get getMethodName() {
-		return `get${ inflection.capitalize(this.name) }`;
+		return `get${ ucFirst(this.name) }`;
 	}
 
 	get addMethodName() {
-		return `add${ inflection.capitalize(this.name) }`;
+		return `add${ ucFirst(this.name) }`;
 	}
 
 	get removeMethodName() {
-		return `remove${ inflection.capitalize(this.name) }`;
+		return `remove${ ucFirst(this.name) }`;
 	}
 
 
@@ -101,6 +112,15 @@ export class OneToManyAssociation extends Association {
 
 export class ManyToOneAssociation extends Association {
 
+	constructor( name, modelClassSpec, options={} ) {
+		if ( typeof options === 'string' ) {
+			options = { keyField: options };
+		}
+
+		super( name, modelClassSpec, options );
+	}
+
+
 	getFor( origin, avoidCache=false ) {
 		let targetClass = this.modelClass;
 
@@ -108,13 +128,16 @@ export class ManyToOneAssociation extends Association {
 			let promise = null;
 
 			if ( this.options.keyField ) {
-				debug( `Using keyField ${this.options.keyField}` );
-				let id = origin[ this.options.keyField ];
+				let key = this.options.keyField;
+				let id = origin[ key ];
+
+				debug( `Using keyField ${key} of `, origin );
+
 				if ( id ) {
-					debug( `  ${this.options.keyField} is ${id}` );
+					debug( `  ${key} is ${id}` );
 					promise = targetClass.get( id );
 				} else {
-					debug( `  ${this.options.keyField} isn't set.` );
+					debug( `  ${key} isn't set.` );
 					promise = Promise.resolve( null );
 				}
 			} else {
@@ -157,7 +180,7 @@ export function associationDelegator( targetClass ) {
  */
 
 export function oneToMany( associationName, modelClass, options={} ) {
-	debug( `Defining oneToMany association: ${associationName}` );
+	debug( `Defining oneToMany association for ${modelClass}: ${associationName}` );
 
 	return function( target, name, descriptor ) {
 		OneToManyAssociation.decorate( target, associationName, modelClass, options );
@@ -167,10 +190,12 @@ export function oneToMany( associationName, modelClass, options={} ) {
 
 
 export function manyToOne( associationName, modelClass, options={} ) {
-	debug( `Defining oneToMany association: ${associationName}` );
+	debug( `Defining oneToMany association for ${modelClass}: ${associationName}` );
 
 	return function( target, name, descriptor ) {
 		ManyToOneAssociation.decorate( target, associationName, modelClass, options );
+		debug( `manyToOne Descriptor for ${name} is:` , descriptor );
+		return descriptor;
 	}
 }
 
