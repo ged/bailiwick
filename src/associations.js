@@ -21,6 +21,16 @@ function ucFirst( string ) {
 	return string.charAt( 0 ).toUpperCase() + string.slice( 1 );
 }
 
+// Returns true if the Function {func} is a Class.
+function isClass( func ) {
+	let rval = typeof func === 'function' &&
+		func.hasOwnProperty('prototype') &&
+		!func.hasOwnProperty('arguments');
+
+	debug( ">>> Function ", func, ` is${rval ? '' : ' not'} a class.` );
+	return rval;
+}
+
 class Association {
 
 	static decorate( target, ...args ) {
@@ -75,7 +85,11 @@ class Association {
 
 	get modelClass() {
 		// TODO: Handle the import type of spec, too: ['User', './user']
-		if ( Array.isArray(this.modelClassSpec) ) {
+		if ( typeof this.modelClassSpec === 'function' && !isClass(this.modelClassSpec) ) {
+			debug( ">>> Class spec is callable!" );
+			this.modelClassSpec = this.modelClassSpec.call();
+		}
+		else if ( Array.isArray(this.modelClassSpec) ) {
 			let [className, importPath] = this.modelClassSpec;
 			// System.import( importPath ).then( mod => {
 			// 	console.debug( `Importing model class ${className} from module: `, mod );

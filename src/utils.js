@@ -1,7 +1,7 @@
 /* -*- javascript -*- */
 "use strict";
 
-const DEBUGGING_ENABLED = false;
+const DEBUGGING_ENABLED = true;
 
 
 /**

@@ -26,7 +26,7 @@ import {customMatchers} from './helpers';
 
 const expect = chai.expect;
 
-describe( 'Associations', () => {
+describe.only( 'Associations', () => {
 
 	let
 		Base     = class Base extends Model {},
@@ -122,6 +122,45 @@ describe( 'Associations', () => {
 
 
 	});
+
+
+	describe.only( 'mutual dependency workarounds', () => {
+
+		let
+			user,
+			properties,
+			User     = class User extends Base {},
+			Property = class Property extends Base {};
+
+
+		before( () => {
+			User.associations.oneToMany( 'properties', function() {Property} );
+		});
+
+		beforeEach( ()  => {
+			user = new User({ id: 8, first_name: 'Bob', last_name: 'Martinez' });
+			properties = [
+				new Property({ id: 12, name: "1212 Example Lane", owner_id: 8 }),
+				new Property({ id: 28, name: "812 Fancy Circle", owner_id: 8 }),
+				new Property({ id: 1262, name: "1333 E. Bantam St.", owner_id: 8 })
+			];
+		});
+
+
+		it( 'allows a function as a Class Spec to work around broken class hoisting', () => {
+			sandbox.stub( Property, 'get' ).resolves( properties );
+			return expect( user.getProperties() ).
+				to.eventually.deep.equal( properties ).
+				then( () => {
+					expect( Property.get ).to.have.been.calledOnce;
+
+					let criteria = Property.get.args[0][0];
+					expect( criteria ).to.be.instanceof( Criteria );
+					expect( criteria.location ).to.equal( `users/${user.id}/properties` );
+				});
+		});
+
+	} );
 
 
 	describe( 'oneToMany association decorator', () => {
