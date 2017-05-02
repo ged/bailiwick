@@ -134,7 +134,7 @@ describe.only( 'Associations', () => {
 
 
 		before( () => {
-			User.associations.oneToMany( 'properties', function() {Property} );
+			User.associations.oneToMany( 'properties', () => Property );
 		});
 
 		beforeEach( ()  => {

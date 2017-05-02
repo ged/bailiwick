@@ -21,15 +21,6 @@ function ucFirst( string ) {
 	return string.charAt( 0 ).toUpperCase() + string.slice( 1 );
 }
 
-// Returns true if the Function {func} is a Class.
-function isClass( func ) {
-	let rval = typeof func === 'function' &&
-		func.hasOwnProperty('prototype') &&
-		!func.hasOwnProperty('arguments');
-
-	debug( ">>> Function ", func, ` is${rval ? '' : ' not'} a class.` );
-	return rval;
-}
 
 class Association {
 
@@ -84,11 +75,11 @@ class Association {
 
 
 	get modelClass() {
-		// TODO: Handle the import type of spec, too: ['User', './user']
-		if ( typeof this.modelClassSpec === 'function' && !isClass(this.modelClassSpec) ) {
+		if ( typeof this.modelClassSpec === 'function' && !this.modelClassSpec['associations'] ) {
 			debug( ">>> Class spec is callable!" );
 			this.modelClassSpec = this.modelClassSpec.call();
 		}
+		// TODO: Handle the import type of spec, too: ['User', './user']
 		else if ( Array.isArray(this.modelClassSpec) ) {
 			let [className, importPath] = this.modelClassSpec;
 			// System.import( importPath ).then( mod => {
@@ -97,6 +88,7 @@ class Association {
 			// });
 			throw new Error( "Imported model class not yet supported." );
 		}
+		
 		return this.modelClassSpec;
 	}
 
