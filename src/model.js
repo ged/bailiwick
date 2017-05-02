@@ -343,14 +343,14 @@ export class Model {
 		for ( let name in attrs ) {
 			debug( `Adding ${name} attribute accessor.` );
 			if ( !Object.hasOwnProperty(self, name) ) {
-                /* eslint-disable no-loop-func */
+				/* eslint-disable no-loop-func */
 				Object.defineProperty( self, name, {
 					configurable: true,
 					enumerable: true,
 					get: () => { return self.getValue(name); },
 					set: newval => { self.setValue(name, newval); }
 				});
-                /* eslint-enable no-loop-func */
+				/* eslint-enable no-loop-func */
 			} else {
 				debug( `Already has a ${name} property.` );
 			}
