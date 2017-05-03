@@ -26,7 +26,7 @@ import {customMatchers} from './helpers';
 
 const expect = chai.expect;
 
-describe.only( 'Associations', () => {
+describe( 'Associations', () => {
 
 	let
 		Base     = class Base extends Model {},
@@ -124,7 +124,7 @@ describe.only( 'Associations', () => {
 	});
 
 
-	describe.only( 'mutual dependency workarounds', () => {
+	describe( 'mutual dependency workarounds', () => {
 
 		let
 			user,
