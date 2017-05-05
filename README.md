@@ -1,5 +1,7 @@
 # Bailiwick
 
+[![Build Status](https://semaphoreci.com/api/v1/ged/bailiwick/branches/master/badge.svg)](https://semaphoreci.com/ged/bailiwick)
+
 This is an experimental model toolkit for web applications. It's meant to allow for a model that is closer to the Domain Model pattern. It's been factored out of working domain models in several web applications to make it as practical and useful as possible while avoiding chrome plating and the geegaws that sometimes accompany such frameworks or toolkits.
 
 The code is getting close to being useful for production code. There are a few things left to work out before I'd feel comfortable saying it's 1.0, but I'm using it in a few applications now and really enjoying it.
