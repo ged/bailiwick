@@ -8,8 +8,10 @@ I think I've ironed out the testing and packaging, but I'm still unsure of what 
 
 The things left to work on are:
 
-* Associations: because ES6's `import` isn't really fully implemented, especially in the browser, mutual associations can't be declared via the decorators; the second association to be added always sees the associated class as `undefined`. You *can*, however, declare them after the class declaration using the `associations` delegator. I think this is workable for now, it's just not quite as pretty.
-* 
+* Association mutators (e.g., addAssociatedObject, removeAssociatedObject, etc.)
+* Consider adding additional association types (manyToMany, oneToOne, ?). I think these will be necessary once associations add mutator methods.
+* Test coverage
+* Documentation
 
 
 ## Requirements
@@ -26,131 +28,128 @@ The things left to work on are:
 
     export class AcmeModel extends Model {
         static get datastore() {
-			return new RESTService( config.serviceEndpoint );
-		}
+            return new RESTService( config.serviceEndpoint );
+        }
     }
 
-	export class Role extends AcmeModel {
-		@validator('name')
-		validateName() {
-			if ( !this.name || this.name === '' ) {
-				throw new ValidationError( 'is not present', 'name' );
-			}
-			
-			return Role.where({ name: this.name }).get().
-				then( existing => {
-					if ( existing.id !== this.id ) {
-						throw new ValidationError('is not unique', 'name');
-					}
-				}).
-				catch( () => true ); // Simplified
-		}
-	}
+    export class Role extends AcmeModel {
+        @validator('name')
+        validateName() {
+            if ( !this.name || this.name === '' ) {
+                throw new ValidationError( 'is not present', 'name' );
+            }
+            
+            return Role.where({ name: this.name }).get().
+                then( existing => {
+                    if ( existing.id !== this.id ) {
+                        throw new ValidationError('is not unique', 'name');
+                    }
+                }).
+                catch( () => true ); // Simplified
+        }
+    }
 
     export class User extends AcmeModel {
-	
-		@validator('firstName')
-		validateFirstName() {
-			if ( !this.firstName || this.firstName === '' ) {
-				throw new ValidationError( 'is not present', 'firstName' );
-			}
-			return true;
-		}
-	
-		@validator('lastName')
-		validateLastName() {
-			if ( !this.lastName || this.lastName === '' ) {
-				throw new ValidationError( 'is not present', 'lastName' );
-			}
-			return true;
-		}
-	
-		@validator('login')
-		validateLastName() {
-			if ( !this.login || this.login === '' ) {
-				throw new ValidationError( 'is not present', 'login' );
-			}
-			else if ( this.login.length < 6 ) {
-				throw new ValidationError( 'is too short (min 6 characters)', 'login' );
-			}
-			return User.where({ login: this.login }).get().
-				then( existing => {
-					if ( existing.id !== this.id ) {
-						throw new ValidationError('is not unique', 'login');
-					}
-				}).
-				catch( () => true ); // Simplified
-		}
-	
-	}
+    
+        @validator('firstName')
+        validateFirstName() {
+            if ( !this.firstName || this.firstName === '' ) {
+                throw new ValidationError( 'is not present', 'firstName' );
+            }
+            return true;
+        }
+    
+        @validator('lastName')
+        validateLastName() {
+            if ( !this.lastName || this.lastName === '' ) {
+                throw new ValidationError( 'is not present', 'lastName' );
+            }
+            return true;
+        }
+    
+        @validator('login')
+        validateLastName() {
+            if ( !this.login || this.login === '' ) {
+                throw new ValidationError( 'is not present', 'login' );
+            }
+            else if ( this.login.length < 6 ) {
+                throw new ValidationError( 'is too short (min 6 characters)', 'login' );
+            }
+            return User.where({ login: this.login }).get().
+                then( existing => {
+                    if ( existing.id !== this.id ) {
+                        throw new ValidationError('is not unique', 'login');
+                    }
+                }).
+                catch( () => true ); // Simplified
+        }
+    
+    }
 
 
-	let smiths = [],
-	    adminRole = null;
+    let smiths = [],
+        adminRole = null;
 
-	User.where({ lastName: 'Smith' }).get().
-		then( users => smiths.push(...users) ).
-		catch( err => console.error("Couldn't fetch Smiths: ", err) );
-	Role.where({ name: 'admin' }).get().
-		then( role => adminRole = role ).
-		catch( err => console.error("Couldn't fetch admin role: ", err) );
+    User.where({ lastName: 'Smith' }).get().
+        then( users => smiths.push(...users) ).
+        catch( err => console.error("Couldn't fetch Smiths: ", err) );
+    Role.where({ name: 'admin' }).get().
+        then( role => adminRole = role ).
+        catch( err => console.error("Couldn't fetch admin role: ", err) );
 
-	let newUser = new User({
-		firstName: 'Jen',
-		lastName: 'Smith',
-		login: 'jsmith'
-	});
-	newUser.save().
-		then( savedUser => smiths.push(savedUser) ).
-		catch( err => {
-			console.error( "Couldn't save the user: ", err );
-			if ( err instanceof ValidationError ) {
-				form.errors = newUser.errors; // Instance of bailiwick.ValidationErrors
-			}
-		})
+    let newUser = new User({
+        firstName: 'Jen',
+        lastName: 'Smith',
+        login: 'jsmith'
+    });
+    newUser.save().
+        then( savedUser => smiths.push(savedUser) ).
+        catch( err => {
+            console.error( "Couldn't save the user: ", err );
+            if ( err instanceof ValidationError ) {
+                form.errors = newUser.errors; // Instance of bailiwick.ValidationErrors
+            }
+        })
 
 
 ### Associations
 
 This allows auto-generation of methods on model objects that return other related model objects.
 
-	import {oneToMany, manyToOne} from 'bailiwick';
+    import {oneToMany, manyToOne} from 'bailiwick';
 
-	export class User extends AcmeModel {
-	
-        @oneToMany('orders', Order);
-		
-	}
+    @oneToMany('orders', Order)
+    export class User extends AcmeModel {}
 
+    @manyToOne('customer', () => User)
     export class Order extends AcmeModel {
-	
-        @manyToOne('customer', User);
-	
-	}
+    
+    
+    }
 
     let user = null, orders = [];
 
     User.get( 23 ).then( result => {
         user = result;
         return user.getOrders().
-      then( results => orders.push(...results) );
-	});
+            then( results => orders.push(...results) );
+    });
 
 
 ### Schema Declaration
 
 This will allow model classes to (optionally) pre-define their API without needing to fetch a record from the datastore first. This is used when constructing new instances so you don't have to provide every field:
 
-	import {schema} from 'bailiwick';
-	
-	@schema({
-		firstName: null,
-		lastName: null,
-		login: null,
-		roles: []
-	})
-	export class User extends AcmeModel {}
-	
+    import {schema} from 'bailiwick';
+    
+    @schema({
+        firstName: null,
+        lastName: null,
+        login: null,
+        roles: []
+    })
+    export class User extends AcmeModel {}
+    
   let u = new User({ firstName: 'Lana', lastName: 'Del Rey' });
 
 
@@ -177,18 +176,18 @@ The `validate` method is called automatically by `create`, `update`, and `replac
 
 I'm planning on adding some canned validation functions for common checks:
 
-	import {
-		validatesPresence,
-		validatesMinLength,
-		validatesType,
-		validatesUnique
-	} from 'bailiwick';
-	
-	export class User extends AcmeModel {
-		@validatesPresence( 'firstName', 'lastName', 'login' );
-		@validatesType( String, 'firstName', 'lastName', 'login' );
-		@validatesMinLength( 6, 'login' );
-		@validatesUnique( 'login' );
-	}
-	
+    import {
+        validatesPresence,
+        validatesMinLength,
+        validatesType,
+        validatesUnique
+    } from 'bailiwick';
+    
+    export class User extends AcmeModel {
+        @validatesPresence( 'firstName', 'lastName', 'login' );
+        @validatesType( String, 'firstName', 'lastName', 'login' );
+        @validatesMinLength( 6, 'login' );
+        @validatesUnique( 'login' );
+    }
+    
 
