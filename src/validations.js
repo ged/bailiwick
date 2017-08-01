@@ -73,7 +73,6 @@ export class ValidationErrors {
 
 
 	add( field, reason ) {
-		debug( "Added a failued: ", field, reason );
 		this.failures.set( field, reason );
 	}
 
