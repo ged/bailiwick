@@ -219,8 +219,10 @@ export class Model {
 			}).
 			then( result => {
 				if ( typeof result === 'object' ) {
+					debug( "Merging result entity ", result, " with saved object." );
 					Object.assign( this[ DATA ], result );
 				} else {
+					debug( "Setting the object's ID to ", result, "." );
 					this[ DATA ]['id'] = result; // eslint-disable-line dot-notation
 				}
 

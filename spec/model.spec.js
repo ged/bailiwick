@@ -10,6 +10,7 @@ import Promise from 'bluebird';
 import chai from 'chai';
 import sinon from 'sinon';
 import chaiAsPromised from 'chai-as-promised';
+import sinonChai from 'sinon-chai';
 
 import {NullDatastore, Criteria, Model, ResultSet, validator, ValidationError} from '../src/index';
 import {debug} from '../src/utils';
@@ -20,33 +21,44 @@ const expect = chai.expect;
 
 describe( 'Model class', () => {
 
+	var sandbox = null;
 	var User = class extends Model {
 
-	@validator( 'firstName' )
-	validateFirstName() {
-		debug( "validateFirstName called!" );
-		if ( this.firstName === 'Nate' ) {
-			throw new ValidationError( "no Nates allowed." );
-		} else if ( !this.firstName || this.firstName === '' ) {
-			throw new ValidationError( "missing" );
+		@validator( 'firstName' )
+		validateFirstName() {
+			debug( "validateFirstName called!" );
+			if ( this.firstName === 'Nate' ) {
+				throw new ValidationError( "no Nates allowed." );
+			} else if ( !this.firstName || this.firstName === '' ) {
+				throw new ValidationError( "missing" );
+			}
 		}
-	}
 
-	@validator( 'lastName' )
-	validateLastName() {
-		debug( "validateLastName called!" );
-		if ( !this.lastName || this.lastName === '' ) {
-			throw new ValidationError( "missing" );
+		@validator( 'lastName' )
+		validateLastName() {
+			debug( "validateLastName called!" );
+			if ( !this.lastName || this.lastName === '' ) {
+				throw new ValidationError( "missing" );
+			}
 		}
-	}
 
 	};
 
 
 	beforeEach( () => {
+		sandbox = sinon.sandbox.create();
+
 		User.datastore = new NullDatastore();
+
+		chai.use( sinonChai );
 		chai.use( chaiAsPromised );
+		chai.use( customMatchers );
 	} );
+
+
+	afterEach( ()  => {
+		sandbox.restore();
+	});
 
 
 	describe( 'attributes', () => {
@@ -89,7 +101,28 @@ describe( 'Model class', () => {
 
 		it( 'can remove all dirty flags', () => {
 			user.markClean();
-			expect( user ).not.to.be.dirty;
+			return expect( user ).not.to.be.dirty;
+		} );
+
+
+		it( 'clears dirty flags when an object is created', () => {
+			return expect( user.create() ).to.be.fulfilled.
+				then( () => {
+					expect( user ).to.not.be.dirty;
+				});
+		} );
+
+
+		it( 'clears dirty flags when an object is updated', () => {
+			return user.save().then( () => {
+				user.firstName = "Devin";
+				expect( user ).to.be.dirty;
+				return expect( user.update() ).to.be.fulfilled.
+					then( () => {
+						expect( user ).to.not.be.dirty;
+					});
+			});
+
 		} );
 
 	} );
@@ -105,6 +138,86 @@ describe( 'Model class', () => {
 		} );
 
 	} );
+
+
+	describe.only( 'saving', () => {
+
+		var data, user;
+
+		beforeEach( () => {
+			data = {
+				firstName: "Rick",
+				lastName: "Sanchez",
+				email: "science.guy1966@realfakedoors.com"
+			};
+		} );
+
+
+		it( "creates the object if it's new", () => {
+			user = new User( data );
+
+			sandbox.stub( User.datastore, 'store' ).resolves( data );
+			return expect( user.save() ).to.be.fulfilled.
+				then( () => {
+					return expect( User.datastore.store ).to.have.been.calledOnce;
+				});
+		} );
+
+
+		it( "updates the object if it's not new but has been changed", () => {
+			user = new User( data, false );
+			user.email = 'rs18841@trunkpeopletube.com'; // dirty the object
+
+			sandbox.stub( User.datastore, 'update' ).resolves( data );
+
+			return expect( user.save() ).to.be.fulfilled.
+				then( () => {
+					return expect( User.datastore.update ).to.have.been.calledOnce;
+				});
+		} );
+
+
+		it( "doesn't do anything if it's not new and is unchanged", () => {
+			user = new User( data, false );
+
+			sandbox.stub( User.datastore, 'update' ).resolves( data );
+
+			return expect( user.save() ).to.be.fulfilled.
+				then( () => {
+					return expect( User.datastore.update ).to.not.have.been.called;
+				});
+		} );
+
+
+		it( "updates the object's fields with the returned entity if it's an Object", () => {
+			let updatedEntity = Object.assign( {}, data, {
+				created_at: 'Thu Aug  3 15:57:08 PDT 2017',
+				email: 'scxxx@realfakedoors.com'
+			});
+
+			user = new User( data );
+
+			sandbox.stub( User.datastore, 'store' ).resolves( updatedEntity );
+
+			return expect( user.save() ).to.be.fulfilled.
+				then( () => {
+					return expect( user.created_at ).to.equal( updatedEntity.created_at );
+				});
+		} );
+
+
+		it( "sets the object's ID to the value of the returned entity if it's not an Object", () => {
+			user = new User( data );
+
+			sandbox.stub( User.datastore, 'store' ).resolves( 12 );
+
+			return expect( user.save() ).to.be.fulfilled.
+				then( () => {
+					return expect( user.id ).to.equal( 12 );
+				});
+		} );
+
+	});
 
 
 	describe( 'validation', () => {
