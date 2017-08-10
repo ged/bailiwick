@@ -14,7 +14,7 @@ import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
 
 import {RESTService, Criteria, Model, RequestError} from '../src/index';
-import {debug} from '../src/utils';
+import {logger} from '../src/utils';
 import {customMatchers} from './helpers';
 
 const expect = chai.expect;
@@ -36,7 +36,7 @@ function makeResolvingResponsePromise( data, status=200, statusText="Ok", header
 		body = data.toString();
 	}
 
-	debug( "Using response body: ", body );
+	logger.debug( "Using response body: ", body );
 	let response = new Response( body, {
 		status,
 		statusText,

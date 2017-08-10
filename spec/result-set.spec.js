@@ -11,7 +11,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
 import {NullDatastore, ResultSet, Criteria, Model} from '../src/index';
-import {debug} from '../src/utils';
+import {logger} from '../src/utils';
 import {customMatchers} from './helpers';
 
 const expect = chai.expect;

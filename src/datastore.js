@@ -7,7 +7,7 @@ import Promise from 'bluebird';
 
 import {NotImplementedError} from './errors';
 import {Criteria} from './criteria';
-import {debug} from './utils';
+import {logger} from './utils';
 
 /**
  * Datastore decorator -- syntactic sugar for setting the `datastore`
@@ -16,7 +16,7 @@ import {debug} from './utils';
 export function datastore( type, ...args ) {
 	return function decorator( target ) {
 		let ds = Reflect.construct( type, args );
-		debug( "Setting datastore of ", target, " to ", ds );
+		logger.debug( "Setting datastore of ", target, " to ", ds );
 		target.datastore = ds;
 	};
 }
@@ -59,10 +59,10 @@ export class Datastore {
 
 		// Collection API if the criteria is a Criteria
 		if ( criteria instanceof Criteria ) {
-			debug( "Fetch with criteria!" );
+			logger.debug( "Fetch with criteria!" );
 			return this.getCollection( type, criteria );
 		} else {
-			debug( "Fetch by ID!" );
+			logger.debug( "Fetch by ID!" );
 			return this.getInstance( type, criteria );
 		}
 	}

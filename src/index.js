@@ -25,3 +25,4 @@ export * from './null-datastore';
 export * from './rest-service';
 
 export * from './errors';
+export * from './utils';

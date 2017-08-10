@@ -2,7 +2,7 @@
 "use strict";
 
 import {Criteria} from './criteria';
-import {monadic, debug} from './utils';
+import {logger, monadic} from './utils';
 
 /**
  * A monadic/fluid interface to an unreified set of Model objects made up of
@@ -36,7 +36,7 @@ export class ResultSet {
 		if ( limit ) { cr = cr.limit( limit ); }
 		if ( offset ) { cr = cr.offset( offset ); }
 
-		debug( `Fetching ${this.model.name} results matching criteria: `, cr );
+		logger.debug( `Fetching ${this.model.name} results matching criteria: `, cr );
 		return this.model.get( cr );
 	}
 
@@ -62,7 +62,7 @@ export class ResultSet {
 	 */
 	@monadic
 	where( params ) {
-		debug( "Cloning resultset to add params: ", params );
+		logger.debug( "Cloning resultset to add params: ", params );
 		this.criteria = this.criteria.filter( params );
 	}
 
@@ -75,7 +75,7 @@ export class ResultSet {
 	 */
 	@monadic
 	limit( count ) {
-		debug( "Cloned resultset to add limit: ", count );
+		logger.debug( "Cloned resultset to add limit: ", count );
 		this.criteria = this.criteria.limit( count );
 	}
 
@@ -89,7 +89,7 @@ export class ResultSet {
 	 */
 	@monadic
 	offset( index ) {
-		debug( "Cloned resultset to add offset: ", index );
+		logger.debug( "Cloned resultset to add offset: ", index );
 		this.criteria = this.criteria.offset( index );
 	}
 
@@ -102,7 +102,7 @@ export class ResultSet {
 	 */
 	@monadic
 	from( location ) {
-		debug( "Clone resultset to change location: ", location );
+		logger.debug( "Clone resultset to change location: ", location );
 		this.criteria = this.criteria.from( location );
 	}
 

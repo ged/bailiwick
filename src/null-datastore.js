@@ -4,7 +4,7 @@
 import Promise from 'bluebird';
 
 import {Datastore} from './datastore';
-import {debug} from './utils';
+import {logger} from './utils';
 
 
 /**
@@ -32,7 +32,7 @@ export class NullDatastore extends Datastore {
 	 */
 	getCollectionForType( type ) {
 		if ( !this.objects.has(type) ) {
-			debug( "ObjectStore doesn't have a %s collection; creating one.", type );
+			logger.debug( "ObjectStore doesn't have a %s collection; creating one.", type );
 			this.objects.set( type, new Map() );
 			this.ids.set( type, 0 );
 		}
@@ -51,7 +51,7 @@ export class NullDatastore extends Datastore {
 	 * @returns {Promise} the promise that resolves to the object data.
 	 */
 	getInstance( type, id ) {
-		debug( `Getting instance ${id} of ${type.name}` );
+		logger.debug( `Getting instance ${id} of ${type.name}` );
 		let collection = this.getCollectionForType( type );
 
 		if ( collection.has(id) ) {
@@ -73,21 +73,21 @@ export class NullDatastore extends Datastore {
 	 * @returns {Promise} the promise that resolves to an Array of matching object data.
 	 */
 	getCollection( type, criteria ) {
-		debug( `Getting ${type.name} collection matching: `, criteria );
+		logger.debug( `Getting ${type.name} collection matching: `, criteria );
 		let collection = this.getCollectionForType( type );
 		let results;
 
 		if ( criteria ) {
-			debug( "Filtered fetch over collection of %d objects!", collection.size );
+			logger.debug( "Filtered fetch over collection of %d objects!", collection.size );
 			let matches = this.findMatchingObjects( collection, criteria );
-			debug( `Found ${matches.length} matches: `, matches );
+			logger.debug( `Found ${matches.length} matches: `, matches );
 			results = Array.from( matches );
 		} else {
-			debug( "Unfiltered fetch!" );
+			logger.debug( "Unfiltered fetch!" );
 			results = Array.from( collection.values() );
 		}
 
-		debug( `result is a ${typeof results}` );
+		logger.debug( `result is a ${typeof results}` );
 		return Promise.resolve( results );
 	}
 
@@ -156,7 +156,7 @@ export class NullDatastore extends Datastore {
 		let id = this.ids.get( type ) + 1;
 		this.ids.set( type, id );
 
-		debug( `Storing ${type.name} ID=${id}` );
+		logger.debug( `Storing ${type.name} ID=${id}` );
 		collection.set( id, data );
 		return Promise.resolve( id );
 	}
@@ -180,7 +180,7 @@ export class NullDatastore extends Datastore {
 			return Promise.reject( new Error(`No such ${type.name} ID=${id}`) );
 		}
 
-		debug( `Merging ${type.name} ID=${id}` );
+		logger.debug( `Merging ${type.name} ID=${id}` );
 		Object.assign( current, data );
 
 		return Promise.resolve( current );

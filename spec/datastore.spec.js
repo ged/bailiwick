@@ -12,7 +12,7 @@ import sinon from 'sinon';
 import chaiAsPromised from 'chai-as-promised';
 
 import {Datastore, Criteria, Model, NotImplementedError} from '../src/index';
-import {debug} from '../src/utils';
+import {logger} from '../src/utils';
 import {customMatchers} from './helpers';
 
 const expect = chai.expect;

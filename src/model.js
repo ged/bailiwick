@@ -7,7 +7,7 @@ import inflection from 'inflection';
 import {ResultSet} from './result-set';
 import {ValidationErrors} from './validations';
 import {associationDelegator} from './associations';
-import {debug} from './utils';
+import {logger} from './utils';
 
 /*
  * Use symbols for model object properties so they don't collide with
@@ -81,7 +81,7 @@ export class Model {
 	 * Set the datastore associated with this model.
 	 */
 	static set datastore( datastore ) {
-		debug( `Datastore for ${this} set to ${datastore}` );
+		logger.debug( `Datastore for ${this} set to ${datastore}` );
 		this[ DATASTORE ] = datastore;
 	}
 
@@ -123,7 +123,7 @@ export class Model {
 	 * Create one or more instances of the model from the specified {data}.
 	 */
 	static fromData( data ) {
-		// debug( "Constructing %s objects from datastore data ", this.name, data );
+		// logger.debug( "Constructing %s objects from datastore data ", this.name, data );
 		if ( Array.isArray(data) ) {
 			return data.map( record => Reflect.construct(this, [record, false]) );
 		} else {
@@ -170,7 +170,7 @@ export class Model {
 		this[ DATASTORE ] = this.constructor.datastore;
 
 		this.defineAttributes( data );
-		debug( `Created a new %s: `, this.constructor.name, this[DATA] );
+		logger.debug( `Created a new %s: `, this.constructor.name, this[DATA] );
 	}
 
 
@@ -219,10 +219,10 @@ export class Model {
 			}).
 			then( result => {
 				if ( typeof result === 'object' ) {
-					debug( "Merging result entity ", result, " with saved object." );
+					logger.debug( "Merging result entity ", result, " with saved object." );
 					Object.assign( this[ DATA ], result );
 				} else {
-					debug( "Setting the object's ID to ", result, "." );
+					logger.debug( "Setting the object's ID to ", result, "." );
 					this[ DATA ]['id'] = result; // eslint-disable-line dot-notation
 				}
 
@@ -290,7 +290,7 @@ export class Model {
 		if ( this.id ) {
 			return this[ DATASTORE ].remove( this.constructor, this.id ).
 				then( deletedData => {
-					console.debug( "Updating ", this, " with results from deletion." );
+					console.logger.debug( "Updating ", this, " with results from deletion." );
 					Object.assign( this[ DATA ], deletedData );
 					this[ NEW_OBJECT ] = true;
 					this[ DIRTY_FIELDS ].clear();
@@ -320,7 +320,7 @@ export class Model {
 	 * Data property writer
 	 */
 	setValue( name, value ) {
-		// debug(`Setting ${name} to ${value}`);
+		// logger.debug(`Setting ${name} to ${value}`);
 		if ( this[ DATA ][name] !== value ) {
             this.markDirty( name );
         }
@@ -343,7 +343,7 @@ export class Model {
 		let self = this;
 
 		for ( let name in attrs ) {
-			debug( `Adding ${name} attribute accessor.` );
+			logger.debug( `Adding ${name} attribute accessor.` );
 			if ( !Object.hasOwnProperty(self, name) ) {
 				/* eslint-disable no-loop-func */
 				Object.defineProperty( self, name, {
@@ -354,7 +354,7 @@ export class Model {
 				});
 				/* eslint-enable no-loop-func */
 			} else {
-				debug( `Already has a ${name} property.` );
+				logger.debug( `Already has a ${name} property.` );
 			}
 		}
 
@@ -401,7 +401,7 @@ export class Model {
 		let promises = [];
 
 		for ( let [field, validationMethod] of this.constructor.validators ) {
-            debug( `Adding validation promise for ${field}` );
+            logger.debug( `Adding validation promise for ${field}` );
 			let pr = Promise.try( () => validationMethod.call(this) );
 			promises.push( pr );
 		}
@@ -410,7 +410,7 @@ export class Model {
 		return Promise.
 			all( promises ).
 			then( () => {
-				debug( "Validation successful!" );
+				logger.debug( "Validation successful!" );
 			});
 	}
 
@@ -462,7 +462,7 @@ export function schema( fields ) {
 				});
                 /* eslint-enable no-loop-func */
 			} else {
-				debug( `Already has a ${name} property.` );
+				logger.debug( `Already has a ${name} property.` );
 			}
 		}
 	};

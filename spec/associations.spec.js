@@ -21,7 +21,7 @@ import {
 	oneToMany,
 	manyToOne
 } from '../src/index';
-import {debug} from '../src/utils';
+import {logger} from '../src/utils';
 import {customMatchers} from './helpers';
 
 const expect = chai.expect;
@@ -263,13 +263,13 @@ describe( 'Associations', () => {
 		before( () => {
 			Property = class Property extends Base {};
 			Property = manyToOne( 'owner', User, 'owner_id' )( Property );
-			debug( "Property is: ", Property );
+			logger.debug( "Property is: ", Property );
 		})
 
 		beforeEach( () => {
 			user = new User({ id: 8, first_name: 'Bob', last_name: 'Martinez' });
 			property = new Property({ id: 12, name: "1212 Example Lane", owner_id: 8 });
-			debug( property );
+			logger.debug( property );
 		})
 
 

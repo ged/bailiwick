@@ -1,20 +1,39 @@
 /* -*- javascript -*- */
 "use strict";
 
-const DEBUGGING_ENABLED = false;
-
-
 /**
- * Enable/disable console debugging en masse if DEBUGGING_ENABLED is set.
+ * Logger interface for Bailiwick classes
  */
-export var debug;
-if ( DEBUGGING_ENABLED ) {
-	debug = function( ...args ) { console.log(...args) };
-} else {
-	debug = function( ...args ) {};
-}
+export var logger = {
+
+	output: null,
 
 
+	outputTo( destination ) {
+		this.output = destination;
+	},
+
+
+	reset() {
+		this.output = null;
+	},
+
+
+	debug( ...args ) {
+		if ( this.output ) {
+			try { this.output.debug(...args) }
+			catch( e ) { }
+		}
+	},
+
+	error( ...args ) {
+		if ( this.output ) {
+			try { this.output.error(...args) }
+			catch( e ) { }
+		}
+	}
+
+};
 
 
 /**
@@ -85,14 +104,14 @@ export function mapify( obj ) {
  */
 export function demapify( obj ) {
 	if (obj instanceof Array) {
-		debug( "Demapifying an Array of Maps." );
+		logger.debug( "Demapifying an Array of Maps." );
 		return obj.map( x => demapify(x) );
 	} else if ( !(obj instanceof Map) ) {
-		debug( "Not a Map, returning it as-is." );
+		logger.debug( "Not a Map, returning it as-is." );
 		return obj;
 	}
 
-	debug( "Turning a Map into an Object." );
+	logger.debug( "Turning a Map into an Object." );
 	let rval = {};
 	for (let [k, v] of obj) {
 		rval[k] = demapify(v);

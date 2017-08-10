@@ -11,7 +11,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
 import {NullDatastore, Criteria, Model} from '../src/index';
-import {debug} from '../src/utils';
+import {logger} from '../src/utils';
 
 const expect = chai.expect;
 
@@ -131,7 +131,7 @@ describe( 'Null Datastore class', () => {
 
 		it( 'rejects the returned Promise when attempting to update a non-existent object', () => {
 			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
-			debug( `Non-existent ID = ${nonexistentId}` );
+			logger.debug( `Non-existent ID = ${nonexistentId}` );
 
 			return expect( datastore.update(User, nonexistentId, {firstName: 'Jaime'}) ).
 				to.be.rejectedWith( `No such User ID=${nonexistentId}` );
@@ -172,7 +172,7 @@ describe( 'Null Datastore class', () => {
 
 		it( 'rejects the returned Promise when attempting to replace a non-existent object', () => {
 			var nonexistentId = ids.reduce( (id1, id2) => Math.max(id1, id2) ) + 1;
-			debug( `Non-existent ID = ${nonexistentId}` );
+			logger.debug( `Non-existent ID = ${nonexistentId}` );
 
 			return expect( datastore.replace(User, nonexistentId, {firstName: 'Jaime'}) ).
 				to.be.rejectedWith( `No such User ID=${nonexistentId}` );
@@ -210,7 +210,7 @@ describe( 'Null Datastore class', () => {
 
 		it( 'resolves the returned Promise when removing a non-existent object', () => {
 			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
-			debug( `Non-existent ID = ${nonexistentId}` );
+			logger.debug( `Non-existent ID = ${nonexistentId}` );
 
 			return expect( datastore.remove(User, nonexistentId) ).
 				to.eventually.be.false;

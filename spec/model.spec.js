@@ -13,7 +13,7 @@ import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 
 import {NullDatastore, Criteria, Model, ResultSet, validator, ValidationError} from '../src/index';
-import {debug} from '../src/utils';
+import {logger} from '../src/utils';
 import {customMatchers} from './helpers';
 
 const expect = chai.expect;
@@ -26,7 +26,7 @@ describe( 'Model class', () => {
 
 		@validator( 'firstName' )
 		validateFirstName() {
-			debug( "validateFirstName called!" );
+			logger.debug( "validateFirstName called!" );
 			if ( this.firstName === 'Nate' ) {
 				throw new ValidationError( "no Nates allowed." );
 			} else if ( !this.firstName || this.firstName === '' ) {
@@ -36,7 +36,7 @@ describe( 'Model class', () => {
 
 		@validator( 'lastName' )
 		validateLastName() {
-			debug( "validateLastName called!" );
+			logger.debug( "validateLastName called!" );
 			if ( !this.lastName || this.lastName === '' ) {
 				throw new ValidationError( "missing" );
 			}
@@ -140,7 +140,7 @@ describe( 'Model class', () => {
 	} );
 
 
-	describe.only( 'saving', () => {
+	describe( 'saving', () => {
 
 		var data, user;
 

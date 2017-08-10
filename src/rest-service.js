@@ -6,7 +6,7 @@ import Promise from 'bluebird';
 
 import {Datastore} from './datastore';
 import {HTTPError} from './errors';
-import {debug, mapify, monadic} from './utils';
+import {logger, mapify, monadic} from './utils';
 
 
 /**
@@ -95,10 +95,10 @@ export class RESTService extends Datastore {
 
 				let mediatype = response.headers.get( 'content-type' );
 				if ( mediatype && mediatype.startsWith('application/json') ) {
-					debug( "Got JSON response; deserializing." );
+					logger.debug( "Got JSON response; deserializing." );
 					return response.json();
 				} else {
-					debug( "Got a %s response; using the raw text.", mediatype );
+					logger.debug( "Got a %s response; using the raw text.", mediatype );
 					return response.text();
 				}
 			});
@@ -126,7 +126,7 @@ export class RESTService extends Datastore {
 		let params = this.makeParamsFromCriteria( criteria );
 		let queryString = this.queryStringFromParams( params );
 
-		debug( `GET ${uri} params: `, params );
+		logger.debug( `GET ${uri} params: `, params );
 		if ( queryString !== '' ) {
 			uri += '?' + queryString;
 		}
@@ -188,14 +188,14 @@ export class RESTService extends Datastore {
 		let params = new Map();
 
 		for ( let [key, val] of criteria.filterClauses ) {
-			debug( `Adding parameter ${key}=${val} from criteria's filter clauses.` );
+			logger.debug( `Adding parameter ${key}=${val} from criteria's filter clauses.` );
 			params.set( key, val );
 		}
 
 		if ( criteria.maxResultCount ) { params.set( 'limit', criteria.maxResultCount ); }
 		if ( criteria.resultOffset ) { params.set( 'offset', criteria.resultOffset ); }
 
-		debug( `Returning Map with ${params.size} params` );
+		logger.debug( `Returning Map with ${params.size} params` );
 		return params;
 	}
 
@@ -204,7 +204,7 @@ export class RESTService extends Datastore {
 	 * Turn the specified {params} Object into a URL-encoded query string.
 	 */
 	queryStringFromParams( params ) {
-		debug( `Making query string from ${params.size} params: `, Array.from(params.entries()) );
+		logger.debug( `Making query string from ${params.size} params: `, Array.from(params.entries()) );
 
 		if ( !params ) { return ''; }
 
@@ -212,11 +212,11 @@ export class RESTService extends Datastore {
 		for ( let [key, val] of params.entries() ) {
 			let encKey = encodeURIComponent( key );
 			let encVal = encodeURIComponent( val );
-			debug( "  adding pair: %s=%s", encKey, encVal );
+			logger.debug( "  adding pair: %s=%s", encKey, encVal );
 			pairs.push( `${encKey}=${encVal}` );
 		}
 
-		debug( "Returning query string of %d param pairs.", pairs.length );
+		logger.debug( "Returning query string of %d param pairs.", pairs.length );
 		return pairs.join( '&' );
 	}
 

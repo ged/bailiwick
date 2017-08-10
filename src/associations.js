@@ -5,7 +5,7 @@
 import inflection from 'inflection';
 import Promise from 'bluebird';
 
-import {debug} from './utils';
+import {logger} from './utils';
 
 
 const DATA = Symbol.for( "data" ),
@@ -25,10 +25,10 @@ function ucFirst( string ) {
 class Association {
 
 	static decorate( target, ...args ) {
-		debug( `Decorating ${target} with ${this.name}` );
+		logger.debug( `Decorating ${target} with ${this.name}` );
 		let association = Reflect.construct( this, args );
 
-		debug( "Association is: ", association );
+		logger.debug( "Association is: ", association );
 		// target.associations.set( name, association );
 
 		Object.assign( target, {
@@ -43,7 +43,7 @@ class Association {
 			}
 		});
 
-		debug( "Target after decoration is: ", target );
+		logger.debug( "Target after decoration is: ", target );
 	}
 
 	constructor( name, modelClassSpec, options={} ) {
@@ -76,19 +76,19 @@ class Association {
 
 	get modelClass() {
 		if ( typeof this.modelClassSpec === 'function' && !this.modelClassSpec['associations'] ) {
-			debug( ">>> Class spec is callable!" );
+			logger.debug( ">>> Class spec is callable!" );
 			this.modelClassSpec = this.modelClassSpec.call();
 		}
 		// TODO: Handle the import type of spec, too: ['User', './user']
 		else if ( Array.isArray(this.modelClassSpec) ) {
 			let [className, importPath] = this.modelClassSpec;
 			// System.import( importPath ).then( mod => {
-			// 	console.debug( `Importing model class ${className} from module: `, mod );
+			// 	console.logger.debug( `Importing model class ${className} from module: `, mod );
 			// 	this.modelClassSpec = mod[ className ];
 			// });
 			throw new Error( "Imported model class not yet supported." );
 		}
-		
+
 		return this.modelClassSpec;
 	}
 
@@ -108,7 +108,7 @@ export class OneToManyAssociation extends Association {
 
 		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
 			let url = this.urlFrom( origin );
-			debug( `Fetching ${this.name} for ${origin} from ${url}` );
+			logger.debug( `Fetching ${this.name} for ${origin} from ${url}` );
 			return targetClass.from( url ).get().then( results => {
 				origin[ ASSOCIATIONS_CACHE ].set( this.name, results );
 				return Promise.resolve( results );
@@ -142,17 +142,17 @@ export class ManyToOneAssociation extends Association {
 				let key = this.options.keyField;
 				let id = origin[ key ];
 
-				debug( `Using keyField ${key} of `, origin );
+				logger.debug( `Using keyField ${key} of `, origin );
 
 				if ( id ) {
-					debug( `  ${key} is ${id}` );
+					logger.debug( `  ${key} is ${id}` );
 					promise = targetClass.get( id );
 				} else {
-					debug( `  ${key} isn't set.` );
+					logger.debug( `  ${key} isn't set.` );
 					promise = Promise.resolve( null );
 				}
 			} else {
-				debug( `  No keyField; using urlFrom.` );
+				logger.debug( `  No keyField; using urlFrom.` );
 				let url = this.urlFrom( origin );
 				promise = targetClass.from( url ).get();
 			}
