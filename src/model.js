@@ -170,7 +170,7 @@ export class Model {
 		this[ DATASTORE ] = this.constructor.datastore;
 
 		this.defineAttributes( data );
-		logger.debug( `Created a new %s: `, this.constructor.name, this[DATA] );
+		logger.debug( `Created a new `, this.constructor.name, ': ', this[DATA] );
 	}
 
 
