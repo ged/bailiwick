@@ -12,7 +12,7 @@ import Promise from 'bluebird';
  * The default namespace
  */
 
-export var VERSION = '0.0.1-alpha.12';
+export var VERSION = '0.0.1-alpha.13';
 
 export * from './model';
 export * from './datastore';
