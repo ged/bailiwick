@@ -65,6 +65,10 @@ describe( 'Associations', () => {
 			expect( User.associations.manyToOne ).to.be.a( 'Function' );
 		});
 
+		it( 'can add oneToOne associations', () => {
+			expect( User.associations.oneToOne ).to.be.a( 'Function' );
+		});
+
 	});
 
 
@@ -285,6 +289,58 @@ describe( 'Associations', () => {
 					expect( User.get ).to.have.been.calledWith( user.id );
 				});
 		} );
+
+	});
+
+
+	describe( 'oneToOne association', () => {
+
+		let
+			user,
+			profile,
+			User    = class User extends Base {},
+			Profile = class Profile extends Base {};
+
+
+		before( () => {
+			User.associations.oneToOne( 'profile', Profile );
+		});
+
+		beforeEach( ()  => {
+			user = new User({ id: 8, first_name: 'Jenneth', last_name: 'Naybor' });
+			profile = new Profile({ id: 12, income: 56000, employer: "Uber", user_id: 8 });
+		});
+
+
+		it( 'adds an instance getter method to the Class', () => {
+			sandbox.stub( Profile, 'get' ).resolves( profile );
+			return expect( user.getProfile() ).
+				to.eventually.deep.equal( profile ).
+				then( () => {
+					expect( Profile.get ).to.have.been.calledOnce;
+
+					let criteria = Profile.get.args[0][0];
+					expect( criteria ).to.be.instanceof( Criteria );
+					expect( criteria.location ).to.equal( `users/${user.id}/profile` );
+				});
+		});
+
+
+		it( 'caches the fetched object', () => {
+			sandbox.stub( Profile, 'get' ).resolves( profile );
+
+			return expect( user.getProfile() ).
+				to.eventually.deep.equal( profile ).
+				then( () => user.getProfile() ).
+				then( () => {
+					expect( Profile.get ).to.have.been.calledOnce;
+				});
+		});
+
+
+		it( 'adds an instance addition method to the Class' );
+		it( 'adds an instance deletion method to the Class' );
+
 
 	});
 

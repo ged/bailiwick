@@ -13,8 +13,7 @@ const DATA = Symbol.for( "data" ),
       ASSOCIATIONS_CACHE = Symbol.for("associationsCache"),
       DATASTORE = Symbol.for("datastore");
 
-// Capitalize only the first letter; inflection.capitalize also lowercases
-// everything but the first letter.
+// Capitalize only the first letter
 function ucFirst( string ) {
 	string = string.toString();
 	if ( string.length === 0 ) return '';
@@ -121,6 +120,36 @@ export class OneToManyAssociation extends Association {
 }
 
 
+export class OneToOneAssociation extends Association {
+
+	getFor( origin, avoidCache=false ) {
+		let targetClass = this.modelClass;
+
+		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
+			let url = this.urlFrom( origin );
+			logger.debug( `Fetching ${this.name} for ${origin} from ${url}` );
+			return targetClass.from( url ).get().then( results => {
+				origin[ ASSOCIATIONS_CACHE ].set( this.name, results );
+				return Promise.resolve( results );
+			});
+		}
+
+		return Promise.resolve( origin[ASSOCIATIONS_CACHE].get(this.name) );
+	}
+
+
+	urlFrom( origin ) {
+		let base = origin.uri;
+		let path = this.options.subResourceUri || this.modelClass.uri;
+
+		path = inflection.singularize( path );
+
+		return `${base}/${path}`;
+	}
+
+}
+
+
 export class ManyToOneAssociation extends Association {
 
 	constructor( name, modelClassSpec, options={} ) {
@@ -178,6 +207,9 @@ export function associationDelegator( targetClass ) {
 		oneToMany: function( ...args ) {
 			OneToManyAssociation.decorate( targetClass.prototype, ...args );
 		},
+		oneToOne: function( ...args ) {
+			OneToOneAssociation.decorate( targetClass.prototype, ...args );
+		},
 		manyToOne: function( ...args ) {
 			ManyToOneAssociation.decorate( targetClass.prototype, ...args );
 		}
@@ -193,6 +225,14 @@ export function associationDelegator( targetClass ) {
 export function oneToMany( associationName, modelClass, options={} ) {
 	return function( target ) {
 		target.associations.oneToMany( associationName, modelClass, options );
+		return target;
+	}
+}
+
+
+export function oneToOne( associationName, modelClass, options={} ) {
+	return function( target ) {
+		target.associations.oneToOne( associationName, modelClass, options );
 		return target;
 	}
 }
