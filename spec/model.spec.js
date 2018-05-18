@@ -249,11 +249,11 @@ describe( 'Model class', () => {
 		it( "refreshes the object", () => {
 			var user = new User( { firstName: "Mr." } );
 
-			sandbox.stub( User.datastore, 'get' ).resolves( { firstName: "Mister" } );
+			sandbox.stub( User.datastore, 'get' ).withArgs( user.constructor, user.id ).resolves( { firstName: "Mister" } );
 
 			return expect( user.refresh() ).to.be.fulfilled.then( () => {
 				expect( user.firstName ).to.equal( "Mister" );
-			});
+			} );
 
 		} );
 
