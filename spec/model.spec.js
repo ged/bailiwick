@@ -243,6 +243,22 @@ describe( 'Model class', () => {
 
 	} );
 
+
+	describe( 'refreshing', () => {
+
+		it( "refreshes the object", () => {
+			var user = new User( { firstName: "Mr." } );
+
+			sandbox.stub( User.datastore, 'get' ).resolves( { firstName: "Mister" } );
+
+			return expect( user.refresh() ).to.be.fulfilled.then( () => {
+				expect( user.firstName ).to.equal( "Mister" );
+			});
+
+		} );
+
+	} );
+
 } );
 
 

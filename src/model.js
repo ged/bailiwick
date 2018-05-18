@@ -304,6 +304,16 @@ export class Model {
 	}
 
 
+	/**
+	 * Fetch the object from the object's store and construct a new model.
+	 */
+	refresh() {
+		return this[ DATASTORE ].get().then( refreshedData => {
+			this.constructor( refreshedData, false );
+		});
+	}
+
+
 	/*
 	 * Attribute accessor API
 	 */
