@@ -2,7 +2,7 @@
   "name": "bailiwick",
   "description": "This is an experimental model toolkit for web applications. It's meant to allow for a model that is closer to the Domain Model pattern.",
   "homepage": "https://bitbucket.org/ged/bailiwick#readme",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "scripts": {
     "build": "babel src --out-dir ./dist",
     "prepublish": "yarn build",
