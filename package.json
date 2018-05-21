@@ -21,6 +21,9 @@
     "rest"
   ],
   "author": "Michael Granger <ged@FaerieMUD.org>",
+  "collaborators": [
+    "Ali Kaufman"
+  ],
   "license": "BSD-3-Clause",
   "repository": {
     "type": "hg",
