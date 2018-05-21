@@ -246,8 +246,8 @@ describe( 'Model class', () => {
 
 	describe( 'refreshing', () => {
 
-		it( "refreshes the object", () => {
-			var user = new User( { firstName: "Mr." } );
+		it( "refreshes the object if the object has an id", () => {
+			var user = new User( { id: 123, firstName: "Mr." } );
 
 			sandbox.stub( User.datastore, 'get' ).withArgs( user.constructor, user.id ).resolves( { firstName: "Mister" } );
 
@@ -257,6 +257,12 @@ describe( 'Model class', () => {
 
 		} );
 
+
+		it( "throws an error if the object does not have an id", () => {
+			var user = new User();
+
+			expect( user.refresh.bind( user ) ).to.throw(/Cannot refresh an object with no id/);
+		} );
 	} );
 
 } );

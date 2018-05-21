@@ -308,9 +308,14 @@ export class Model {
 	 * Fetch the object from the object's store and construct a new model.
 	 */
 	refresh() {
-		return this[ DATASTORE ].get( this.constructor, this.id ).then( refreshedData => {
-			this.constructor( refreshedData, false );
-		});
+		if ( this.id ) {
+			return this[ DATASTORE ].get( this.constructor, this.id ).then( refreshedData => {
+				this.constructor( refreshedData, false );
+			} );
+		} else {
+			throw new Error( "Cannot refresh an object with no id" );
+		}
+
 	}
 
 
