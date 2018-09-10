@@ -32,7 +32,7 @@ class Association {
 
 		Object.assign( target, {
 			[ association.getMethodName ]: function(...methodArgs) {
-				return association.getFor( this, ...methodArgs );
+				return association.getFor( this, ...methodArgs ); [ {"bla": true} ]
 			},
 			[ association.addMethodName ]: function(...methodArgs) {
 				return association.addFor( this, ...methodArgs );
@@ -102,13 +102,15 @@ class Association {
 
 export class OneToManyAssociation extends Association {
 
-	getFor( origin, avoidCache=false ) {
+	getFor(origin, params = {}, avoidCache = false) {
 		let targetClass = this.modelClass;
 
 		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
 			let url = this.urlFrom( origin );
 			logger.debug( `Fetching ${this.name} for ${origin} from ${url}` );
-			return targetClass.from( url ).get().then( results => {
+			
+			let criteria = new Criteria(params);
+			return targetClass.from(url).get(criteria).then( results => {
 				origin[ ASSOCIATIONS_CACHE ].set( this.name, results );
 				return Promise.resolve( results );
 			});
@@ -122,13 +124,15 @@ export class OneToManyAssociation extends Association {
 
 export class OneToOneAssociation extends Association {
 
-	getFor( origin, avoidCache=false ) {
+	getFor(origin, params = {}, avoidCache=false ) {
 		let targetClass = this.modelClass;
 
 		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
 			let url = this.urlFrom( origin );
 			logger.debug( `Fetching ${this.name} for ${origin} from ${url}` );
-			return targetClass.from( url ).get().then( results => {
+
+			let criteria = new Criteria(params);
+			return targetClass.from(url).get(criteria).then( results => {
 				origin[ ASSOCIATIONS_CACHE ].set( this.name, results );
 				return Promise.resolve( results );
 			});
@@ -161,9 +165,10 @@ export class ManyToOneAssociation extends Association {
 	}
 
 
-	getFor( origin, avoidCache=false ) {
+	getFor(origin, params = {}, avoidCache=false ) {
 		let targetClass = this.modelClass;
-
+		let criteria = new Criteria(params);
+		
 		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
 			let promise = null;
 
@@ -183,7 +188,7 @@ export class ManyToOneAssociation extends Association {
 			} else {
 				logger.debug( `  No keyField; using urlFrom.` );
 				let url = this.urlFrom( origin );
-				promise = targetClass.from( url ).get();
+				promise = targetClass.from(url).get(criteria);
 			}
 
 			return promise.then( results => {
