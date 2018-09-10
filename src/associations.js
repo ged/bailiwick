@@ -32,7 +32,7 @@ class Association {
 
 		Object.assign( target, {
 			[ association.getMethodName ]: function(...methodArgs) {
-				return association.getFor( this, ...methodArgs ); [ {"bla": true} ]
+				return association.getFor( this, ...methodArgs );
 			},
 			[ association.addMethodName ]: function(...methodArgs) {
 				return association.addFor( this, ...methodArgs );
@@ -168,7 +168,7 @@ export class ManyToOneAssociation extends Association {
 	getFor(origin, params = {}, avoidCache=false ) {
 		let targetClass = this.modelClass;
 		let criteria = new Criteria(params);
-		
+
 		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
 			let promise = null;
 
