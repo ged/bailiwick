@@ -12,7 +12,7 @@ import Promise from 'bluebird';
  * The default namespace
  */
 
-export let VERSION = '0.2.1';
+export let VERSION = '0.2.2';
 
 export * from './model';
 export * from './datastore';
