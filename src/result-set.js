@@ -32,7 +32,9 @@ export class ResultSet {
 	 * @method get
 	 */
 	get( limit=null, offset=null ) {
-		var cr = this.criteria;
+		let cr = this.criteria;
+		logger.debug( "Getting a model object for resultset criteria: ", cr );
+
 		if ( limit ) { cr = cr.limit( limit ); }
 		if ( offset ) { cr = cr.offset( offset ); }
 
@@ -64,6 +66,7 @@ export class ResultSet {
 	where( params ) {
 		logger.debug( "Cloning resultset to add params: ", params );
 		this.criteria = this.criteria.filter( params );
+		logger.debug( "Clone now has criteria: ", this.criteria );
 	}
 
 
@@ -77,6 +80,7 @@ export class ResultSet {
 	limit( count ) {
 		logger.debug( "Cloned resultset to add limit: ", count );
 		this.criteria = this.criteria.limit( count );
+		logger.debug( "Clone now has criteria: ", this.criteria );
 	}
 
 
@@ -91,6 +95,7 @@ export class ResultSet {
 	offset( index ) {
 		logger.debug( "Cloned resultset to add offset: ", index );
 		this.criteria = this.criteria.offset( index );
+		logger.debug( "Clone now has criteria: ", this.criteria );
 	}
 
 
@@ -104,6 +109,7 @@ export class ResultSet {
 	from( location ) {
 		logger.debug( "Clone resultset to change location: ", location );
 		this.criteria = this.criteria.from( location );
+		logger.debug( "Clone now has criteria: ", this.criteria );
 	}
 
 }

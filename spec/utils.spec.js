@@ -10,7 +10,7 @@ import chai from 'chai';
 import * as utils from '../src/utils';
 
 
-var expect = chai.expect;
+let expect = chai.expect;
 
 
 /* The specs for mapify and demapify are originally from the tests for es6-mapify by
@@ -28,7 +28,7 @@ describe( 'Utility functions', () => {
 
 	describe( "logging", () => {
 
-		var testingLogger = class {
+		let testingLogger = class {
 			constructor() {
 				this.debugLogs = [];
 				this.errorLogs = [];

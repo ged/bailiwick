@@ -21,8 +21,8 @@ const expect = chai.expect;
 
 describe( 'Model class', () => {
 
-	var sandbox = null;
-	var User = class extends Model {
+	let sandbox = null;
+	let User = class extends Model {
 
 		@validator( 'firstName' )
 		validateFirstName() {
@@ -62,7 +62,7 @@ describe( 'Model class', () => {
 
 
 	describe( 'attributes', () => {
-		var data, user;
+		let data, user;
 
 		beforeEach( () => {
 			data = { firstName: "Robin", lastName: "Hood", email: "hood@sherwood.org" };
@@ -86,7 +86,7 @@ describe( 'Model class', () => {
 
 
 	describe( 'dirty-marking', () => {
-		var data, user;
+		let data, user;
 
 		beforeEach( () => {
 			data = { firstName: "Gavin", lastName: "Rossdale", email: "gavin@bush.group" };
@@ -131,7 +131,7 @@ describe( 'Model class', () => {
 	describe( 'resultsets', () => {
 
 		it( '#where returns a resultset that combines the model and a criteria', () => {
-			var result = User.where( { firstName: 'Arya' } );
+			let result = User.where( { firstName: 'Arya' } );
 			expect( result ).to.be.an.instanceof( ResultSet );
 			expect( result.criteria ).to.be.an.instanceof( Criteria );
 			expect( result.criteria.filterClauses.get('firstName') ).to.equal( 'Arya' );
@@ -142,7 +142,7 @@ describe( 'Model class', () => {
 
 	describe( 'saving', () => {
 
-		var data, user;
+		let data, user;
 
 		beforeEach( () => {
 			data = {
@@ -222,7 +222,7 @@ describe( 'Model class', () => {
 
 	describe( 'validation', () => {
 
-		var data, user;
+		let data, user;
 
 		beforeEach( () => {
 			data = { firstName: "Miki", lastName: "Berenyi", email: "m@lulabox.eu" };
@@ -247,7 +247,7 @@ describe( 'Model class', () => {
 	describe( 'refreshing', () => {
 
 		it( "refreshes the object if the object has an id", () => {
-			var user = new User( { id: 123, firstName: "Mr." } );
+			let user = new User( { id: 123, firstName: "Mr." } );
 
 			sandbox.stub( User.datastore, 'get' ).withArgs( user.constructor, user.id ).resolves( { firstName: "Mister" } );
 
@@ -259,7 +259,7 @@ describe( 'Model class', () => {
 
 
 		it( "throws an error if the object does not have an id", () => {
-			var user = new User();
+			let user = new User();
 
 			expect( user.refresh.bind( user ) ).to.throw(/Cannot refresh an object with no id/);
 		} );

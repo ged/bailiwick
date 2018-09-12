@@ -4,7 +4,7 @@
 /**
  * Logger interface for Bailiwick classes
  */
-export var logger = {
+export let logger = {
 
 	output: null,
 
@@ -43,9 +43,9 @@ export var logger = {
  * a clone of the receiving object instead of the receiver.
  */
 export function monadic( target, name, descriptor ) {
-	var realfunc = descriptor.value;
+	let realfunc = descriptor.value;
 	descriptor.value = function( ...args ) {
-		var dup = this.clone();
+		let dup = this.clone();
 		realfunc.apply( dup, args );
 		return dup;
 	};

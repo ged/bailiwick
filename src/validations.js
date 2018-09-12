@@ -13,7 +13,7 @@ const VALIDATORS = Symbol.for("validators");
  */
 export function validator( field ) {
 	return function decorator( target, name, descriptor ) {
-		var methodBody = descriptor.value;
+		let methodBody = descriptor.value;
 
 		// Promisify the method and add it to the list of validators
 		descriptor.value = Promise.method( methodBody );

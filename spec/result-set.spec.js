@@ -9,6 +9,8 @@ import Promise from 'bluebird';
 
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
 
 import {NullDatastore, ResultSet, Criteria, Model} from '../src/index';
 import {logger} from '../src/utils';
@@ -19,12 +21,16 @@ const expect = chai.expect;
 
 describe( 'ResultSet class', () => {
 
-	var User = class extends Model {},
+	let User = class extends Model {},
 	    user1,
 		user2,
-		user3;
+		user3,
+		sandbox = null;
 
 	beforeEach( () => {
+		sandbox = sinon.sandbox.create();
+
+		chai.use( sinonChai );
 		chai.use( chaiAsPromised );
 		chai.use( customMatchers );
 
@@ -40,10 +46,14 @@ describe( 'ResultSet class', () => {
 		]);
 	} );
 
+	afterEach( ()  => {
+		sandbox.restore();
+	});
+
 
 	it( 'can be created with a Model and a Criteria', () => {
-		var criteria = Criteria.all();
-		var rs = new ResultSet( User, criteria );
+		let criteria = Criteria.all();
+		let rs = new ResultSet( User, criteria );
 
 		return expect( rs.get() ).to.be.fulfilled.then( results => {
 			expect( results ).to.have.lengthOf( 3 );
@@ -55,5 +65,48 @@ describe( 'ResultSet class', () => {
 				have.property( 'firstName', 'Duncan' );
 		});
 	} );
+
+
+	it( 'can generate a Criteria with both a URI and parameters', done => {
+		let criteria = Criteria.all();
+		let rs = new ResultSet( User )
+
+		rs = rs.where({ a: 1, b: 2 });
+		rs = rs.from( '/foo/bar' );
+
+		expect( rs.criteria.location ).to.equal( '/foo/bar' );
+		expect( rs.criteria.filterClauses.get('a') ).to.equal( 1 );
+		expect( rs.criteria.filterClauses.get('b') ).to.equal( 2 );
+
+		done();
+	});
+
+
+	it( 'can generate a Criteria with filter parameters', done => {
+		let criteria = Criteria.all();
+		let rs = new ResultSet( User )
+
+		rs = rs.where({ a: 1, b: 2 });
+
+		expect( rs.criteria.location ).to.beNull;
+		expect( rs.criteria.filterClauses.get('a') ).to.equal( 1 );
+		expect( rs.criteria.filterClauses.get('b') ).to.equal( 2 );
+
+		done();
+	});
+
+
+	it( 'can fetch a Promise from its model', () => {
+		sandbox.stub( User, 'get' ).resolves( user2 );
+
+		let rs = new ResultSet( User )
+		rs = rs.where({ id: 2 });
+
+		return expect( rs.get() ).
+			to.eventually.deep.equal( user2 ).
+			then( () => {
+				expect( User.get ).to.have.been.calledWith( rs.criteria ).once;
+			});
+	});
 
 } );

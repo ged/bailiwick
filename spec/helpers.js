@@ -3,7 +3,7 @@
 
 export function customMatchers( chai, utils ) {
 
-	var Assertion = chai.Assertion;
+	let Assertion = chai.Assertion;
 
 
 	Assertion.addProperty( 'dirty', function() {

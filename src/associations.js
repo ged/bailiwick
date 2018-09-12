@@ -5,6 +5,7 @@
 import inflection from 'inflection';
 import Promise from 'bluebird';
 
+import {Criteria} from './criteria';
 import {logger} from './utils';
 
 
@@ -102,15 +103,14 @@ class Association {
 
 export class OneToManyAssociation extends Association {
 
-	getFor(origin, params = {}, avoidCache = false) {
+	getFor(origin, params={}, avoidCache=false) {
 		let targetClass = this.modelClass;
 
 		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
 			let url = this.urlFrom( origin );
-			logger.debug( `Fetching ${this.name} for ${origin} from ${url}` );
-			
-			let criteria = new Criteria(params);
-			return targetClass.from(url).get(criteria).then( results => {
+			logger.debug( `Fetching ${this.name} for ${origin} from ${url} with params: `, params );
+
+			return targetClass.from( url ).where( params ).get().then( results => {
 				origin[ ASSOCIATIONS_CACHE ].set( this.name, results );
 				return Promise.resolve( results );
 			});
@@ -124,15 +124,14 @@ export class OneToManyAssociation extends Association {
 
 export class OneToOneAssociation extends Association {
 
-	getFor(origin, params = {}, avoidCache=false ) {
+	getFor(origin, params={}, avoidCache=false ) {
 		let targetClass = this.modelClass;
 
 		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
 			let url = this.urlFrom( origin );
 			logger.debug( `Fetching ${this.name} for ${origin} from ${url}` );
 
-			let criteria = new Criteria(params);
-			return targetClass.from(url).get(criteria).then( results => {
+			return targetClass.from( url ).where( params ).get().then( results => {
 				origin[ ASSOCIATIONS_CACHE ].set( this.name, results );
 				return Promise.resolve( results );
 			});
@@ -165,9 +164,8 @@ export class ManyToOneAssociation extends Association {
 	}
 
 
-	getFor(origin, params = {}, avoidCache=false ) {
+	getFor(origin, params={}, avoidCache=false ) {
 		let targetClass = this.modelClass;
-		let criteria = new Criteria(params);
 
 		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
 			let promise = null;
@@ -180,6 +178,8 @@ export class ManyToOneAssociation extends Association {
 
 				if ( id ) {
 					logger.debug( `  ${key} is ${id}` );
+					// :TODO: Add support for passing filter parameters to Datastore.getInstance()
+					// promise = targetClass.where( params ).get( id );
 					promise = targetClass.get( id );
 				} else {
 					logger.debug( `  ${key} isn't set.` );
@@ -188,7 +188,8 @@ export class ManyToOneAssociation extends Association {
 			} else {
 				logger.debug( `  No keyField; using urlFrom.` );
 				let url = this.urlFrom( origin );
-				promise = targetClass.from(url).get(criteria);
+
+				promise = targetClass.from( url ).where( params ).get();
 			}
 
 			return promise.then( results => {

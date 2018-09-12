@@ -20,7 +20,7 @@ const expect = chai.expect;
 
 describe( 'Datastore class', () => {
 
-	var Profile = class extends Model {},
+	let Profile = class extends Model {},
 	    store = null;
 
 

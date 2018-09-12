@@ -18,7 +18,7 @@ const expect = chai.expect;
 
 describe( 'Null Datastore class', () => {
 
-	var User = class extends Model {},
+	let User = class extends Model {},
 	    datastore = null;
 
 
@@ -31,7 +31,7 @@ describe( 'Null Datastore class', () => {
 	describe( 'get', () => {
 
 		it( 'fetches the object with the specified ID', () => {
-			var testData = { testing: "object" };
+			let testData = { testing: "object" };
 			return datastore.store( User, testData ).then( id => {
 				datastore.get( User, id ).then( result => {
 					expect( result ).to.deep.equal( testData );
@@ -62,7 +62,7 @@ describe( 'Null Datastore class', () => {
 
 		describe( 'with a store containing objects', () => {
 
-			var objects = [
+			let objects = [
 				{ firstName: "Robin", lastName: "Loxley", alias: "Robin Hood" },
 				{ firstName: "Robin", lastName: "Williams" },
 				{ firstName: "Robin", lastName: "Leach" }
@@ -75,14 +75,14 @@ describe( 'Null Datastore class', () => {
 
 
 			it( "resolves with an Array of matches if the criteria match", () => {
-				var criteria = new Criteria( User, { firstName: 'Robin' } );
+				let criteria = new Criteria( User, { firstName: 'Robin' } );
 				return expect( datastore.get(User, criteria) ).
 					to.eventually.deep.equal( objects );
 			});
 
 
 			it( "resolves with an empty Array if the criteria don't match anything", () => {
-				var criteria = new Criteria({ firstName: 'Rob' });
+				let criteria = new Criteria({ firstName: 'Rob' });
 				return expect( datastore.get(User, criteria) ).
 					to.eventually.deep.equal( [] );
 			});
@@ -95,12 +95,12 @@ describe( 'Null Datastore class', () => {
 
 	describe( 'updating', () => {
 
-		var objects = [
+		let objects = [
 			{ firstName: "Marian", lastName: "Cooper", alias: "Maid Marian" },
 			{ firstName: "Jillian", lastName: "Garland" },
 			{ firstName: "Gillian", lastName: "Temper" }
 		];
-		var ids;
+		let ids;
 
 
 		beforeEach( () => {
@@ -111,7 +111,7 @@ describe( 'Null Datastore class', () => {
 
 
 		it( 'can update the data for an existing object', () => {
-			var objId = ids[ 0 ];
+			let objId = ids[ 0 ];
 			return expect( datastore.update(User, objId, {firstName: 'Jemma'}) ).
 				to.eventually.deep.equal({
 					firstName: "Jemma",
@@ -130,7 +130,7 @@ describe( 'Null Datastore class', () => {
 
 
 		it( 'rejects the returned Promise when attempting to update a non-existent object', () => {
-			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
+			let nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
 			logger.debug( `Non-existent ID = ${nonexistentId}` );
 
 			return expect( datastore.update(User, nonexistentId, {firstName: 'Jaime'}) ).
@@ -142,12 +142,12 @@ describe( 'Null Datastore class', () => {
 
 	describe( 'replacing', () => {
 
-		var objects = [
+		let objects = [
 			{ firstName: "Petyr", lastName: "Baelish", alias: "Little Finger" },
 			{ firstName: "Jeyne", lastName: "Poole" },
 			{ firstName: "Arya", lastName: "Stark", alias: "Waterdancer" }
 		];
-		var ids;
+		let ids;
 
 
 		beforeEach( () => {
@@ -157,8 +157,8 @@ describe( 'Null Datastore class', () => {
 
 
 		it( 'can replace the data for an existing object', () => {
-			var objId = ids[ 2 ];
-			var replaceData = {firstName: "Cat", lastName: "of the Canals"};
+			let objId = ids[ 2 ];
+			let replaceData = {firstName: "Cat", lastName: "of the Canals"};
 
 			return expect( datastore.replace(User, objId, replaceData) ).
 				to.eventually.deep.equal( objects[2] ).
@@ -171,7 +171,7 @@ describe( 'Null Datastore class', () => {
 
 
 		it( 'rejects the returned Promise when attempting to replace a non-existent object', () => {
-			var nonexistentId = ids.reduce( (id1, id2) => Math.max(id1, id2) ) + 1;
+			let nonexistentId = ids.reduce( (id1, id2) => Math.max(id1, id2) ) + 1;
 			logger.debug( `Non-existent ID = ${nonexistentId}` );
 
 			return expect( datastore.replace(User, nonexistentId, {firstName: 'Jaime'}) ).
@@ -183,12 +183,12 @@ describe( 'Null Datastore class', () => {
 
 	describe( 'removing', () => {
 
-		var objects = [
+		let objects = [
 			{ firstName: "Lukas-Kasha", alias: "the King" },
 			{ firstName: "Kayim" },
 			{ firstName: "Nur-Jehan" }
 		];
-		var ids;
+		let ids;
 
 		beforeEach( () => {
 			return Promise.map( objects, obj => datastore.store(User, obj) ).
@@ -197,7 +197,7 @@ describe( 'Null Datastore class', () => {
 
 
 		it( 'can remove the data for an existing object', () => {
-			var objId = ids[ 1 ];
+			let objId = ids[ 1 ];
 			return expect( datastore.remove(User, objId) ).
 				to.eventually.be.true.
 				then( () => {
@@ -209,7 +209,7 @@ describe( 'Null Datastore class', () => {
 
 
 		it( 'resolves the returned Promise when removing a non-existent object', () => {
-			var nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
+			let nonexistentId = ids.reduce( (id1, id2) => id1 > id2 ? id1 : id2 ) + 1;
 			logger.debug( `Non-existent ID = ${nonexistentId}` );
 
 			return expect( datastore.remove(User, nonexistentId) ).

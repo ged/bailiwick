@@ -54,7 +54,7 @@ function makeFailingResponsePromise( message="Network error", status=404 ) {
 
 describe( 'REST Service datastore class', () => {
 
-	var User = class extends Model {},
+	let User = class extends Model {},
 	    datastore = null,
 	    baseUrl = 'http://localhost:8889/v1',
 	    sandbox = null;

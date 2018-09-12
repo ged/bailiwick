@@ -33,6 +33,7 @@ describe( 'Associations', () => {
 		sandbox  = null;
 
 	beforeEach( () => {
+		logger.outputTo( console );
 		sandbox = sinon.sandbox.create();
 
 		chai.use( sinonChai );
@@ -120,6 +121,22 @@ describe( 'Associations', () => {
 				});
 		});
 
+
+		it( 'allows filter parameters to be passed to the datastore', () => {
+			sandbox.stub( Property, 'get' ).
+				resolves( properties.slice(0,2) );
+
+			return expect( user.getProperties({ name: '~2' }) ).
+				to.eventually.deep.equal( properties.slice(0,2) ).
+				then( () => {
+					expect( Property.get ).to.have.been.calledOnce;
+
+					let criteria = Property.get.args[0][0];
+					expect( criteria ).to.be.instanceof( Criteria );
+					expect( criteria.location ).to.equal( `users/${user.id}/properties` );
+					expect( criteria.filterClauses.get('name') ).to.eq( '~2' );
+				});
+		});
 
 		it( 'adds a collection addition method to the Class' );
 		it( 'adds a collection deletion method to the Class' );
@@ -246,6 +263,24 @@ describe( 'Associations', () => {
 				then( () => {
 					expect( User.get ).to.have.been.calledOnce;
 				});
+		});
+
+
+		it.skip( 'allows parameters to be passed to the fetch', () => {
+			sandbox.stub( User, 'get' ).resolves( user );
+
+			return expect( property.getOwner({ detailed: true }) ).
+				to.eventually.deep.equal( user ).
+			then( () => {
+				expect( User.get ).to.have.been.
+					calledWith( property.owner_id, {detailed: true} );
+
+				let criteria = User.get.args[0][0];
+				expect( criteria ).to.be.instanceof( Criteria );
+				expect( criteria.location ).to.equal( `properties/${property.id}/owner` );
+				expect( criteria.filterClauses ).to.be.a('map').
+					that.includes({ detailed: true });
+			});
 		});
 
 
