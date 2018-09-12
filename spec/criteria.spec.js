@@ -19,8 +19,8 @@ const expect = chai.expect;
 describe( 'Criteria', () => {
 
 	it( 'can construct clones of itself', () => {
-		var criteria = new Criteria();
-		var clone = criteria.clone();
+		let criteria = new Criteria();
+		let clone = criteria.clone();
 
 		expect( clone ).to.be.an.instanceof( Criteria );
 		expect( clone ).to.not.equal( criteria );
@@ -30,8 +30,19 @@ describe( 'Criteria', () => {
 	});
 
 
+	it( 'copies its location when it is cloned', () => {
+		let criteria = new Criteria();
+
+		criteria.location = 'primary';
+		let clone = criteria.clone();
+
+		expect( clone.location ).to.eq( criteria.location );
+		expect( clone.location ).to.deep.equal( criteria.location );
+	});
+
+
 	it( "it knows it doesn't have a filter if no clauses have been added", () => {
-		var criteria = new Criteria();
+		let criteria = new Criteria();
 		expect( criteria.hasFilter ).to.be.false;
 	});
 
@@ -39,7 +50,7 @@ describe( 'Criteria', () => {
 	describe( 'filtering', () => {
 
 		it( 'can be set up in the constructor', () => {
-			var criteria = new Criteria({ status: 'shipped', shipDate: '2013-11-12' });
+			let criteria = new Criteria({ status: 'shipped', shipDate: '2013-11-12' });
 			expect( criteria ).to.be.an.instanceof( Criteria );
 			expect( criteria.hasFilter ).to.be.true;
 			expect( criteria.filterClauses.get('status') ).to.equal( 'shipped' );
@@ -48,8 +59,8 @@ describe( 'Criteria', () => {
 
 
 		it( 'can be fluently mutated by adding filter clauses', () => {
-			var criteria = new Criteria();
-			var clone = criteria.
+			let criteria = new Criteria();
+			let clone = criteria.
 				filter({ status: 'shipped' }).
 				filter({ shipDate: '2013-11-12' });
 
@@ -62,13 +73,14 @@ describe( 'Criteria', () => {
 			expect( clone.filterClauses.get('shipDate') ).to.equal( '2013-11-12' );
 		});
 
+
 	});
 
 
 	describe( 'limiting', () => {
 
 		it( 'can be fluently mutated by adding a limit', () => {
-			var criteria = new Criteria().limit( 20 );
+			let criteria = new Criteria().limit( 20 );
 
 			expect( criteria ).to.be.an.instanceof( Criteria );
 			expect( criteria.maxResultCount ).to.equal( 20 );
@@ -80,7 +92,7 @@ describe( 'Criteria', () => {
 	describe( 'offsetting', () => {
 
 		it( 'can be fluently mutated by adding an offset', () => {
-			var criteria = new Criteria().offset( 15 );
+			let criteria = new Criteria().offset( 15 );
 
 			expect( criteria ).to.be.an.instanceof( Criteria );
 			expect( criteria.resultOffset ).to.equal( 15 );
@@ -92,7 +104,7 @@ describe( 'Criteria', () => {
 	describe( 'setting an alternate location', () => {
 
 		it( 'can be set to fetch results from a specific "location"', () => {
-			var criteria = new Criteria().from( "/somewhere/else" );
+			let criteria = new Criteria().from( "/somewhere/else" );
 
 			expect( criteria ).to.be.an.instanceof( Criteria );
 			expect( criteria.location ).to.equal( "/somewhere/else" );

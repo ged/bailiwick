@@ -1,7 +1,7 @@
 /* -*- javascript -*- */
 "use strict";
 
-import {monadic} from './utils';
+import {monadic, logger} from './utils';
 
 
 /**
@@ -31,9 +31,12 @@ export class Criteria {
 
 	clone() {
 		let newObj = Reflect.construct( this.constructor, [{}] );
+
 		newObj.filterClauses = new Map( this.filterClauses );
 		newObj.maxResultCount = this.maxResultCount;
 		newObj.resultOffset = this.resultOffset;
+		newObj.location = this.location;
+
 		return newObj;
 	}
 
