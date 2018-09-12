@@ -11,6 +11,7 @@
     "lintfix": "eslint ./src --fix",
     "testonly": "mocha $npm_package_options_mocha",
     "test": "yarn run lint && yarn run testonly",
+    "test-debugger": "mocha $npm_package_options_debugmocha",
     "test-watch": "yarn run testonly -- --watch --watch-extensions js"
   },
   "keywords": [
@@ -30,7 +31,8 @@
     "url": "https://bitbucket.org/ged/bailiwick"
   },
   "options": {
-    "mocha": "--require scripts/mocha_runner spec/*.spec.js"
+    "mocha": "--require scripts/mocha_runner spec/*.spec.js",
+    "debugmocha": "--require scripts/mocha_runner --inspect spec/*.spec.js"
   },
   "directories": {
     "doc": "doc",
