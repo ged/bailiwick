@@ -220,6 +220,78 @@ describe( 'Model class', () => {
 	});
 
 
+	describe( 'replacing', () => {
+
+		let data, user;
+
+		beforeEach( () => {
+			data = {
+				id: 12,
+				firstName: "Rick",
+				lastName: "Sanchez",
+				email: "science.guy1966@realfakedoors.com",
+				removed_at: new Date()
+			};
+			user = new User( data );
+		} );
+
+
+		it( "replaces the object's data in the datastore", () => {
+			sandbox.stub( User.datastore, 'replace' ).
+				resolves( Object.assign(data, {removed_at: null}) );
+
+			return expect( user.replace() ).to.be.fulfilled.
+				then( () => {
+					expect( User.datastore.replace ).to.have.been.calledOnce;
+					expect( user.removed_at ).to.beNull;
+				});
+		} );
+
+	});
+
+
+	describe( 'deleting', () => {
+
+		let data, user;
+
+		beforeEach( () => {
+			data = {
+				id: 12,
+				firstName: "Rick",
+				lastName: "Sanchez",
+				email: "science.guy1966@realfakedoors.com",
+				removed_at: null
+			};
+			user = new User( data );
+		} );
+
+
+		it( "removes the object from the datastore", () => {
+			let removedDate = new Date();
+			sandbox.stub( User.datastore, 'remove' ).
+				resolves( Object.assign(data, {removed_at: removedDate}) );
+			return expect( user.delete() ).to.be.fulfilled.
+				then( () => {
+					expect( User.datastore.remove ).to.have.been.calledOnce;
+					expect( user.removed_at ).to.eq( removedDate );
+				});
+		} );
+
+
+		it( "is a no-op if it doesn't have an ID", () => {
+			user.id = null;
+
+			sandbox.stub( User.datastore, 'remove' );
+
+			return expect( user.delete() ).to.be.fulfilled.
+				then( () => {
+					expect( User.datastore.remove ).not.to.have.been.called;
+				});
+		} );
+
+	});
+
+
 	describe( 'validation', () => {
 
 		let data, user;

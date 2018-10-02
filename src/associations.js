@@ -83,7 +83,7 @@ class Association {
 		else if ( Array.isArray(this.modelClassSpec) ) {
 			let [className, importPath] = this.modelClassSpec;
 			// System.import( importPath ).then( mod => {
-			// 	console.logger.debug( `Importing model class ${className} from module: `, mod );
+			// 	logger.debug( `Importing model class ${className} from module: `, mod );
 			// 	this.modelClassSpec = mod[ className ];
 			// });
 			throw new Error( "Imported model class not yet supported." );
