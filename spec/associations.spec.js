@@ -110,6 +110,18 @@ describe( 'Associations', () => {
 		});
 
 
+		it('avoids caching the fetched collection', () => {
+			sandbox.stub(Property, 'get').resolves( properties );
+
+			return expect( user.getProperties({}, true) ).
+				to.eventually.deep.equal( properties ).
+				then( () => user.getProperties({}, true) ).
+				then( () => {
+					expect( Property.get ).to.not.have.been.calledOnce;
+				});
+		});
+
+
 		it( 'caches the fetched collection', () => {
 			sandbox.stub( Property, 'get' ).resolves( properties );
 
@@ -254,6 +266,18 @@ describe( 'Associations', () => {
 		});
 
 
+		it('avoids caching the fetched object', () => {
+			sandbox.stub(User, 'get').resolves(user);
+
+			return expect(property.getOwner({}, true)).
+				to.eventually.deep.equal(user).
+				then(() => property.getOwner({}, true)).
+				then(() => {
+					expect(User.get).to.not.have.been.calledOnce;
+				});
+		});
+
+
 		it( 'caches the fetched object', () => {
 			sandbox.stub( User, 'get' ).resolves( user );
 
@@ -357,6 +381,18 @@ describe( 'Associations', () => {
 					let criteria = Profile.get.args[0][0];
 					expect( criteria ).to.be.instanceof( Criteria );
 					expect( criteria.location ).to.equal( `users/${user.id}/profile` );
+				});
+		});
+
+
+		it( 'avoids caching the fetched object', () => {
+			sandbox.stub( Profile, 'get' ).resolves( profile );
+
+			return expect( user.getProfile({}, true) ).
+				to.eventually.deep.equal( profile ).
+				then( () => user.getProfile({}, true) ).
+				then( () => {
+					expect( Profile.get ).to.not.have.been.calledOnce;
 				});
 		});
 
