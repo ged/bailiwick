@@ -290,7 +290,7 @@ export class Model {
 		if ( this.id ) {
 			return this[ DATASTORE ].remove( this.constructor, this.id ).
 				then( deletedData => {
-					console.logger.debug( "Updating ", this, " with results from deletion." );
+					logger.debug( "Updating ", this, " with results from deletion." );
 					Object.assign( this[ DATA ], deletedData );
 					this[ NEW_OBJECT ] = true;
 					this[ DIRTY_FIELDS ].clear();
