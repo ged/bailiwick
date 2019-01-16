@@ -157,7 +157,7 @@ export class Datastore {
 	 * @returns {Promise}  a promise that should resolve to `true` if the object
 	 *    was in the store prior to the removal, or `false` if it was not.
 	 */
-	remove( type, id ) {
+	remove( type, id, data ) {
 		return Promise.reject( new NotImplementedError("remove") );
 	}
 

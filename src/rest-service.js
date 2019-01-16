@@ -168,9 +168,9 @@ export class RESTService extends Datastore {
 	 * Delete the instance of the specified {type} with the given {id} via the REST service and
 	 * return a Promise that resolves to the result.
 	 */
-	remove( type, id ) {
+	remove( type, id, data ) {
 		let uri = `${type.uri}/${id}`;
-		return this.sendJsonRequest( uri, 'DELETE' );
+		return this.sendJsonRequest( uri, 'DELETE', data );
 	}
 
 
