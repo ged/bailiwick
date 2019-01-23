@@ -337,6 +337,29 @@ describe( 'Model class', () => {
 		} );
 	} );
 
+
+	describe( 'deleting', () => {
+
+		it( "deletes the object if the object has an id", () => {
+			let data = { id: 1234, firstName: "Morty", email: "morty@rm.co" };
+			let user = new User( data );
+
+			user.email = "mortimer@rm.co";
+
+			return expect( user.delete() ).to.be.fulfilled.then( () => {
+				expect( user.email ).to.equal( "mortimer@rm.co" );
+			} );
+
+		});
+
+
+		it( "resolves if the object does not have an id", () => {
+			let user = new User();
+
+			expect( user.delete.bind( user ) ).to.throw(/Cannot delete an object with no id/);
+		});
+
+	});
 } );
 
 
