@@ -287,19 +287,27 @@ export class Model {
      * result.
 	 */
 	delete() {
+		let dirtyData = {};
+		for ( let field of this[ DIRTY_FIELDS ] ) {
+			dirtyData[ field ] = this[ DATA ][ field ];
+		}
+
 		if ( this.id ) {
-			return this[ DATASTORE ].remove( this.constructor, this.id ).
+			return this.validate().
+				then( () => {
+					this[ DATASTORE ].remove( this.constructor, this.id, dirtyData );
+				}).
 				then( deletedData => {
-					console.logger.debug( "Updating ", this, " with results from deletion." );
+					logger.debug( "Updating ", this, " with results from deletion." );
 					Object.assign( this[ DATA ], deletedData );
 					this[ NEW_OBJECT ] = true;
 					this[ DIRTY_FIELDS ].clear();
-					this.defineAttributes( this[DATA] );
+					this.defineAttributes( this[ DATA ] );
 
 					return this;
 				});
 		} else {
-			return Promise.resolve( this[ DATA ] );
+			throw new Error( "Cannot delete an object with no id" );
 		}
 	}
 
