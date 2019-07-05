@@ -216,14 +216,20 @@ export class NullDatastore extends Datastore {
 	 * @method remove
 	 * @param {Class}   type   the collection to remove the object from
 	 * @param {Integer} id     the ID of the object to remove
+	 * @param {Object}  data   the object data to store
 	 *
 	 * @returns {Promise} the promise that resolves to `true` if the object existed
 	 *                    or `false` if it did not.
 	 */
-	remove( type, id ) {
+	remove( type, id, data ) {
 		let collection = this.getCollectionForType( type );
-		let result = collection.delete( id );
-		return Promise.resolve( result );
+		collection.set( id, data );
+
+		let current = collection.get( id );
+
+		collection.delete( id );
+
+		return Promise.resolve( current );
 	}
 
 
