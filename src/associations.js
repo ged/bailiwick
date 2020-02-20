@@ -106,7 +106,7 @@ export class OneToManyAssociation extends Association {
 	getFor(origin, params={}, avoidCache=false) {
 		let targetClass = this.modelClass;
 
-		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
+		if ( avoidCache || !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
 			let url = this.urlFrom( origin );
 			logger.debug( `Fetching ${this.name} for ${origin} from ${url} with params: `, params );
 
@@ -127,7 +127,7 @@ export class OneToOneAssociation extends Association {
 	getFor(origin, params={}, avoidCache=false ) {
 		let targetClass = this.modelClass;
 
-		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
+		if ( avoidCache || !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
 			let url = this.urlFrom( origin );
 			logger.debug( `Fetching ${this.name} for ${origin} from ${url}` );
 
@@ -167,7 +167,7 @@ export class ManyToOneAssociation extends Association {
 	getFor(origin, params={}, avoidCache=false ) {
 		let targetClass = this.modelClass;
 
-		if ( !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
+		if ( avoidCache || !origin[ASSOCIATIONS_CACHE].has(this.name) ) {
 			let promise = null;
 
 			if ( this.options.keyField ) {
