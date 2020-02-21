@@ -33,7 +33,7 @@ describe( 'Associations', () => {
 		sandbox  = null;
 
 	beforeEach( () => {
-		logger.outputTo( console );
+		// logger.outputTo( console );
 		sandbox = sinon.sandbox.create();
 
 		chai.use( sinonChai );

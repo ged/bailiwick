@@ -47,6 +47,7 @@ describe( 'Model class', () => {
 
 	beforeEach( () => {
 		sandbox = sinon.sandbox.create();
+		// logger.outputTo( console );
 
 		User.datastore = new NullDatastore();
 
@@ -57,6 +58,7 @@ describe( 'Model class', () => {
 
 
 	afterEach( ()  => {
+		logger.reset();
 		sandbox.restore();
 	});
 
@@ -271,7 +273,7 @@ describe( 'Model class', () => {
 			sandbox.stub( User.datastore, 'remove' ).
 				resolves( Object.assign(data, {removed_at: removedDate}) );
 			return expect( user.delete() ).to.be.fulfilled.
-				then( () => {
+				then( user => {
 					expect( User.datastore.remove ).to.have.been.calledOnce;
 					expect( user.removed_at ).to.eq( removedDate );
 				});
@@ -306,6 +308,7 @@ describe( 'Model class', () => {
 			return expect( user.validate() ).to.be.fulfilled;
 		} );
 
+
 		it( 'returns a Promise that rejects if the object is not valid', () => {
 			user.firstName = 'Nate'; // No Nates allowed
 			user.lastName = null; // missing
@@ -337,29 +340,6 @@ describe( 'Model class', () => {
 		} );
 	} );
 
-
-	describe( 'deleting', () => {
-
-		it( "deletes the object if the object has an id", () => {
-			let data = { id: 1234, firstName: "Morty", email: "morty@rm.co" };
-			let user = new User( data );
-
-			user.email = "mortimer@rm.co";
-
-			return expect( user.delete() ).to.be.fulfilled.then( () => {
-				expect( user.email ).to.equal( "mortimer@rm.co" );
-			} );
-
-		});
-
-
-		it( "resolves if the object does not have an id", () => {
-			let user = new User();
-
-			expect( user.delete.bind( user ) ).to.throw(/Cannot delete an object with no id/);
-		});
-
-	});
 } );
 
 

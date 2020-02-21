@@ -23,10 +23,14 @@ describe( 'Null Datastore class', () => {
 
 
 	beforeEach( () => {
+		// logger.outputTo( console );
 		chai.use( chaiAsPromised );
 		datastore = new NullDatastore();
 	});
 
+	afterEach( () => {
+		logger.reset();
+	});
 
 	describe( 'get', () => {
 
@@ -199,11 +203,11 @@ describe( 'Null Datastore class', () => {
 		it( 'can remove the data for an existing object', () => {
 			let objId = ids[ 1 ];
 			return expect( datastore.remove(User, objId) ).
-				to.eventually.be.true.
+				to.eventually.deep.equal( objects[1] ).
 				then( () => {
 					expect( datastore.get(User, objId) ).
 						to.be.rejectedWith( `No such User ID=${objId}` );
-					});
+				});
 
 		});
 
@@ -213,7 +217,7 @@ describe( 'Null Datastore class', () => {
 			logger.debug( `Non-existent ID = ${nonexistentId}` );
 
 			return expect( datastore.remove(User, nonexistentId) ).
-				to.eventually.be.false;
+				to.eventually.be.undefined;
 		});
 
 	});
