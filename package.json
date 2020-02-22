@@ -58,7 +58,7 @@
     "nodemon": "1.7.x",
     "sinon": "^2.1.0",
     "sinon-chai": "^2.9.0",
-    "yarn": "^0.21.3"
+    "yarn": "^1.22.0"
   },
   "dependencies": {
     "babel-runtime": "6.x.x",
