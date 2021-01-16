@@ -122,6 +122,18 @@ describe( 'Associations', () => {
 		});
 
 
+		it( 'allows for bypassing the cached collection', () => {
+			sandbox.stub( Property, 'get' ).resolves( properties );
+
+			return expect( user.getProperties() ).
+				to.eventually.deep.equal( properties ).
+				then( () => user.getProperties({}, true) ).
+				then( () => {
+					expect( Property.get ).to.have.been.calledTwice;
+				});
+		});
+
+
 		it( 'allows filter parameters to be passed to the datastore', () => {
 			sandbox.stub( Property, 'get' ).
 				resolves( properties.slice(0,2) );
@@ -266,6 +278,18 @@ describe( 'Associations', () => {
 		});
 
 
+		it( 'allows for bypassing the cached object', () => {
+			sandbox.stub( User, 'get' ).resolves( user );
+
+			return expect( property.getOwner() ).
+				to.eventually.deep.equal( user ).
+				then( () => property.getOwner({}, true) ).
+				then( () => {
+					expect( User.get ).to.have.been.calledTwice;
+				});
+		});
+
+
 		it.skip( 'allows parameters to be passed to the fetch', () => {
 			sandbox.stub( User, 'get' ).resolves( user );
 
@@ -369,6 +393,18 @@ describe( 'Associations', () => {
 				then( () => user.getProfile() ).
 				then( () => {
 					expect( Profile.get ).to.have.been.calledOnce;
+				});
+		});
+
+
+		it( 'allows for bypassing the cached object', () => {
+			sandbox.stub( Profile, 'get' ).resolves( profile );
+
+			return expect( user.getProfile() ).
+				to.eventually.deep.equal( profile ).
+				then( () => user.getProfile({}, true) ).
+				then( () => {
+					expect( Profile.get ).to.have.been.calledTwice;
 				});
 		});
 
